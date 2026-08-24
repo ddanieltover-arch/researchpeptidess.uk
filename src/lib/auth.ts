@@ -30,6 +30,14 @@ export const DEMO_USERS: Record<UserRole, User> = {
   },
 };
 
+export const GUEST_USER: User = {
+  id: 'guest',
+  email: '',
+  name: 'Guest',
+  role: 'CUSTOMER',
+  createdAt: '',
+};
+
 export function hasPermission(userRole: UserRole, requiredRole: UserRole): boolean {
   if (userRole === 'ADMIN') return true;
   if (userRole === 'ANALYST' && requiredRole === 'ANALYST') return true;

@@ -7,7 +7,6 @@ import {
   Product,
   ProductCategory,
   Order,
-  ShippingMethod,
   Coupon,
   ProductBatch,
   AuditLogEntry,
@@ -15,84 +14,10 @@ import {
 } from '../types';
 import { INITIAL_CATEGORIES } from './data/categories';
 import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
+import { INITIAL_SHIPPING_METHODS } from './shipping-methods';
 
-export { INITIAL_CATEGORIES };
+export { INITIAL_CATEGORIES, INITIAL_SHIPPING_METHODS };
 export const INITIAL_PRODUCTS: Product[] = ALL_CATALOGUE_PRODUCTS;
-
-export const INITIAL_SHIPPING_METHODS: ShippingMethod[] = [
-  {
-    id: 'ship-uk-standard',
-    name: 'Royal Mail Tracked 24 (Next Business Day)',
-    zone: 'UK_MAINLAND',
-    carrier: 'Royal Mail',
-    price: 4.99,
-    freeShippingThreshold: 75.0,
-    estimatedDays: '1 Working Day (Order by 3 PM)',
-    trackingAvailable: true,
-    isActive: true,
-    sortOrder: 1,
-  },
-  {
-    id: 'ship-uk-express',
-    name: 'Special Delivery Guaranteed by 1 PM',
-    zone: 'UK_MAINLAND',
-    carrier: 'Royal Mail Special Delivery',
-    price: 8.99,
-    freeShippingThreshold: 150.0,
-    estimatedDays: 'Guaranteed by 1 PM Next Day',
-    trackingAvailable: true,
-    isActive: true,
-    sortOrder: 2,
-  },
-  {
-    id: 'ship-uk-highlands',
-    name: 'Highlands & Islands Tracked 48',
-    zone: 'UK_HIGHLANDS',
-    carrier: 'Royal Mail',
-    price: 6.99,
-    freeShippingThreshold: 100.0,
-    estimatedDays: '2 - 3 Working Days',
-    trackingAvailable: true,
-    isActive: true,
-    sortOrder: 3,
-  },
-  {
-    id: 'ship-eu-zone1',
-    name: 'European Priority Airmail (Zone 1: IE/FR/DE/NL)',
-    zone: 'EUROPE_ZONE_1',
-    carrier: 'DPD Air / DHL Express',
-    price: 14.99,
-    freeShippingThreshold: 200.0,
-    estimatedDays: '2 - 4 Business Days',
-    trackingAvailable: true,
-    isActive: true,
-    sortOrder: 4,
-  },
-  {
-    id: 'ship-eu-zone2',
-    name: 'European Priority Airmail (Zone 2: CH/IT/ES/SE/AT)',
-    zone: 'EUROPE_ZONE_2',
-    carrier: 'DHL Express Laboratory',
-    price: 19.99,
-    freeShippingThreshold: 250.0,
-    estimatedDays: '3 - 5 Business Days',
-    trackingAvailable: true,
-    isActive: true,
-    sortOrder: 5,
-  },
-  {
-    id: 'ship-intl-priority',
-    name: 'Global Academic Laboratory Freight (US/CA/AU/SG)',
-    zone: 'INTERNATIONAL',
-    carrier: 'FedEx Temperature Controlled Priority',
-    price: 29.99,
-    freeShippingThreshold: 350.0,
-    estimatedDays: '3 - 6 Business Days',
-    trackingAvailable: true,
-    isActive: true,
-    sortOrder: 6,
-  },
-];
 
 export const INITIAL_COUPONS: Coupon[] = [
   {

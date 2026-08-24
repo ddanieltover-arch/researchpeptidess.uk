@@ -51,7 +51,7 @@ export const CartPage: React.FC = () => {
         </div>
         <h2 className="text-xl font-bold font-mono text-slate-900">Your Requisition Basket is Empty</h2>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          Explore our certified British analytical peptides, blends, and standards.
+          Explore our published research peptides, blends, and laboratory catalogue.
         </p>
         <Button variant="primary" size="md" onClick={() => navigate('/shop')} className="font-mono text-xs shadow-md shadow-blue-500/20">
           Browse Requisition Catalogue

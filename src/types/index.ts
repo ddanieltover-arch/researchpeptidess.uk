@@ -237,7 +237,7 @@ export type CryptoNetwork = 'USDT_TRC20' | 'USDT_ERC20' | 'BTC' | 'USDC_ERC20' |
 export interface CryptoPaymentDetails {
   network: CryptoNetwork;
   walletAddress: string;
-  cryptoAmount: string;
+  cryptoAmount?: string;
   exchangeRateSnapshot?: string;
   expiresAt: string;
 }

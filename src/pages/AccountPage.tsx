@@ -28,6 +28,9 @@ export const AccountPage: React.FC = () => {
     products,
     currency,
     navigate,
+    signOutCustomer,
+    isAdminAuthenticated,
+    signOutAdmin,
   } = useStore();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'wishlist' | 'compliance'>('orders');
@@ -35,7 +38,7 @@ export const AccountPage: React.FC = () => {
 
   // Filter orders for this customer
   const customerOrders = orders.filter(
-    (o) => o.customerEmail === currentUser.email || o.customerId === currentUser.id || true
+    (o) => o.customerEmail.toLowerCase() === currentUser.email.toLowerCase() || o.customerId === currentUser.id
   );
 
   const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
@@ -98,9 +101,24 @@ export const AccountPage: React.FC = () => {
             <span>Customer ID: {currentUser.id}</span>
             <div className="text-emerald-700 font-semibold flex items-center justify-end gap-1">
               <ShieldCheck className="h-3 w-3" />
-              Verified In-Vitro Researcher
+              Signed in
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="font-mono text-xs"
+            onClick={async () => {
+              if (isAdminAuthenticated && currentUser.role === 'ADMIN') {
+                await signOutAdmin();
+              } else {
+                await signOutCustomer();
+              }
+              navigate('/account/login', { replace: true });
+            }}
+          >
+            Sign out
+          </Button>
         </div>
       </div>
 
@@ -151,7 +169,12 @@ export const AccountPage: React.FC = () => {
             </div>
 
             <div className="divide-y divide-slate-100 font-mono text-xs">
-              {customerOrders.map((ord) => (
+              {customerOrders.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 font-sans">
+                  No requisitions yet for this account.
+                </div>
+              ) : (
+                customerOrders.map((ord) => (
                 <div key={ord.id} className="p-4 grid grid-cols-12 items-center gap-2">
                   <div className="col-span-3">
                     <span className="font-bold text-slate-900 block">{ord.orderNumber}</span>
@@ -184,7 +207,8 @@ export const AccountPage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </div>
         </div>

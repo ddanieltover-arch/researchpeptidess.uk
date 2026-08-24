@@ -19,6 +19,7 @@ import { getSeoMetadataForPath } from '../../lib/seo';
 import { AppLink } from '../ui/AppLink';
 import { ROUTES } from '../../lib/routing';
 import { ContactEnquiryForm } from './ContactEnquiryForm';
+import { resolvePublicBusinessValue } from '../../lib/public-placeholders';
 import {
   ShieldAlert,
   Printer,
@@ -42,15 +43,15 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
     let text = page.contentMarkdown;
 
     const replacements: Record<string, string> = {
-      '[LEGAL_ENTITY_NAME]': storeSettings.legalEntityName,
-      '[REGISTERED_OFFICE_ADDRESS]': storeSettings.registeredOfficeAddress,
-      '[COMPANY_NUMBER]': storeSettings.companyNumber,
-      '[VAT_NUMBER]': storeSettings.vatNumber,
+      '[LEGAL_ENTITY_NAME]': resolvePublicBusinessValue(storeSettings.legalEntityName),
+      '[REGISTERED_OFFICE_ADDRESS]': resolvePublicBusinessValue(storeSettings.registeredOfficeAddress),
+      '[COMPANY_NUMBER]': resolvePublicBusinessValue(storeSettings.companyNumber),
+      '[VAT_NUMBER]': resolvePublicBusinessValue(storeSettings.vatNumber),
       '[PRIMARY_CONTACT_EMAIL]': storeSettings.primaryEmail,
       '[SUPPORT_CONTACT_EMAIL]': storeSettings.supportEmail,
       '[DATA_PROTECTION_EMAIL]': storeSettings.privacyEmail,
-      '[PRIMARY_CONTACT_PHONE]': storeSettings.phone,
-      '[GOVERNING_LAW_COUNTRY]': storeSettings.governingLaw,
+      '[PRIMARY_CONTACT_PHONE]': resolvePublicBusinessValue(storeSettings.phone),
+      '[GOVERNING_LAW_COUNTRY]': resolvePublicBusinessValue(storeSettings.governingLaw),
     };
 
     for (const [placeholder, val] of Object.entries(replacements)) {

@@ -5,6 +5,8 @@
  */
 
 import { Order, Payment, OrderNotification, NotificationType } from '../types';
+import { STORE_CONTACT_EMAIL } from './store-contact';
+import { getBankSettlementInstructions, getCryptoSettlementInstructions } from './settlement-instructions';
 
 export interface NotificationProvider {
   name: string;
@@ -51,18 +53,36 @@ export function buildNotificationContent(
 
     case 'PAYMENT_INSTRUCTIONS':
       if (order.paymentMethod === 'BANK_TRANSFER') {
+        const bankInstructions = getBankSettlementInstructions();
+        const publishedBank = payment?.bankDetails?.accountNumber
+          ? payment.bankDetails
+          : bankInstructions.configured
+            ? {
+                accountName: bankInstructions.accountName,
+                bankName: bankInstructions.bankName,
+                sortCode: bankInstructions.sortCode,
+                accountNumber: bankInstructions.accountNumber,
+                reference: payment?.reference || ref,
+              }
+            : null;
         return {
           subject: `[RP-UK] Faster Payments Settlement Instructions: Requisition #${ref}`,
-          contentSummary: `Please remit £${order.total.toFixed(
-            2
-          )} using reference "${payment?.reference || ref}" to Research Peptides UK (Sort Code: 20-00-00, Acc: 83920194).`,
+          contentSummary: publishedBank
+            ? `Please remit £${order.total.toFixed(2)} using reference "${publishedBank.reference || ref}" to ${publishedBank.accountName} (${publishedBank.bankName}, sort code ${publishedBank.sortCode}, account ${publishedBank.accountNumber}). Payment is verified manually after receipt.`
+            : `Order #${ref} is pending payment of £${order.total.toFixed(2)}. Bank destination details are not published in the storefront. Email ${STORE_CONTACT_EMAIL} with this order number before sending funds.`,
         };
       } else {
+        const cryptoInstructions = getCryptoSettlementInstructions();
+        const publishedCrypto = payment?.cryptoDetails?.walletAddress
+          ? payment.cryptoDetails
+          : cryptoInstructions.configured
+            ? cryptoInstructions
+            : null;
         return {
           subject: `[RP-UK] Cryptocurrency Settlement Details: Requisition #${ref}`,
-          contentSummary: `5% crypto discount applied. Total due: £${order.total.toFixed(
-            2
-          )}. Remit to dedicated wallet address before reservation window expires.`,
+          contentSummary: publishedCrypto
+            ? `5% crypto discount applied. Total due: £${order.total.toFixed(2)} GBP equivalent on ${publishedCrypto.network} to ${publishedCrypto.walletAddress}. Settlement is verified manually after the transaction is submitted.`
+            : `Order #${ref} is pending cryptocurrency payment of £${order.total.toFixed(2)}. A receiving wallet is not published. Email ${STORE_CONTACT_EMAIL} with this order number before sending funds.`,
         };
       }
 

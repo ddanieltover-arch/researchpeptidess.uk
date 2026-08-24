@@ -1,5 +1,6 @@
 import { MerchandisingRecord } from './merchandising-persistence';
 import { InventoryTransaction, Order, Payment, ShippingMethod, StoreSettings } from '../types';
+import { PublicSettlementSnapshot } from './settlement-instructions';
 
 async function readJson(response: Response): Promise<Record<string, unknown>> {
   const text = await response.text();
@@ -19,6 +20,7 @@ export async function fetchBootstrap(): Promise<{
   payments: Payment[];
   inventoryTransactions: InventoryTransaction[];
   newsletter: { providerConnected: boolean; providerStatus: string };
+  settlement?: PublicSettlementSnapshot;
   degraded?: boolean;
   reference?: string;
 } | null> {

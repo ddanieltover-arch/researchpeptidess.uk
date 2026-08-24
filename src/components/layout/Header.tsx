@@ -19,6 +19,7 @@ export const Header: React.FC = () => {
     categories,
     publishedProducts,
     isAdminAuthenticated,
+    isAccountAuthenticated,
   } = useStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -160,14 +161,16 @@ export const Header: React.FC = () => {
             </AppLink>
 
             <AppLink
-              href={ROUTES.account}
+              href={isAccountAuthenticated ? ROUTES.account : ROUTES.accountLogin}
               className={`flex items-center gap-1.5 rounded-lg p-2 font-mono text-xs font-bold uppercase tracking-tight transition-colors ${
-                route.kind === 'account' ? 'bg-blue-50 text-[#4353FF]' : 'text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]'
+                route.kind === 'account' || route.kind === 'account-login'
+                  ? 'bg-blue-50 text-[#4353FF]'
+                  : 'text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]'
               }`}
-              title="Account"
+              title={isAccountAuthenticated ? 'Account' : 'Sign in'}
             >
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Account</span>
+              <span className="hidden sm:inline">{isAccountAuthenticated ? 'Account' : 'Sign in'}</span>
             </AppLink>
 
             <button
@@ -215,7 +218,7 @@ export const Header: React.FC = () => {
             { href: '/about', label: 'About' },
             { href: '/faq', label: 'FAQ' },
             { href: '/contact', label: 'Contact' },
-            { href: ROUTES.account, label: 'Account' },
+            { href: ROUTES.account, label: isAccountAuthenticated ? 'Account' : 'Sign in' },
             { href: ROUTES.cart, label: `Cart (${totalCartCount})` },
           ].map((item) => (
             <AppLink

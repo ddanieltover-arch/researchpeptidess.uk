@@ -1,7 +1,7 @@
 # Research Peptides UK — Architecture & Foundation
 
 > **Brand:** Research Peptides UK  
-> **Tagline:** 99% Pure British Peptides  
+> **Positioning:** In-vitro research peptides and laboratory catalogue  
 > **Domain:** researchpeptidess.uk  
 > **Primary Market:** United Kingdom & Europe  
 
@@ -23,7 +23,7 @@ Research Peptides UK is an independent e-commerce application engineered specifi
 All copy and product entities are bound to in-vitro laboratory guidelines:
 - **No Human / Veterinary Consumption Claims**: Audited by `/src/lib/compliance.ts`.
 - **Mandatory Compliance Disclaimer**: 3-point legal acknowledgment before requisition checkout.
-- **HPLC & Mass Spectrometry Transparency**: Every compound variant displays tested HPLC batch purity (≥99.0%) and downloadable COA profiles.
+- **HPLC & Mass Spectrometry Transparency**: Product pages show HPLC/COA files and purity percentages only when those records exist on the product or batch.
 
 ---
 
@@ -31,8 +31,8 @@ All copy and product entities are bound to in-vitro laboratory guidelines:
 
 - **Authoritative Calculations:** Server-side engine calculates subtotal, bulk tier savings (10% for 3+, 15% for 6+, 20% for 10+), and shipping thresholds (£75.00 for free UK Tracked delivery).
 - **Payment Methods:**
-  1. **UK Faster Payments / SEPA Bank Transfer**: Generates account details and sort code (`20-00-00`, `89210044`), with reference number and manual verification queue in the Admin portal.
-  2. **Cryptocurrency (BTC / ETH / USDT-TRC20)**: Automatic **5% business rule discount** applied to order totals.
+  1. **UK Faster Payments / SEPA Bank Transfer**: Destination details are taken from production environment configuration and shown only when they are not sample/placeholder values. Settlement is verified manually in Admin.
+  2. **Cryptocurrency (BTC)**: A **5%** discount is applied in the pricing engine when crypto is selected. Wallets are shown only when a non-sample receiving address is configured. This is not instant settlement.
 
 ---
 

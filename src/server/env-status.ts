@@ -24,7 +24,9 @@ export const ENV_VARIABLE_CATALOG: EnvVariableSpec[] = [
   { name: 'SENTRY_DSN', classification: 'OPTIONAL' },
   { name: 'NEXT_PUBLIC_SENTRY_DSN', classification: 'OPTIONAL' },
   { name: 'NEXT_PUBLIC_ANALYTICS_PROPERTY_ID', classification: 'OPTIONAL' },
-  { name: 'CRON_SECRET', classification: 'OPTIONAL' },
+  { name: 'BANK_TRANSFER_SORT_CODE', classification: 'REQUIRED_FOR_FEATURE', feature: 'bank_settlement' },
+  { name: 'BANK_TRANSFER_ACCOUNT_NUMBER', classification: 'REQUIRED_FOR_FEATURE', feature: 'bank_settlement' },
+  { name: 'CRYPTO_BTC_WALLET_ADDRESS', classification: 'REQUIRED_FOR_FEATURE', feature: 'crypto_settlement' },
   { name: 'GEMINI_API_KEY', classification: 'OPTIONAL' },
 ];
 
@@ -35,6 +37,9 @@ const PLACEHOLDER_FRAGMENTS = [
   'xxxxxxxx',
   'G-XXXXXXXXXX',
   'choose-a-strong',
+  '20-00-00',
+  '12345678',
+  'bc1q9v8084',
 ];
 
 export type EnvPresence = 'PRESENT' | 'MISSING' | 'OPTIONAL';

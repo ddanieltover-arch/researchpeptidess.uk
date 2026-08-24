@@ -14,6 +14,7 @@ import { authorizeDocumentAccess, authorizeOrderAccess } from './security';
 import { CartItem, ProductVariant, Coupon, ShippingMethod, Product, ProductCategory } from '../types';
 import { runParityTests } from './parity-tests';
 import { runPersistenceTests } from './persistence-tests';
+import { normalizePaymentProofReference } from './settlement-instructions';
 
 export interface TestResult {
   category: 'PRICING' | 'INVENTORY' | 'STATE_MACHINE' | 'PAYMENTS' | 'SHIPPING' | 'SECURITY' | 'IMPORT' | 'PARITY' | 'PERSISTENCE';
@@ -335,6 +336,18 @@ export function runAllCommerceTests(): TestSuiteReport {
       passed,
       expected: 'Awaiting -> Submitted -> Verified -> Refunded (Valid); Verified -> Awaiting (Blocked)',
       actual: `p1: ${p1.isValid}, p2: ${p2.isValid}, p3: ${p3.isValid}, p4: ${p4.isValid}`,
+    };
+  });
+
+  runTest('PAYMENTS', 'Checkout does not treat empty or placeholder proofs as submitted payment', () => {
+    const empty = normalizePaymentProofReference('');
+    const placeholder = normalizePaymentProofReference('FPS-TRANSFER-PENDING');
+    const real = normalizePaymentProofReference('TXID-ABC');
+    const passed = empty === undefined && placeholder === undefined && real === 'TXID-ABC';
+    return {
+      passed,
+      expected: 'Only real customer evidence becomes a payment proof',
+      actual: `${String(empty)}/${String(placeholder)}/${String(real)}`,
     };
   });
 

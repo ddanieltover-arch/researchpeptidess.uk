@@ -9,6 +9,7 @@ import React from 'react';
 import { useStore } from '../../context/StoreContext';
 import { ShieldCheck, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
+import { isUnpublishedBusinessValue } from '../../lib/public-placeholders';
 
 export const MaintenanceView: React.FC = () => {
   const { storeSettings, navigate } = useStore();
@@ -59,6 +60,7 @@ export const MaintenanceView: React.FC = () => {
             </div>
           </div>
 
+          {!isUnpublishedBusinessValue(storeSettings.phone) && (
           <div className="flex items-start gap-3">
             <Phone className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
             <div>
@@ -66,6 +68,7 @@ export const MaintenanceView: React.FC = () => {
               <span className="text-sm font-semibold text-white">{storeSettings.phone}</span>
             </div>
           </div>
+          )}
         </div>
 
         {/* Admin Bypass for Authorized Verification */}

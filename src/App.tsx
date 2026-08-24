@@ -23,6 +23,7 @@ import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { AccountPage } from './pages/AccountPage';
+import { AccountLoginPage } from './pages/AccountLoginPage';
 import { AdminPage } from './pages/AdminPage';
 import { AdminLoginPage, AdminSessionLoading } from './pages/AdminLoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -37,6 +38,7 @@ const AppContent: React.FC = () => {
     currentPath,
     authReady,
     isAdminAuthenticated,
+    isAccountAuthenticated,
     navigate,
     products,
     categories,
@@ -92,6 +94,13 @@ const AppContent: React.FC = () => {
     }
   }, [authReady, isAdminAuthenticated, activeRoute.kind, navigate]);
 
+  useEffect(() => {
+    if (!authReady || !isAccountAuthenticated) return;
+    if (activeRoute.kind === 'account-login') {
+      navigate('/account', { replace: true });
+    }
+  }, [authReady, isAccountAuthenticated, activeRoute.kind, navigate]);
+
   // Maintenance Mode Guard (Permits Admin access to settings/verification)
   const isMaintenanceActive =
     (storeSettings.storeStatus === 'MAINTENANCE' || storeSettings.maintenanceMode) &&
@@ -139,6 +148,19 @@ const AppContent: React.FC = () => {
       case 'checkout':
         return <CheckoutPage />;
       case 'account':
+      case 'account-login':
+        if (!authReady) {
+          return (
+            <div className="flex justify-center px-4 py-16">
+              <p className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Checking account session…
+              </p>
+            </div>
+          );
+        }
+        if (!isAccountAuthenticated) {
+          return <AccountLoginPage />;
+        }
         return <AccountPage />;
       case 'admin':
         return <AdminPage />;

@@ -4,9 +4,10 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { handleAdminApiRequest } from './admin-http';
+import { handleCustomerApiRequest } from './customer-http';
 import { readAdminSessionFromCookieHeader } from './admin-auth';
-import { pingDatabase } from '../db/index';
-import { buildEnvDiagnostic, isEmailProviderConnected, storageStatus } from './env-status';
+import { buildEnvDiagnostic, isEmailProviderConnected } from './env-status';
+import { writeHealthResponse, writeReadyResponse } from './health-handlers';
 import {
   getClientAddress,
   hashIp,
@@ -25,6 +26,7 @@ import { createContactMessage } from './persist/contact';
 import { upsertNewsletterSubscription } from './persist/newsletter';
 import { loadCommerceState, persistInventoryEvent, persistOrderBundle, persistPaymentUpdate } from './persist/commerce';
 import { InventoryTransaction, Order, Payment, ShippingMethod, StoreSettings } from '../types';
+import { getPublicSettlementSnapshot } from '../lib/settlement-instructions';
 
 function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: string): boolean {
   const user = readAdminSessionFromCookieHeader(req.headers.cookie);
@@ -35,36 +37,6 @@ function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: 
   return true;
 }
 
-async function handleHealth(res: ServerResponse, correlationId: string): Promise<void> {
-  const database = await pingDatabase();
-  const storage = storageStatus();
-  const status = database === 'unavailable' ? 'degraded' : 'healthy';
-  sendJson(
-    res,
-    200,
-    {
-      status,
-      database,
-      storage,
-    },
-    { 'x-correlation-id': correlationId }
-  );
-}
-
-async function handleReady(res: ServerResponse, correlationId: string): Promise<void> {
-  const variables = buildEnvDiagnostic();
-  const database = variables.DATABASE_URL;
-  const ready = database === 'PRESENT';
-  sendJson(
-    res,
-    ready ? 200 : 503,
-    {
-      ready,
-      variables,
-    },
-    { 'x-correlation-id': correlationId }
-  );
-}
 
 async function handleBootstrap(res: ServerResponse, correlationId: string): Promise<void> {
   try {
@@ -90,6 +62,7 @@ async function handleBootstrap(res: ServerResponse, correlationId: string): Prom
             ? 'PROVIDER_CONFIGURED_NOT_SENDING'
             : 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
         },
+        settlement: getPublicSettlementSnapshot(),
       },
       { 'x-correlation-id': correlationId }
     );
@@ -109,6 +82,10 @@ async function handleBootstrap(res: ServerResponse, correlationId: string): Prom
           providerConnected: false,
           providerStatus: 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
         },
+        settlement: {
+          bank: { configured: false, accountName: '', bankName: '', sortCode: '', accountNumber: '' },
+          crypto: { configured: false, network: 'BTC', walletAddress: '' },
+        },
         degraded: true,
         reference: correlationId,
       },
@@ -126,11 +103,11 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
 
   try {
     if (path === '/api/health' && req.method === 'GET') {
-      await handleHealth(res, correlationId);
+      await writeHealthResponse(res, correlationId);
       return true;
     }
     if (path === '/api/ready' && req.method === 'GET') {
-      await handleReady(res, correlationId);
+      await writeReadyResponse(res, correlationId);
       return true;
     }
     if (path === '/api/bootstrap' && req.method === 'GET') {
@@ -140,6 +117,10 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
 
     if (path.startsWith('/api/admin/login') || path.startsWith('/api/admin/logout') || path.startsWith('/api/admin/session')) {
       return handleAdminApiRequest(req, res);
+    }
+
+    if (path.startsWith('/api/account/')) {
+      return handleCustomerApiRequest(req, res);
     }
 
     if (path === '/api/contact' && req.method === 'POST') {

@@ -25,7 +25,8 @@ export async function saveStoreSettings(settings: StoreSettings, actor?: string)
   if (!db) {
     throw new Error('DATABASE_UNAVAILABLE');
   }
-  const payload = JSON.stringify(settings);
+  const canonical = withCanonicalStoreContactEmails(settings);
+  const payload = JSON.stringify(canonical);
   const now = new Date();
   await db
     .insert(storeSettingsRecords)
@@ -43,5 +44,5 @@ export async function saveStoreSettings(settings: StoreSettings, actor?: string)
         updatedBy: actor,
       },
     });
-  return settings;
+  return canonical;
 }

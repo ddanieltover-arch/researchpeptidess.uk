@@ -28,6 +28,7 @@ export type RouteKind =
   | 'cart'
   | 'checkout'
   | 'account'
+  | 'account-login'
   | 'admin'
   | 'admin-login'
   | 'cms'
@@ -68,6 +69,7 @@ export const ROUTES = {
   cart: '/cart',
   checkout: '/checkout',
   account: '/account',
+  accountLogin: '/account/login',
   admin: '/admin',
   adminLogin: '/admin/login',
 } as const;
@@ -191,6 +193,10 @@ export function parseAppPath(input: string): ParsedAppRoute {
     if (!RESERVED_SLUGS.has(leaf)) {
       return base('cms', { slug: leaf, pathname: `/${leaf}`, href: `/${leaf}` });
     }
+  }
+
+  if (segments[0] === 'account' && segments[1] === 'login' && segments.length === 2) {
+    return base('account-login', { pathname: ROUTES.accountLogin, href: ROUTES.accountLogin });
   }
 
   if (segments[0] === 'admin' && segments[1] === 'login' && segments.length === 2) {

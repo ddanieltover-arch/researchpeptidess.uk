@@ -5,7 +5,6 @@ import { AppLink } from '../components/ui/AppLink';
 import { NewsletterSignup } from '../components/content/NewsletterSignup';
 import { RecentlyViewedRail } from '../components/catalogue/RecentlyViewedRail';
 import { categoryPath, ROUTES } from '../lib/routing';
-import { getStorefrontTrustMetrics } from '../lib/trust-metrics';
 import {
   getBestsellerEntries,
   getFeaturedProducts,
@@ -13,66 +12,43 @@ import {
   getBackInStockProducts,
 } from '../lib/merchandising';
 import { FileCheck2, FlaskConical, ShieldCheck } from 'lucide-react';
+import { HeroFeaturedProduct } from '../components/home/HeroFeaturedProduct';
+import { HeroIntro } from '../components/home/HeroIntro';
+import { HeroTrustBar } from '../components/home/HeroTrustBar';
 
 export const HomePage: React.FC = () => {
-  const { publishedProducts, categories, orders, inventoryTransactions, shippingMethods, storeSettings } = useStore();
-  const metrics = getStorefrontTrustMetrics(publishedProducts, categories, shippingMethods);
+  const { publishedProducts, categories, orders, inventoryTransactions, storeSettings } = useStore();
   const bestsellers = getBestsellerEntries(publishedProducts, orders, 4);
   const featured = getFeaturedProducts(publishedProducts, 4);
   const newArrivals = getNewArrivalProducts(publishedProducts, Date.now(), 4);
   const restocked = getBackInStockProducts(publishedProducts, inventoryTransactions, Date.now(), 4);
   const discoveryCategories = categories.filter((category) => category.isActive);
+  const heroProduct =
+    publishedProducts.find((product) => product.slug === 'tesamorelin') ||
+    featured[0] ||
+    bestsellers[0]?.product;
+  const heroIsBestseller = Boolean(heroProduct && bestsellers.some((entry) => entry.product.id === heroProduct.id));
 
   return (
     <div className="space-y-12 bg-slate-50 pb-16 sm:space-y-16">
-      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-blue-50/50 via-slate-50 to-slate-50 py-14 sm:py-20">
-        <div className="pointer-events-none absolute top-0 right-0 flex h-full w-1/2 items-center justify-center opacity-10">
-          <div className="h-80 w-80 rounded-full border-[24px] border-[#4353FF]" />
-        </div>
+      <section className="relative border-b border-slate-200 bg-[#F7F8FC] py-16 sm:py-24">
+        <div
+          className="pointer-events-none absolute inset-0 overflow-hidden opacity-50"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.28) 1px, transparent 0)',
+            backgroundSize: '22px 22px',
+          }}
+        />
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-10">
-          <div className="max-w-2xl">
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-3 py-1 font-mono text-xs font-bold tracking-wider text-[#4353FF] uppercase shadow-xs">
-              <span className="h-2 w-2 rounded-full bg-[#4353FF]" />
-              UK laboratory catalogue
-            </div>
-            <h1 className="mb-4 font-mono text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              Research peptides and biochemical reagents for <span className="text-[#4353FF]">in-vitro work</span>
-            </h1>
-            <p className="mb-6 max-w-lg text-sm leading-relaxed text-slate-600 sm:text-base">
-              Research Peptides UK supplies published catalogue items to laboratories and qualified research purchasers.
-              Documentation is shown only when a batch record exists. Products are not for human or veterinary use.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-1">
-              <AppLink
-                href={ROUTES.peptides}
-                className="inline-flex items-center justify-center rounded-lg border border-[#4353FF] bg-[#4353FF] px-8 py-3.5 font-mono text-xs font-bold tracking-wider text-white uppercase shadow-md shadow-blue-500/20 hover:bg-[#3846E0]"
-              >
-                Browse peptides
-              </AppLink>
-              <AppLink
-                href="/quality"
-                className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-transparent px-8 py-3.5 font-mono text-xs font-bold tracking-wider text-slate-800 uppercase hover:border-[#4353FF] hover:bg-blue-50 hover:text-[#4353FF]"
-              >
-                Documentation &amp; quality
-              </AppLink>
-            </div>
+          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+            <HeroIntro />
+            {heroProduct && (
+              <div className="flex justify-center px-4 pt-6 pb-4 sm:px-8 lg:justify-end lg:pt-8 lg:pb-6">
+                <HeroFeaturedProduct product={heroProduct} isBestseller={heroIsBestseller} />
+              </div>
+            )}
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {[
-            { value: String(metrics.publishedProductCount), label: 'Published catalogue items' },
-            { value: String(metrics.documentedProductCount), label: 'Listings with documentation records' },
-            { value: String(metrics.activeCategoryCount), label: 'Active catalogue categories' },
-            { value: String(metrics.fulfilmentRegionCount), label: 'Configured fulfilment zones' },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl border border-slate-200 bg-white p-5">
-              <p className="font-mono text-2xl font-extrabold text-slate-900">{item.value}</p>
-              <p className="mt-1 text-[11px] font-medium tracking-wide text-slate-500 uppercase">{item.label}</p>
-            </div>
-          ))}
+          <HeroTrustBar />
         </div>
       </section>
 

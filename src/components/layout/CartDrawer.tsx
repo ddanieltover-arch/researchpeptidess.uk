@@ -114,7 +114,7 @@ export const CartDrawer: React.FC = () => {
           </div>
           <h4 className="text-sm font-bold text-slate-900">Your basket is empty</h4>
           <p className="text-xs text-slate-500 max-w-xs mt-1">
-            Browse our certified research peptide catalogue and add analytical standards.
+            Browse the research peptide catalogue and add published analytical items.
           </p>
           <Button
             variant="primary"

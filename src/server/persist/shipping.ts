@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { ShippingMethod } from '../../types';
 import { getDb } from '../../db/index';
 import { shippingMethods } from '../../db/schema';
-import { INITIAL_SHIPPING_METHODS } from '../../lib/mock-data';
+import { INITIAL_SHIPPING_METHODS } from '../../lib/shipping-methods';
 
 function fromPence(value: number | null | undefined): number | undefined {
   if (value == null) return undefined;

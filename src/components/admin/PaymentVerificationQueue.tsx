@@ -368,7 +368,7 @@ export const PaymentVerificationQueue: React.FC = () => {
                 <div className="text-[11px] space-y-1">
                   <div>Network: <strong className="text-slate-900">{selectedPayment.cryptoDetails.network}</strong></div>
                   <div>Receiving Address: <span className="font-mono text-slate-800 break-all">{selectedPayment.cryptoDetails.walletAddress}</span></div>
-                  <div>Expected Amount: <strong className="text-emerald-700">{selectedPayment.cryptoDetails.cryptoAmount}</strong></div>
+                  <div>Expected Amount: <strong className="text-emerald-700">{selectedPayment.cryptoDetails.cryptoAmount || 'GBP order total — no live crypto quote'}</strong></div>
                 </div>
               </div>
             )}

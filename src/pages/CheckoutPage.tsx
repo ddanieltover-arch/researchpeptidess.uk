@@ -7,6 +7,7 @@ import { Checkbox } from '../components/ui/Checkbox';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { Badge } from '../components/ui/Badge';
 import { formatPrice } from '../lib/utils';
+import { STORE_CONTACT_EMAIL } from '../lib/store-contact';
 import { PaymentMethod, ShippingAddress, Order } from '../types';
 import {
   Building2,
@@ -32,6 +33,7 @@ export const CheckoutPage: React.FC = () => {
     navigate,
     currentUser,
     addToast,
+    settlement,
   } = useStore();
 
   const [step, setStep] = useState<'details' | 'confirmation'>('details');
@@ -39,15 +41,15 @@ export const CheckoutPage: React.FC = () => {
 
   // Form Fields
   const [email, setEmail] = useState(currentUser.email || '');
-  const [fullName, setFullName] = useState(currentUser.name || '');
+  const [fullName, setFullName] = useState(currentUser.id === 'guest' ? '' : currentUser.name || '');
   const [institution, setInstitution] = useState(currentUser.institution || '');
-  const [addressLine1, setAddressLine1] = useState('Laboratory Block 4, Research Core');
+  const [addressLine1, setAddressLine1] = useState('');
   const [addressLine2, setAddressLine2] = useState('');
-  const [city, setCity] = useState('Oxford');
-  const [county, setCounty] = useState('Oxfordshire');
-  const [postcode, setPostcode] = useState('OX1 3QU');
+  const [city, setCity] = useState('');
+  const [county, setCounty] = useState('');
+  const [postcode, setPostcode] = useState('');
   const [country, setCountry] = useState('GB');
-  const [phone, setPhone] = useState(currentUser.phone || '+44 7700 900123');
+  const [phone, setPhone] = useState(currentUser.phone || '');
 
   // Payment proof
   const [bankRefInput, setBankRefInput] = useState('');
@@ -60,6 +62,8 @@ export const CheckoutPage: React.FC = () => {
 
   const [copiedBank, setCopiedBank] = useState(false);
   const [copiedCrypto, setCopiedCrypto] = useState(false);
+  const bankSettlement = settlement.bank;
+  const cryptoSettlement = settlement.crypto;
 
   if (cart.length === 0 && step !== 'confirmation') {
     return (
@@ -97,9 +101,7 @@ export const CheckoutPage: React.FC = () => {
     };
 
     const paymentProof =
-      selectedPaymentMethod === 'BANK_TRANSFER'
-        ? bankRefInput || 'FPS-TRANSFER-PENDING'
-        : cryptoTxInput || 'CRYPTO-TX-PENDING';
+      selectedPaymentMethod === 'BANK_TRANSFER' ? bankRefInput.trim() : cryptoTxInput.trim();
 
     setTimeout(() => {
       void (async () => {
@@ -110,6 +112,11 @@ export const CheckoutPage: React.FC = () => {
           paymentMethod: selectedPaymentMethod,
           paymentProofReference: paymentProof,
         });
+
+        if (!order) {
+          setIsSubmitting(false);
+          return;
+        }
 
         setCreatedOrder(order);
         setStep('confirmation');
@@ -290,7 +297,7 @@ export const CheckoutPage: React.FC = () => {
                       value: 'CRYPTOCURRENCY',
                       title: 'Cryptocurrency (Bitcoin / Ethereum / USDT-TRC20)',
                       description:
-                        'Instant settlement with an automatic 5% institutional discount applied to the total.',
+                        'Cryptocurrency transfer with a 5% discount on the order total. Settlement is verified manually after you send the transaction — this is not instant.',
                       badge: '5% DISCOUNT APPLIED',
                       icon: <Coins className="h-5 w-5 text-sky-500" />,
                     },
@@ -301,98 +308,81 @@ export const CheckoutPage: React.FC = () => {
                 {selectedPaymentMethod === 'BANK_TRANSFER' ? (
                   <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between font-bold text-slate-900">
-                      <span>UK Bank Account Details</span>
+                      <span>UK Bank Transfer</span>
                       <span className="text-[10px] text-[#4353FF] bg-blue-50 px-2 py-0.5 rounded-md font-bold">
                         Manual Verification
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px]">
-                      <div>
-                        <span className="text-slate-500 block">Bank Name:</span>
-                        <span className="font-bold text-slate-800">Barclays Corporate UK</span>
+                    {bankSettlement.configured ? (
+                      <div className="grid grid-cols-2 gap-2 text-[11px]">
+                        <div>
+                          <span className="text-slate-500 block">Bank Name:</span>
+                          <span className="font-bold text-slate-800">{bankSettlement.bankName}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Account Name:</span>
+                          <span className="font-bold text-slate-800">{bankSettlement.accountName}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Sort Code:</span>
+                          <span className="font-bold text-slate-800">{bankSettlement.sortCode}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Account Number:</span>
+                          <span className="font-bold text-slate-800">{bankSettlement.accountNumber}</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-slate-500 block">Account Name:</span>
-                        <span className="font-bold text-slate-800">Research Peptides UK Ltd</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block">Sort Code:</span>
-                        <span className="font-bold text-slate-800">20-00-00</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block">Account Number:</span>
-                        <span className="font-bold text-slate-800">89210044</span>
-                      </div>
-                    </div>
+                    ) : (
+                      <p className="font-sans text-[11px] text-slate-600 leading-relaxed">
+                        Payment instructions are temporarily unavailable. Please contact {STORE_CONTACT_EMAIL}.
+                      </p>
+                    )}
 
                     <Input
-                      label="Payment Reference Note / FPS Transaction Ref"
+                      label="Payment Reference Note / FPS Transaction Ref (optional)"
                       value={bankRefInput}
                       onChange={(e) => setBankRefInput(e.target.value)}
-                      placeholder="e.g. FPS-OXFORD-LAB or your Requisition PO Number"
+                      placeholder="Leave blank if you have not transferred yet"
                       className="text-xs h-9"
-                      helperText="You can also enter your institutional PO number or FPS reference."
+                      helperText="Only enter a Faster Payments reference if you have already sent the transfer."
                     />
                   </div>
                 ) : (
                   <div className="rounded-xl bg-blue-50/70 border border-blue-200 p-4 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between font-bold text-blue-950">
-                      <span>Cryptocurrency Settlement Addresses</span>
+                      <span>Cryptocurrency Settlement</span>
                       <span className="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded-md">
-                        -5% Savings Applied
+                        -5% after verification
                       </span>
                     </div>
 
-                    <div className="space-y-2 text-[11px]">
+                    {cryptoSettlement.configured ? (
                       <div className="bg-white p-2.5 rounded-lg border border-blue-200 flex items-center justify-between">
                         <div className="truncate pr-2">
-                          <span className="text-slate-500 block text-[10px]">Bitcoin (BTC):</span>
-                          <span className="font-bold text-slate-900 text-xs">
-                            bc1qrpuklab99purepeptidesresearch78x221
-                          </span>
+                          <span className="text-slate-500 block text-[10px]">Bitcoin (BTC) only:</span>
+                          <span className="font-bold text-slate-900 text-xs">{cryptoSettlement.walletAddress}</span>
                         </div>
                         <button
                           type="button"
-                          onClick={() =>
-                            copyToClipboard(
-                              'bc1qrpuklab99purepeptidesresearch78x221',
-                              'crypto'
-                            )
-                          }
+                          onClick={() => copyToClipboard(cryptoSettlement.walletAddress, 'crypto')}
                           className="text-slate-500 hover:text-slate-900 p-1"
+                          aria-label="Copy Bitcoin wallet address"
                         >
                           {copiedCrypto ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                         </button>
                       </div>
-
-                      <div className="bg-white p-2.5 rounded-lg border border-blue-200 flex items-center justify-between">
-                        <div className="truncate pr-2">
-                          <span className="text-slate-500 block text-[10px]">USDT (TRC-20):</span>
-                          <span className="font-bold text-slate-900 text-xs">
-                            TRPUK99PureBritishPeptidesTRC20OfficialX
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            copyToClipboard(
-                              'TRPUK99PureBritishPeptidesTRC20OfficialX',
-                              'crypto'
-                            )
-                          }
-                          className="text-slate-500 hover:text-slate-900 p-1"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                    ) : (
+                      <p className="font-sans text-[11px] text-slate-600 leading-relaxed">
+                        Payment instructions are temporarily unavailable. Please contact {STORE_CONTACT_EMAIL}.
+                      </p>
+                    )}
 
                     <Input
-                      label="Transaction Hash / TXID (Optional at this stage)"
+                      label="Transaction Hash / TXID (optional)"
                       value={cryptoTxInput}
                       onChange={(e) => setCryptoTxInput(e.target.value)}
-                      placeholder="Paste TXID hash if payment already broadcasted"
+                      placeholder="Paste TXID only if the payment is already broadcast"
                       className="text-xs h-9"
                     />
                   </div>
@@ -538,58 +528,70 @@ export const CheckoutPage: React.FC = () => {
 
             {createdOrder?.paymentMethod === 'BANK_TRANSFER' ? (
               <div className="space-y-4 text-xs font-mono">
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Beneficiary Name:</span>
-                      <span className="font-bold text-slate-900">Research Peptides UK Ltd</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Bank:</span>
-                      <span className="font-bold text-slate-900">Barclays Corporate UK</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Sort Code:</span>
-                      <span className="font-bold text-slate-900">20-00-00</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Account Number:</span>
-                      <span className="font-bold text-slate-900">89210044</span>
-                    </div>
-                    <div className="col-span-2 pt-2 border-t border-slate-200">
-                      <span className="text-slate-500 block text-[10px]">Mandatory Payment Reference:</span>
-                      <span className="font-bold text-[#4353FF] text-sm">{createdOrder?.orderNumber}</span>
+                {bankSettlement.configured ? (
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Beneficiary Name:</span>
+                        <span className="font-bold text-slate-900">{bankSettlement.accountName}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Bank:</span>
+                        <span className="font-bold text-slate-900">{bankSettlement.bankName}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Sort Code:</span>
+                        <span className="font-bold text-slate-900">{bankSettlement.sortCode}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[10px]">Account Number:</span>
+                        <span className="font-bold text-slate-900">{bankSettlement.accountNumber}</span>
+                      </div>
+                      <div className="col-span-2 pt-2 border-t border-slate-200">
+                        <span className="text-slate-500 block text-[10px]">Mandatory Payment Reference:</span>
+                        <span className="font-bold text-[#4353FF] text-sm">{createdOrder.orderNumber}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <p className="font-sans text-[11px] text-slate-600 leading-relaxed">
+                    Payment instructions are temporarily unavailable. Please contact {STORE_CONTACT_EMAIL}.
+                  </p>
+                )}
 
                 <p className="text-[11px] font-sans text-slate-600 leading-relaxed">
-                  Please initiate a standard UK Faster Payments or SEPA transfer using your order number as the
-                  payment reference. Once funds arrive in our accounts, an administrator will verify the payment
-                  and dispatch your items with a tracked tracking code.
+                  Payment remains unverified until an administrator records receipt. Dispatch happens after that
+                  verification, not when the requisition is submitted.
                 </p>
               </div>
             ) : (
               <div className="space-y-4 text-xs font-mono">
-                <div className="rounded-xl bg-blue-50/70 border border-blue-200 p-4 space-y-3">
-                  <span className="text-slate-700 block text-[10px] font-bold uppercase">
-                    Bitcoin (BTC) Destination Address:
-                  </span>
-                  <div className="bg-white p-3 rounded-lg border border-blue-300 flex items-center justify-between text-xs font-bold text-slate-900">
-                    <span className="truncate">bc1qrpuklab99purepeptidesresearch78x221</span>
-                    <button
-                      onClick={() =>
-                        copyToClipboard('bc1qrpuklab99purepeptidesresearch78x221', 'crypto')
-                      }
-                      className="ml-2 text-slate-500 hover:text-slate-900 p-1"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
+                {cryptoSettlement.configured ? (
+                  <div className="rounded-xl bg-blue-50/70 border border-blue-200 p-4 space-y-3">
+                    <span className="text-slate-700 block text-[10px] font-bold uppercase">
+                      {cryptoSettlement.network} destination:
+                    </span>
+                    <div className="bg-white p-3 rounded-lg border border-blue-300 flex items-center justify-between text-xs font-bold text-slate-900">
+                      <span className="truncate">{cryptoSettlement.walletAddress}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(cryptoSettlement.walletAddress, 'crypto')}
+                        className="ml-2 text-slate-500 hover:text-slate-900 p-1"
+                        aria-label="Copy cryptocurrency wallet address"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="text-[11px] text-[#4353FF] font-semibold">
+                      Amount payable: {formatPrice(createdOrder?.total || 0, currency)} GBP equivalent. Send only on
+                      the stated network. There is no live exchange-rate quote in checkout.
+                    </div>
                   </div>
-                  <div className="text-[11px] text-[#4353FF] font-semibold">
-                    Amount Payable: {formatPrice(createdOrder?.total || 0, currency)} in equivalent BTC
-                  </div>
-                </div>
+                ) : (
+                  <p className="font-sans text-[11px] text-slate-600 leading-relaxed">
+                    Payment instructions are temporarily unavailable. Please contact {STORE_CONTACT_EMAIL}.
+                  </p>
+                )}
               </div>
             )}
 

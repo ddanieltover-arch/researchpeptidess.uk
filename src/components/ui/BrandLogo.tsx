@@ -144,11 +144,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         {showTagline && (
           <div className="flex items-center gap-2 mt-1">
             <span className={`font-bold uppercase tracking-wider text-[#0EA5E9] ${subSizes[size]}`}>
-              HPLC Certified Standards
+              In-vitro research supply
             </span>
             <span className="text-slate-300 text-[10px]">•</span>
             <span className={`font-mono text-slate-400 uppercase tracking-widest ${subSizes[size]}`}>
-              &gt; 99% PURITY
+              UK catalogue
             </span>
           </div>
         )}

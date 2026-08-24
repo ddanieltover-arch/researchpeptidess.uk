@@ -1,6 +1,15 @@
 import { TestResult } from './commerce-tests';
 import { applyMerchandisingOverlay } from './merchandising';
 import { neutralizeUnsafePublicCopy } from './public-copy-safety';
+import { STORE_CONTACT_EMAIL, withCanonicalStoreContactEmails } from './store-contact';
+import {
+  getBankSettlementInstructions,
+  getCryptoSettlementInstructions,
+  isSampleBankDestination,
+  normalizePaymentProofReference,
+} from './settlement-instructions';
+import { resolvePublicBusinessValue, UNPUBLISHED_BUSINESS_DETAIL } from './public-placeholders';
+import { getSeoMetadataForPath, generateRobotsTxt } from './seo';
 import { Product } from '../types';
 
 function run(
@@ -121,6 +130,78 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'RP-ERR-XXXX',
         actual: sampleRef,
+      };
+    }),
+    run('Legacy store inboxes canonicalize to the single contact email', () => {
+      const next = withCanonicalStoreContactEmails({
+        primaryEmail: 'lab@researchpeptidess.uk',
+        supportEmail: 'support@researchpeptidess.uk',
+        privacyEmail: 'privacy@researchpeptidess.uk',
+      });
+      const passed =
+        next.primaryEmail === STORE_CONTACT_EMAIL &&
+        next.supportEmail === STORE_CONTACT_EMAIL &&
+        next.privacyEmail === STORE_CONTACT_EMAIL;
+      return {
+        passed,
+        expected: STORE_CONTACT_EMAIL,
+        actual: `${next.primaryEmail}/${next.supportEmail}/${next.privacyEmail}`,
+      };
+    }),
+    run('Sample bank and crypto destinations are not treated as live settlement details', () => {
+      const bank = getBankSettlementInstructions();
+      const crypto = getCryptoSettlementInstructions();
+      const sampleDetected = isSampleBankDestination('20-00-00', '89210044');
+      const passed = bank.configured === false && crypto.configured === false && sampleDetected && !bank.sortCode && !crypto.walletAddress;
+      return {
+        passed,
+        expected: 'Unconfigured empty destinations; sample sort code detected',
+        actual: `bank=${bank.configured} crypto=${crypto.configured} sample=${sampleDetected} sort=${bank.sortCode} wallet=${crypto.walletAddress}`,
+      };
+    }),
+    run('Placeholder payment proofs do not count as submitted evidence', () => {
+      const pending = normalizePaymentProofReference('FPS-TRANSFER-PENDING');
+      const cryptoPending = normalizePaymentProofReference('CRYPTO-TX-PENDING');
+      const real = normalizePaymentProofReference('FP-88291');
+      const passed = pending === undefined && cryptoPending === undefined && real === 'FP-88291';
+      return {
+        passed,
+        expected: 'Placeholders discarded; real reference retained',
+        actual: `${String(pending)}/${String(cryptoPending)}/${String(real)}`,
+      };
+    }),
+    run('Unpublished legal placeholders are not shown as live company details', () => {
+      const resolved = resolvePublicBusinessValue('[LEGAL_ENTITY_NAME]');
+      const phone = resolvePublicBusinessValue('+44 (0) 20 8123 4567');
+      const passed = resolved === UNPUBLISHED_BUSINESS_DETAIL && phone === UNPUBLISHED_BUSINESS_DETAIL;
+      return {
+        passed,
+        expected: UNPUBLISHED_BUSINESS_DETAIL,
+        actual: `${resolved} / ${phone}`,
+      };
+    }),
+    run('Peptides category canonical is not rewritten to /shop', () => {
+      const seo = getSeoMetadataForPath('/peptides');
+      const passed =
+        seo.canonicalUrl === 'https://researchpeptidess.uk/peptides' && seo.robots.includes('index');
+      return {
+        passed,
+        expected: 'https://researchpeptidess.uk/peptides with index',
+        actual: `${seo.canonicalUrl} ${seo.robots}`,
+      };
+    }),
+    run('Robots.txt lists sitemap and disallows cart, checkout, account, and admin', () => {
+      const robots = generateRobotsTxt();
+      const passed =
+        robots.includes('Sitemap: https://researchpeptidess.uk/sitemap.xml') &&
+        robots.includes('Disallow: /cart') &&
+        robots.includes('Disallow: /checkout') &&
+        robots.includes('Disallow: /account') &&
+        robots.includes('Disallow: /admin');
+      return {
+        passed,
+        expected: 'Sitemap + transactional disallows',
+        actual: robots.slice(0, 180),
       };
     }),
   ];

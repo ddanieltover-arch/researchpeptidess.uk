@@ -38,7 +38,12 @@ export const Footer: React.FC = () => {
             <p className="font-mono text-xs leading-relaxed text-slate-400">
               UK laboratory catalogue for research peptides, reagents, and documented batches where records exist.
             </p>
-            <p className="font-mono text-xs text-slate-500">{storeSettings.supportEmail}</p>
+            <a
+              href={`mailto:${storeSettings.supportEmail}`}
+              className="font-mono text-xs text-slate-500 hover:text-white transition-colors"
+            >
+              {storeSettings.supportEmail}
+            </a>
           </div>
 
           <div className="flex flex-col gap-2 font-mono">

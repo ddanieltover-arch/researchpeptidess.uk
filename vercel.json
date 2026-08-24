@@ -21,7 +21,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|products/|favicon\\.svg|og-image\\.svg|robots\\.txt|logo\\.svg|index\\.html).*)",
+      "source": "/((?!api/|assets/|products/|hero/|favicon\\.svg|og-image\\.svg|robots\\.txt|sitemap\\.xml|logo\\.svg|index\\.html).*)",
       "destination": "/index.html"
     }
   ],

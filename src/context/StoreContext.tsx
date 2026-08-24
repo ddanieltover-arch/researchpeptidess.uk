@@ -46,9 +46,19 @@ import {
 } from '../lib/persistence-api';
 import { MerchandisingRecord } from '../lib/merchandising-persistence';
 import { INITIAL_CMS_PAGES, DEFAULT_STORE_SETTINGS } from '../lib/cms-data';
-import { DEMO_USERS, hasPermission } from '../lib/auth';
+import { withCanonicalStoreContactEmails } from '../lib/store-contact';
+import {
+  getBankSettlementInstructions,
+  getCryptoSettlementInstructions,
+  normalizePaymentProofReference,
+  PublicSettlementSnapshot,
+  UNCONFIGURED_SETTLEMENT,
+} from '../lib/settlement-instructions';
+import { DEMO_USERS, GUEST_USER, hasPermission } from '../lib/auth';
 import { fetchAdminSession, loginAdmin, logoutAdmin } from '../lib/admin-api';
 import { AdminSessionUser } from '../lib/admin-session';
+import { fetchCustomerSession, loginCustomer, logoutCustomer, registerCustomer as registerCustomerRequest } from '../lib/customer-api';
+import { CustomerSessionUser } from '../lib/customer-session';
 import { calculateOrderTotals, OrderCalculationResult } from '../lib/pricing';
 import { checkVariantStockAvailability, recordInventoryTransaction } from '../lib/inventory';
 import { executeCatalogueImport, exportCatalogueToCsv } from '../lib/catalogue-import';
@@ -155,6 +165,7 @@ interface StoreContextType {
   cartTotals: OrderCalculationResult;
   selectedPaymentMethod: PaymentMethod;
   setSelectedPaymentMethod: (method: PaymentMethod) => void;
+  settlement: PublicSettlementSnapshot;
 
   // Wishlist
   wishlist: string[];
@@ -169,8 +180,18 @@ interface StoreContextType {
   setUserRole: (role: UserRole) => void;
   authReady: boolean;
   isAdminAuthenticated: boolean;
+  isCustomerAuthenticated: boolean;
+  isAccountAuthenticated: boolean;
   signInAdmin: (email: string, password: string) => Promise<{ user: AdminSessionUser } | { error: string }>;
   signOutAdmin: () => Promise<void>;
+  signInCustomer: (email: string, password: string) => Promise<{ user: CustomerSessionUser } | { error: string }>;
+  registerCustomer: (input: {
+    name: string;
+    email: string;
+    password: string;
+    institution?: string;
+  }) => Promise<{ user: CustomerSessionUser } | { error: string }>;
+  signOutCustomer: () => Promise<void>;
 
   // Orders & Payment Operations
   orders: Order[];
@@ -276,30 +297,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     INITIAL_SHIPPING_METHODS[0]?.id || 'ship-uk-standard'
   );
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('BANK_TRANSFER');
+  const [settlement, setSettlement] = useState<PublicSettlementSnapshot>(UNCONFIGURED_SETTLEMENT);
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(null);
 
   // Cart & UI State
-  const [cart, setCart] = useState<CartItem[]>([
-    {
-      id: 'cart-1',
-      productId: 'prod-bpc157',
-      productName: 'BPC-157',
-      productSlug: 'bpc-157',
-      variantId: 'var-bpc157-1',
-      variantName: '5mg Lyophilized Vial',
-      size: '5mg',
-      sku: 'RPUK-BPC-157-5MG',
-      unitPrice: 15.99,
-      quantity: 3,
-      image: '/products/bpc-157/01-primary.webp',
-      purityScore: 99.42,
-    },
-  ]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [cartDrawerOpen, setCartDrawerOpen] = useState<boolean>(false);
-  const [wishlist, setWishlist] = useState<string[]>(['prod-tb500']);
+  const [wishlist, setWishlist] = useState<string[]>([]);
   const [currency, setCurrency] = useState<'GBP' | 'EUR'>('GBP');
-  const [currentUser, setCurrentUser] = useState<User>(DEMO_USERS.CUSTOMER);
+  const [currentUser, setCurrentUser] = useState<User>(GUEST_USER);
   const [adminSession, setAdminSession] = useState<AdminSessionUser | null>(null);
+  const [customerSession, setCustomerSession] = useState<CustomerSessionUser | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   // CMS & Store Settings State
@@ -315,7 +323,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateStoreSettings = async (updates: Partial<StoreSettings>): Promise<boolean> => {
-    const next = { ...storeSettings, ...updates };
+    const next = withCanonicalStoreContactEmails({ ...storeSettings, ...updates });
     const persisted = await persistStoreSettingsRequest(next);
     if (!persisted.ok) {
       addToast(
@@ -449,7 +457,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setProducts((prev) => applyMerchandisingOverlay(prev, snapshot.merchandising));
       }
       if (snapshot.storeSettings) {
-        setStoreSettings(snapshot.storeSettings);
+        setStoreSettings(withCanonicalStoreContactEmails(snapshot.storeSettings));
       }
       if (snapshot.shippingMethods?.length) {
         setShippingMethods(snapshot.shippingMethods);
@@ -457,6 +465,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setOrders(snapshot.orders || []);
       setPayments(snapshot.payments || []);
       setInventoryTransactions(snapshot.inventoryTransactions || []);
+      if (snapshot.settlement) {
+        setSettlement(snapshot.settlement);
+      }
     })();
     return () => {
       cancelled = true;
@@ -1009,19 +1020,35 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let cancelled = false;
     (async () => {
       try {
-        const sessionUser = await fetchAdminSession();
-        if (cancelled || !sessionUser) return;
-        setAdminSession(sessionUser);
-        setCurrentUser({
-          id: sessionUser.id,
-          email: sessionUser.email,
-          name: sessionUser.name,
-          role: 'ADMIN',
-          institution: 'Research Peptides UK',
-          createdAt: new Date().toISOString(),
-        });
+        const [adminUser, customerUser] = await Promise.all([fetchAdminSession(), fetchCustomerSession()]);
+        if (cancelled) return;
+        if (adminUser) {
+          setAdminSession(adminUser);
+          setCurrentUser({
+            id: adminUser.id,
+            email: adminUser.email,
+            name: adminUser.name,
+            role: 'ADMIN',
+            institution: 'Research Peptides UK',
+            createdAt: new Date().toISOString(),
+          });
+        }
+        if (customerUser) {
+          setCustomerSession(customerUser);
+          if (!adminUser) {
+            setCurrentUser({
+              id: customerUser.id,
+              email: customerUser.email,
+              name: customerUser.name,
+              role: customerUser.role,
+              institution: customerUser.institution,
+              phone: customerUser.phone,
+              createdAt: new Date().toISOString(),
+            });
+          }
+        }
       } catch {
-        // Public catalogue remains available without an admin session.
+        // Public catalogue remains available without a session.
       } finally {
         if (!cancelled) setAuthReady(true);
       }
@@ -1032,6 +1059,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const isAdminAuthenticated = adminSession?.role === 'ADMIN';
+  const isCustomerAuthenticated = Boolean(customerSession);
+  const isAccountAuthenticated = isAdminAuthenticated || isCustomerAuthenticated;
 
   const applyAdminUser = (sessionUser: AdminSessionUser) => {
     setAdminSession(sessionUser);
@@ -1041,6 +1070,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       name: sessionUser.name,
       role: 'ADMIN',
       institution: 'Research Peptides UK',
+      createdAt: new Date().toISOString(),
+    });
+  };
+
+  const applyCustomerUser = (sessionUser: CustomerSessionUser) => {
+    setCustomerSession(sessionUser);
+    setCurrentUser({
+      id: sessionUser.id,
+      email: sessionUser.email,
+      name: sessionUser.name,
+      role: sessionUser.role,
+      institution: sessionUser.institution,
+      phone: sessionUser.phone,
       createdAt: new Date().toISOString(),
     });
   };
@@ -1058,8 +1100,46 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await logoutAdmin();
     setAdminSession(null);
     setAdminDraftPreviewMode(false);
-    setCurrentUser(DEMO_USERS.CUSTOMER);
+    if (customerSession) {
+      applyCustomerUser(customerSession);
+    } else {
+      setCurrentUser(GUEST_USER);
+    }
     addToast('info', 'Signed out', 'Admin session ended.');
+  };
+
+  const signInCustomer = async (email: string, password: string) => {
+    const result = await loginCustomer(email, password);
+    if ('user' in result) {
+      applyCustomerUser(result.user);
+      addToast('success', 'Signed in', 'Welcome back.');
+    }
+    return result;
+  };
+
+  const registerCustomerAccount = async (input: {
+    name: string;
+    email: string;
+    password: string;
+    institution?: string;
+  }) => {
+    const result = await registerCustomerRequest(input);
+    if ('user' in result) {
+      applyCustomerUser(result.user);
+      addToast('success', 'Account created', 'You are now signed in.');
+    }
+    return result;
+  };
+
+  const signOutCustomer = async () => {
+    await logoutCustomer();
+    setCustomerSession(null);
+    if (adminSession) {
+      applyAdminUser(adminSession);
+    } else {
+      setCurrentUser(GUEST_USER);
+    }
+    addToast('info', 'Signed out', 'Customer session ended.');
   };
 
   const setUserRole = (role: UserRole | string) => {
@@ -1073,7 +1153,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       navigate('/admin/login');
       return;
     }
-    const targetUser = DEMO_USERS[key] || DEMO_USERS.CUSTOMER;
+    const targetUser = DEMO_USERS[key] || GUEST_USER;
     setCurrentUser(targetUser);
   };
 
@@ -1175,6 +1255,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
     });
 
+    const paymentProof = normalizePaymentProofReference(orderData.paymentProofReference);
+    const bankSettlement = settlement.bank.configured ? settlement.bank : getBankSettlementInstructions();
+    const cryptoSettlement = settlement.crypto.configured ? settlement.crypto : getCryptoSettlementInstructions();
+
     // 6. Build Initial Payment Entity
     const initialPayment: Payment = {
       id: paymentId,
@@ -1183,33 +1267,31 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       method: orderData.paymentMethod,
       amount: cartTotals.total,
       currency,
-      status: orderData.paymentProofReference ? 'SUBMITTED' : 'AWAITING_CUSTOMER_ACTION',
+      status: paymentProof ? 'SUBMITTED' : 'AWAITING_CUSTOMER_ACTION',
       reference:
         orderData.paymentMethod === 'BANK_TRANSFER'
           ? `RP-BK-${orderNumber.split('-')[2]}`
           : `RP-CRYPTO-${orderNumber.split('-')[2]}`,
-      transactionHash: orderData.paymentProofReference,
+      transactionHash: paymentProof,
       bankDetails:
-        orderData.paymentMethod === 'BANK_TRANSFER'
+        orderData.paymentMethod === 'BANK_TRANSFER' && bankSettlement.configured
           ? {
-              accountName: 'Research Peptides UK Ltd',
-              accountNumber: '83920194',
-              sortCode: '20-00-00',
-              bankName: 'Barclays Commercial UK',
-              reference: `RP-BK-${orderNumber.split('-')[2]}`,
+              accountName: bankSettlement.accountName,
+              accountNumber: bankSettlement.accountNumber,
+              sortCode: bankSettlement.sortCode,
+              bankName: bankSettlement.bankName,
+              reference: orderNumber,
             }
           : undefined,
       cryptoDetails:
-        orderData.paymentMethod === 'CRYPTOCURRENCY'
+        orderData.paymentMethod === 'CRYPTOCURRENCY' && cryptoSettlement.configured
           ? {
-              network: 'BTC',
-              walletAddress: 'bc1q9v8084z65k90c7405g7620h5s9v65k8h8w3s92',
-              cryptoAmount: `${(cartTotals.total / 80000).toFixed(6)} BTC`,
-              exchangeRateSnapshot: '1 BTC = £80,000.00 GBP',
+              network: cryptoSettlement.network,
+              walletAddress: cryptoSettlement.walletAddress,
               expiresAt: expiryIso,
             }
           : undefined,
-      submittedAt: orderData.paymentProofReference ? nowIso : undefined,
+      submittedAt: paymentProof ? nowIso : undefined,
       createdAt: nowIso,
       updatedAt: nowIso,
     };
@@ -1221,7 +1303,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         orderId,
         timestamp: nowIso,
         fromStatus: 'DRAFT',
-        toStatus: orderData.paymentProofReference ? 'PAYMENT_SUBMITTED' : 'PENDING_PAYMENT',
+        toStatus: paymentProof ? 'PAYMENT_SUBMITTED' : 'PENDING_PAYMENT',
         actor: currentUser.name || currentUser.email,
         actorRole: currentUser.role,
         note: `Order requisition registered via ${orderData.paymentMethod.replace('_', ' ')}.`,
@@ -1255,8 +1337,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       paymentId,
       paymentMethod: orderData.paymentMethod,
       paymentStatus: initialPayment.status,
-      status: orderData.paymentProofReference ? 'PAYMENT_SUBMITTED' : 'PENDING_PAYMENT',
-      paymentProofReference: orderData.paymentProofReference,
+      status: paymentProof ? 'PAYMENT_SUBMITTED' : 'PENDING_PAYMENT',
+      paymentProofReference: paymentProof,
       reservationExpiresAt: expiryIso,
       researchConsentSigned: true,
       history: initialHistory,
@@ -1914,6 +1996,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         cartTotals,
         selectedPaymentMethod,
         setSelectedPaymentMethod,
+        settlement,
         wishlist,
         toggleWishlist,
         currency,
@@ -1922,8 +2005,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setUserRole,
         authReady,
         isAdminAuthenticated,
+        isCustomerAuthenticated,
+        isAccountAuthenticated,
         signInAdmin,
         signOutAdmin,
+        signInCustomer,
+        registerCustomer: registerCustomerAccount,
+        signOutCustomer,
         orders,
         payments,
         notifications,

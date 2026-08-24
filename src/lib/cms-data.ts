@@ -32,7 +32,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   primaryEmail: STORE_CONTACT_EMAIL,
   supportEmail: STORE_CONTACT_EMAIL,
   privacyEmail: STORE_CONTACT_EMAIL,
-  phone: '+44 (0) 20 8123 4567',
+  phone: '',
   primaryDomain: 'https://researchpeptidess.uk',
   currency: 'GBP',
   environment: 'PRODUCTION',
@@ -219,9 +219,9 @@ Our products are available to qualified researchers, academic institutions, corp
 
 #### Which payment methods do you accept?
 We accept:
-1. **UK Faster Payments / Bank Transfer:** Instant clearing via standard online banking (Sort Code & Account Number provided at checkout).
-2. **SEPA Euro Bank Transfers:** For institutional purchasers in European jurisdictions (IBAN / BIC).
-3. **Direct Cryptocurrency:** Bitcoin (BTC), Tether (USDT on TRC-20 and ERC-20), and Ethereum (ETH), with an automatic 5% settlement discount.
+1. **UK Faster Payments / Bank Transfer:** Destination details are shown only when they have been published. Payment is verified manually after funds arrive.
+2. **SEPA Euro Bank Transfers:** Available when an IBAN is published for the order.
+3. **Cryptocurrency:** Bitcoin (BTC) and other networks only when a receiving wallet is published at checkout, with a 5% settlement discount after verification. This is not instant settlement.
 
 #### How is payment verified?
 Once you complete checkout and transfer funds, enter your payment reference code or transaction hash on the order confirmation screen. Our compliance team verifies settlements against bank and blockchain ledgers, typically within 1–4 business hours.
@@ -262,9 +262,7 @@ Our team is available Monday through Friday, 09:00 to 17:00 GMT to assist with o
 
 ### Contact Coordinates
 
-- **General Inquiries:** [PRIMARY_CONTACT_EMAIL]
-- **Order & Payment Support:** [SUPPORT_CONTACT_EMAIL]
-- **Data Protection & Compliance:** [DATA_PROTECTION_EMAIL]
+- **Email:** [PRIMARY_CONTACT_EMAIL]
 - **Telephone:** [PRIMARY_CONTACT_PHONE]
 - **Postal / Registered Address:**
   [LEGAL_ENTITY_NAME]  

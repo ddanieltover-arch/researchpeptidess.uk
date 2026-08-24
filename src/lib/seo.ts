@@ -256,15 +256,21 @@ export function getSeoMetadataForPath(
   // 5. Shop / Search / Category Page
   if (path.startsWith('/shop') || path.startsWith('/search') || path.startsWith('/category/') || path === '/peptides' || path === '/research-chemicals') {
     const hasSearch = Boolean(context?.searchQuery && context.searchQuery.trim().length > 0);
+    const pathOnly = path.split('?')[0] || '/shop';
+    const canonicalPath = pathOnly.startsWith('/search') ? '/shop' : pathOnly;
     return {
       title: hasSearch
         ? `Search: "${context?.searchQuery}" | Research Peptides UK`
-        : 'Buy In-Vitro Research Peptides | Verified Laboratory Standards UK',
+        : pathOnly === '/peptides'
+          ? 'Peptides | Research Peptides UK'
+          : pathOnly === '/research-chemicals'
+            ? 'Research Chemicals | Research Peptides UK'
+            : 'Research Peptides Catalogue | Research Peptides UK',
       description:
         'Browse published research peptides and laboratory catalogue items. Documentation is shown only where batch records exist.',
-      canonicalUrl: `${PRIMARY_DOMAIN}/shop`,
+      canonicalUrl: `${PRIMARY_DOMAIN}${canonicalPath}`,
       ogTitle: 'Catalogue | Research Peptides UK',
-      ogDescription: 'High-purity in-vitro research peptides and analytical biochemical standards.',
+      ogDescription: 'Research peptides and laboratory reagents for in-vitro use.',
       ogType: 'website',
       robots: hasSearch ? 'noindex, follow' : 'index, follow',
     };
