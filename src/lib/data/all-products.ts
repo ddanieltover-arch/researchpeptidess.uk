@@ -1,42 +1,51 @@
 import { Product } from '../../types';
-import { PRODUCTS_PEPTIDES_PART1 } from './products-peptides-1';
-import { PRODUCTS_PEPTIDES_PART2 } from './products-peptides-2';
-import { PRODUCTS_PEPTIDES_PART3 } from './products-peptides-3';
-import { PRODUCTS_BLENDS } from './products-blends';
+import { neutralizeUnsafePublicCopy } from '../public-copy-safety';
 import { PRODUCTS_NASAL } from './products-nasal';
 import { PRODUCTS_REAGENTS, PRODUCTS_EQUIPMENT } from './products-reagents-equipment';
 import { getProductImage } from '../product-image-generator';
+import { WOOCOMMERCE_PRODUCTS } from './generated/from-woocommerce';
+import catalog from './generated/woocommerce-catalog.json';
 
-const RAW_PRODUCTS: Product[] = [
-  ...PRODUCTS_PEPTIDES_PART1,
-  ...PRODUCTS_PEPTIDES_PART2,
-  ...PRODUCTS_PEPTIDES_PART3,
-  ...PRODUCTS_BLENDS,
+const extrasKeptIds = new Set((catalog.extrasKept as Array<{ id: string }>).map((row) => row.id));
+
+const EXTRA_PRODUCTS: Product[] = [
   ...PRODUCTS_NASAL,
-  ...PRODUCTS_REAGENTS,
   ...PRODUCTS_EQUIPMENT,
+  ...PRODUCTS_REAGENTS.filter((product) => extrasKeptIds.has(product.id)),
 ];
 
-export const ALL_CATALOGUE_PRODUCTS: Product[] = RAW_PRODUCTS.map((p) => {
-  const customImgUrl = getProductImage(p);
+function withCatalogueImages(product: Product): Product {
+  const safeProduct: Product = {
+    ...product,
+    shortDescription: neutralizeUnsafePublicCopy(product.shortDescription || ''),
+    longDescription: neutralizeUnsafePublicCopy(product.longDescription || ''),
+  };
+  const localPhotos = (safeProduct.images || []).filter((image) => image.url.startsWith('/products/'));
+  if (localPhotos.length > 0) {
+    return {
+      ...safeProduct,
+      images: localPhotos.map((image, index) => ({
+        ...image,
+        isPrimary: index === 0,
+        sortOrder: index,
+      })),
+    };
+  }
+
+  const generatedUrl = getProductImage(safeProduct);
   return {
-    ...p,
+    ...safeProduct,
     images: [
       {
-        id: `img-${p.id}-custom-lab`,
-        productId: p.id,
-        url: customImgUrl,
-        altText: `${p.name} — Certified Laboratory Reference Standard`,
+        id: `img-${product.id}-custom-lab`,
+        productId: product.id,
+        url: generatedUrl,
+        altText: `${product.name} — Certified Laboratory Reference Standard`,
         sortOrder: 0,
         isPrimary: true,
       },
-      ...(p.images || [])
-        .filter((img) => !img.url.includes('unsplash.com/photo-1584308666744'))
-        .map((img, i) => ({
-          ...img,
-          isPrimary: false,
-          sortOrder: i + 1,
-        })),
     ],
   };
-});
+}
+
+export const ALL_CATALOGUE_PRODUCTS: Product[] = [...WOOCOMMERCE_PRODUCTS, ...EXTRA_PRODUCTS].map(withCatalogueImages);

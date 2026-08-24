@@ -90,7 +90,7 @@ export function calculateEligibleShippingMethods(
       isAvailable: false,
       eligibleMethods: [],
       selectedPrice: 0,
-      error: `Shipping unavailable for destination code: ${countryCode}. No compliant temperature-controlled carrier route configured.`,
+      error: `Shipping unavailable for destination code: ${countryCode}. No active carrier is configured for this destination.`,
     };
   }
 

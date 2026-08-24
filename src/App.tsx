@@ -24,59 +24,51 @@ import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { AccountPage } from './pages/AccountPage';
 import { AdminPage } from './pages/AdminPage';
+import { AdminLoginPage, AdminSessionLoading } from './pages/AdminLoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 import { getSeoMetadataForPath } from './lib/seo';
 import { trackPageView } from './lib/analytics';
+import { parseAppPath } from './lib/routing';
+import { RouteErrorBoundary } from './components/system/ErrorBoundaries';
 
 const AppContent: React.FC = () => {
   const {
     currentPath,
-    currentUser,
-    setUserRole,
+    authReady,
+    isAdminAuthenticated,
+    navigate,
     products,
     categories,
-    selectedCategorySlug,
     cmsPages,
     searchQuery,
     storeSettings,
   } = useStore();
 
-  // Maintenance Mode Guard (Permits Admin access to settings/verification)
-  const isMaintenanceActive =
-    (storeSettings.storeStatus === 'MAINTENANCE' || storeSettings.maintenanceMode) &&
-    currentUser.role !== 'ADMIN' &&
-    currentPath !== '/admin';
-
-  if (isMaintenanceActive) {
-    return (
-      <>
-        <MaintenanceView />
-        <ToastContainer />
-      </>
-    );
-  }
+  const activeRoute = useMemo(() => parseAppPath(currentPath), [currentPath]);
 
   // 1. Resolve Active Entity for Dynamic SEO
   const currentProduct = useMemo(() => {
-    if (currentPath.startsWith('/product/')) {
-      const slug = currentPath.replace('/product/', '');
-      return products.find((p) => p.slug === slug);
+    if (activeRoute.kind === 'product' && activeRoute.slug) {
+      return products.find((p) => p.slug === activeRoute.slug);
     }
     return undefined;
-  }, [currentPath, products]);
+  }, [activeRoute, products]);
 
   const currentCategory = useMemo(() => {
-    if (currentPath === '/shop' && selectedCategorySlug) {
-      return categories.find((c) => c.slug === selectedCategorySlug);
+    if (activeRoute.kind === 'category' && activeRoute.slug) {
+      return categories.find((c) => c.slug === activeRoute.slug);
+    }
+    if (currentProduct) {
+      return categories.find((c) => c.id === currentProduct.categoryId);
     }
     return undefined;
-  }, [currentPath, selectedCategorySlug, categories]);
+  }, [activeRoute, categories, currentProduct]);
 
   const matchedCmsPage = useMemo(() => {
-    const cleanPath = currentPath.startsWith('/') ? currentPath.substring(1) : currentPath;
-    return cmsPages.find((p) => p.slug === cleanPath);
-  }, [currentPath, cmsPages]);
+    if (activeRoute.kind !== 'cms' || !activeRoute.slug) return undefined;
+    return cmsPages.find((p) => p.slug === activeRoute.slug);
+  }, [activeRoute, cmsPages]);
 
   // 2. Generate Authoritative SEO Metadata & JSON-LD
   const currentSeo = useMemo(() => {
@@ -88,40 +80,78 @@ const AppContent: React.FC = () => {
     });
   }, [currentPath, currentProduct, currentCategory, matchedCmsPage, searchQuery]);
 
-  // 3. Analytics Tracking & Scroll Reset
+  // 3. Analytics Tracking
   useEffect(() => {
     trackPageView(currentPath);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPath]);
 
-  // 4. Page Router
+  useEffect(() => {
+    if (!authReady || !isAdminAuthenticated) return;
+    if (activeRoute.kind === 'admin-login') {
+      navigate('/admin', { replace: true });
+    }
+  }, [authReady, isAdminAuthenticated, activeRoute.kind, navigate]);
+
+  // Maintenance Mode Guard (Permits Admin access to settings/verification)
+  const isMaintenanceActive =
+    (storeSettings.storeStatus === 'MAINTENANCE' || storeSettings.maintenanceMode) &&
+    !isAdminAuthenticated &&
+    activeRoute.kind !== 'admin' &&
+    activeRoute.kind !== 'admin-login';
+
+  if (isMaintenanceActive) {
+    return (
+      <>
+        <MaintenanceView />
+        <ToastContainer />
+      </>
+    );
+  }
+
+  if (activeRoute.kind === 'admin' || activeRoute.kind === 'admin-login') {
+    if (!authReady) {
+      return <AdminSessionLoading />;
+    }
+    if (!isAdminAuthenticated) {
+      return <AdminLoginPage />;
+    }
+  }
+
+  // 4. Page Router — unique slug per page
   const renderCurrentPage = () => {
-    if (currentPath === '/' || currentPath === '') {
-      return <HomePage />;
+    switch (activeRoute.kind) {
+      case 'home':
+        return <HomePage />;
+      case 'shop':
+      case 'category':
+      case 'search':
+        if (activeRoute.kind === 'category' && activeRoute.slug && !currentCategory) {
+          return <NotFoundPage />;
+        }
+        return <ShopPage />;
+      case 'product':
+        if (!currentProduct) {
+          return <NotFoundPage />;
+        }
+        return <ProductDetailPage key={currentProduct.id} />;
+      case 'cart':
+        return <CartPage />;
+      case 'checkout':
+        return <CheckoutPage />;
+      case 'account':
+        return <AccountPage />;
+      case 'admin':
+        return <AdminPage />;
+      case 'admin-login':
+        return <AdminPage />;
+      case 'cms':
+        if (matchedCmsPage) {
+          return <CMSPageView page={matchedCmsPage} />;
+        }
+        return <NotFoundPage />;
+      default:
+        return <NotFoundPage />;
     }
-    if (currentPath === '/shop') {
-      return <ShopPage />;
-    }
-    if (currentPath.startsWith('/product/')) {
-      return <ProductDetailPage />;
-    }
-    if (currentPath === '/cart') {
-      return <CartPage />;
-    }
-    if (currentPath === '/checkout') {
-      return <CheckoutPage />;
-    }
-    if (currentPath === '/account') {
-      return <AccountPage />;
-    }
-    if (currentPath === '/admin') {
-      return <AdminPage />;
-    }
-    if (matchedCmsPage) {
-      return <CMSPageView page={matchedCmsPage} />;
-    }
-    // Resource Not Located Fallback
-    return <NotFoundPage />;
   };
 
   return (
@@ -148,7 +178,7 @@ const AppContent: React.FC = () => {
 
       {/* Main Page Body */}
       <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
-        {renderCurrentPage()}
+        <RouteErrorBoundary>{renderCurrentPage()}</RouteErrorBoundary>
       </main>
 
       {/* Global Footer */}
@@ -158,18 +188,6 @@ const AppContent: React.FC = () => {
       <CartDrawer />
       <ResearchDisclaimerModal />
       <CookieConsentBanner />
-
-      {/* Role Switcher Floating Pill */}
-      <div className="fixed bottom-4 right-4 z-40 bg-slate-950/90 text-white rounded-full p-1.5 px-3 border border-amber-500/40 shadow-xl flex items-center gap-2 font-mono text-[11px] backdrop-blur-xs">
-        <span className="text-stone-400 hidden sm:inline">Active Mode:</span>
-        <span className="font-bold text-amber-400 uppercase">{currentUser.role}</span>
-        <button
-          onClick={() => setUserRole(currentUser.role.toUpperCase() === 'ADMIN' ? 'CUSTOMER' : 'ADMIN')}
-          className="bg-amber-600/30 hover:bg-amber-600/50 text-amber-300 border border-amber-500/50 px-2 py-0.5 rounded-full transition-colors font-sans text-[10px] font-semibold"
-        >
-          Switch to {currentUser.role.toUpperCase() === 'ADMIN' ? 'Customer' : 'Admin'}
-        </button>
-      </div>
     </div>
   );
 };

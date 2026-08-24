@@ -13,8 +13,8 @@ export const DEMO_USERS: Record<UserRole, User> = {
   },
   ADMIN: {
     id: 'usr_admin_master',
-    email: 'lab.director@researchpeptidess.uk',
-    name: 'Chief Scientific Officer (Admin)',
+    email: 'info@researchpeptidess.uk',
+    name: 'Research Peptides UK Admin',
     role: 'ADMIN',
     institution: 'Research Peptides UK Laboratory Services',
     phone: '+44 20 7946 0991',

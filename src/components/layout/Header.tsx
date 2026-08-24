@@ -1,19 +1,11 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import {
-  ShoppingBag,
-  Search,
-  User,
-  FlaskConical,
-  ShieldCheck,
-  Menu,
-  X,
-  Heart,
-  SlidersHorizontal,
-  ChevronDown,
-} from 'lucide-react';
-import { Button } from '../ui/Button';
+import { User, Menu, X, Heart, ChevronDown, Search } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
+import { AppLink } from '../ui/AppLink';
+import { CatalogueSearchBox } from '../search/CatalogueSearchBox';
+import { categoryPath, isNavActive, parseAppPath, ROUTES } from '../../lib/routing';
+import { PEPTIDES_CATEGORY_SLUG, RESEARCH_CHEMICALS_CATEGORY_SLUG } from '../../lib/catalogue-collections';
 
 export const Header: React.FC = () => {
   const {
@@ -25,272 +17,239 @@ export const Header: React.FC = () => {
     searchQuery,
     setSearchQuery,
     categories,
-    setSelectedCategorySlug,
-    currentUser,
+    publishedProducts,
+    isAdminAuthenticated,
   } = useStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const route = parseAppPath(currentPath);
+  const moreCategories = categories.filter(
+    (category) =>
+      category.isActive &&
+      category.slug !== PEPTIDES_CATEGORY_SLUG &&
+      category.slug !== RESEARCH_CHEMICALS_CATEGORY_SLUG
+  );
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate('/shop');
-      setSearchOpen(false);
-    }
-  };
+  const navLinkClass = (href: string) =>
+    `transition-colors pb-0.5 ${
+      isNavActive(currentPath, href) ? 'border-b-2 border-[#4353FF] font-bold text-[#4353FF]' : 'hover:text-[#4353FF]'
+    }`;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10">
-        <div className="flex items-center justify-between h-18 gap-4">
-          {/* Mobile Menu Trigger */}
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-xs backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <div className="flex h-18 items-center justify-between gap-4">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-800 hover:bg-slate-100 transition-colors"
+            className="rounded-lg p-2 text-slate-800 transition-colors hover:bg-slate-100 md:hidden"
             aria-label="Toggle Navigation Menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
-          {/* Official Brand Logo Badge */}
-          <div
-            onClick={() => navigate('/')}
-            className="cursor-pointer select-none shrink-0 transition-opacity hover:opacity-90"
-          >
+          <AppLink href={ROUTES.home} className="shrink-0 transition-opacity hover:opacity-90">
             <BrandLogo variant="light" size="md" />
-          </div>
+          </AppLink>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8 text-xs font-semibold uppercase tracking-wider text-slate-600 font-mono">
-            <button
-              onClick={() => {
-                setSelectedCategorySlug(null);
-                navigate('/shop');
-              }}
-              className={`transition-colors pb-0.5 ${
-                currentPath === '/shop' || currentPath === '/'
-                  ? 'text-[#4353FF] border-b-2 border-[#4353FF] font-bold'
-                  : 'hover:text-[#4353FF]'
-              }`}
-            >
-              Catalogue
-            </button>
-            <button
-              onClick={() => navigate('/quality')}
-              className={`transition-colors pb-0.5 ${
-                currentPath === '/quality'
-                  ? 'text-[#4353FF] border-b-2 border-[#4353FF] font-bold'
-                  : 'hover:text-[#4353FF]'
-              }`}
-            >
-              Quality &amp; HPLC
-            </button>
-            <div className="relative group">
-              <button
-                onClick={() => {
-                  setSelectedCategorySlug('research-peptides');
-                  navigate('/shop');
-                }}
-                className="flex items-center gap-1 hover:text-[#4353FF] transition-colors pb-0.5"
-              >
-                Categories
-                <ChevronDown className="h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
-              </button>
-              <div className="absolute top-full left-0 hidden group-hover:block w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                {categories.map((cat) => (
-                  <button
+          <nav
+            className="hidden items-center space-x-5 font-mono text-xs font-semibold uppercase tracking-wider text-slate-600 lg:flex xl:space-x-7"
+            aria-label="Primary"
+          >
+            <AppLink href={ROUTES.home} className={navLinkClass(ROUTES.home)}>
+              Home
+            </AppLink>
+            <AppLink href={ROUTES.peptides} className={navLinkClass(ROUTES.peptides)}>
+              Peptides
+            </AppLink>
+            <AppLink href={ROUTES.researchChemicals} className={navLinkClass(ROUTES.researchChemicals)}>
+              Research Chemicals
+            </AppLink>
+            <div className="group relative">
+              <AppLink href={ROUTES.shop} className={`flex items-center gap-1 ${navLinkClass(ROUTES.shop)}`}>
+                Shop
+                <ChevronDown className="h-3 w-3 text-slate-400 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
+              </AppLink>
+              <div className="absolute top-full left-0 z-50 hidden w-72 rounded-xl border border-slate-200 bg-white py-2 shadow-xl group-hover:block group-focus-within:block">
+                <AppLink href={ROUTES.shop} className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]">
+                  All catalogue
+                </AppLink>
+                {moreCategories.map((cat) => (
+                  <AppLink
                     key={cat.id}
-                    onClick={() => {
-                      setSelectedCategorySlug(cat.slug);
-                      navigate('/shop');
-                    }}
-                    className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF] transition-colors flex items-center justify-between"
+                    href={categoryPath(cat.slug)}
+                    className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]"
                   >
                     <span>{cat.name}</span>
-                    <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">
-                      {cat.productCount}
+                    <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
+                      {cat.productCount ?? 0}
                     </span>
-                  </button>
+                  </AppLink>
                 ))}
+                <AppLink href={ROUTES.search} className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]">
+                  Search
+                </AppLink>
               </div>
             </div>
-            <button
-              onClick={() => navigate('/research-use')}
-              className={`transition-colors pb-0.5 ${
-                currentPath === '/research-use'
-                  ? 'text-[#4353FF] border-b-2 border-[#4353FF] font-bold'
-                  : 'hover:text-[#4353FF]'
-              }`}
-            >
-              Compliance &amp; Safety
-            </button>
-            {currentUser.role === 'ADMIN' && (
-              <button
-                onClick={() => navigate('/admin')}
-                className={`px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider rounded-lg transition-colors border ${
-                  currentPath === '/admin'
-                    ? 'bg-[#4353FF] text-white border-[#4353FF]'
-                    : 'bg-blue-50 text-[#4353FF] border-blue-200 hover:bg-[#4353FF] hover:text-white'
+            <AppLink href="/quality" className={navLinkClass('/quality')}>
+              Quality
+            </AppLink>
+            <div className="group relative">
+              <AppLink href="/about" className={`flex items-center gap-1 ${navLinkClass('/about')}`}>
+                About
+                <ChevronDown className="h-3 w-3 text-slate-400 transition-transform group-hover:rotate-180" />
+              </AppLink>
+              <div className="absolute top-full left-0 z-50 hidden w-48 rounded-xl border border-slate-200 bg-white py-2 shadow-xl group-hover:block group-focus-within:block">
+                <AppLink href="/about" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50">
+                  About
+                </AppLink>
+                <AppLink href="/faq" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50">
+                  FAQ
+                </AppLink>
+                <AppLink href="/contact" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50">
+                  Contact
+                </AppLink>
+              </div>
+            </div>
+            {isAdminAuthenticated && (
+              <AppLink
+                href={ROUTES.admin}
+                className={`rounded-lg border px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider ${
+                  route.kind === 'admin'
+                    ? 'border-[#4353FF] bg-[#4353FF] text-white'
+                    : 'border-blue-200 bg-blue-50 text-[#4353FF] hover:bg-[#4353FF] hover:text-white'
                 }`}
               >
                 Admin Hub
-              </button>
+              </AppLink>
             )}
           </nav>
 
-          {/* Right Action Icons */}
           <div className="flex items-center gap-3 sm:gap-5">
-            {/* Search Input with Pill Design */}
-            <form onSubmit={handleSearchSubmit} className="hidden lg:flex items-center relative">
-              <input
-                type="text"
-                placeholder="Search compounds..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-100 border border-slate-200 text-xs py-2 pl-9 pr-4 w-48 xl:w-56 rounded-full focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20 focus:border-[#4353FF] focus:bg-white transition-all text-slate-900 placeholder:text-slate-400 font-mono"
-              />
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-            </form>
+            <CatalogueSearchBox
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onNavigate={navigate}
+              products={publishedProducts}
+              categories={categories}
+              className="hidden lg:block"
+              inputClassName="w-48 rounded-full border border-slate-200 bg-slate-100 py-2 pl-4 pr-4 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#4353FF] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20 xl:w-56"
+            />
 
-            {/* Mobile Search Toggle */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="lg:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100"
+              className="rounded-lg p-2 text-slate-700 hover:bg-slate-100 lg:hidden"
               title="Search"
+              aria-label="Search catalogue"
             >
               <Search className="h-4 w-4" />
             </button>
 
-            {/* Saved / Wishlist */}
-            <button
-              onClick={() => navigate('/account')}
-              className="p-2 rounded-lg text-slate-600 hover:text-[#4353FF] hover:bg-blue-50 relative transition-colors"
-              title="Saved Requisitions"
+            <AppLink
+              href={ROUTES.account}
+              className="relative rounded-lg p-2 text-slate-600 transition-colors hover:bg-blue-50 hover:text-[#4353FF]"
+              title="Saved compounds"
             >
               <Heart className="h-4 w-4" />
               {wishlist.length > 0 && (
                 <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#4353FF] ring-2 ring-white" />
               )}
-            </button>
+            </AppLink>
 
-            {/* Account Link */}
-            <button
-              onClick={() => navigate('/account')}
-              className={`flex items-center gap-1.5 text-xs font-bold uppercase font-mono tracking-tight p-2 rounded-lg transition-colors ${
-                currentPath === '/account'
-                  ? 'text-[#4353FF] bg-blue-50'
-                  : 'text-slate-700 hover:text-[#4353FF] hover:bg-blue-50'
+            <AppLink
+              href={ROUTES.account}
+              className={`flex items-center gap-1.5 rounded-lg p-2 font-mono text-xs font-bold uppercase tracking-tight transition-colors ${
+                route.kind === 'account' ? 'bg-blue-50 text-[#4353FF]' : 'text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]'
               }`}
-              title="Customer Account & Orders"
+              title="Account"
             >
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Account</span>
-            </button>
+            </AppLink>
 
-            {/* Cart Trigger with Circular Counter */}
             <button
               onClick={() => setCartDrawerOpen(true)}
-              className="flex items-center gap-2 cursor-pointer group bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-full transition-all"
-              title="Requisition Basket"
+              className="group flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 transition-all hover:border-blue-200 hover:bg-blue-50"
+              title="Cart"
             >
-              <div className="w-5 h-5 bg-[#4353FF] rounded-full flex items-center justify-center text-[10px] font-mono font-bold text-white shadow-xs">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4353FF] font-mono text-[10px] font-bold text-white shadow-xs">
                 {totalCartCount}
               </div>
-              <span className="hidden md:inline text-xs font-bold uppercase tracking-wider font-mono text-slate-800 group-hover:text-[#4353FF] transition-colors">
-                Basket
+              <span className="hidden font-mono text-xs font-bold uppercase tracking-wider text-slate-800 transition-colors group-hover:text-[#4353FF] md:inline">
+                Cart
               </span>
             </button>
           </div>
         </div>
 
-        {/* Mobile Search Bar Dropdown */}
         {searchOpen && (
-          <div className="lg:hidden py-3 border-t border-slate-200">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                placeholder="Search compound, CAS # or SKU..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-9 pr-4 text-xs bg-slate-100 border border-slate-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20 focus:border-[#4353FF] focus:bg-white"
-                autoFocus
-              />
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-            </form>
+          <div className="border-t border-slate-200 py-3 lg:hidden">
+            <CatalogueSearchBox
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onNavigate={(href) => {
+                navigate(href);
+                setSearchOpen(false);
+                setMobileMenuOpen(false);
+              }}
+              products={publishedProducts}
+              categories={categories}
+              autoFocus
+              inputClassName="h-10 w-full rounded-full border border-slate-300 bg-slate-100 pl-4 pr-4 font-mono text-xs focus:border-[#4353FF] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20"
+            />
           </div>
         )}
       </div>
 
-      {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-2 shadow-lg animate-in slide-in-from-top-2 duration-150">
-          <button
-            onClick={() => {
-              navigate('/');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg"
-          >
-            Store Overview
-          </button>
-          <button
-            onClick={() => {
-              setSelectedCategorySlug(null);
-              navigate('/shop');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg"
-          >
-            All Research Products
-          </button>
-          <div className="pl-3 space-y-1 border-l-2 border-[#4353FF] my-1">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategorySlug(cat.slug);
-                  navigate('/shop');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full text-left px-2 py-1 text-xs text-slate-600 hover:text-[#4353FF] flex items-center justify-between"
-              >
-                <span>{cat.name}</span>
-                <span className="font-mono text-[10px] text-slate-400">({cat.productCount})</span>
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => {
-              navigate('/cart');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg flex items-center justify-between"
-          >
-            <span>Requisition Cart</span>
-            <span className="font-mono text-xs font-bold text-[#4353FF]">({totalCartCount} items)</span>
-          </button>
-          <button
-            onClick={() => {
-              navigate('/account');
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg"
-          >
-            Customer Account &amp; Order History
-          </button>
-          {currentUser.role === 'ADMIN' && (
-            <button
-              onClick={() => {
-                navigate('/admin');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 text-sm font-bold text-white bg-[#4353FF] rounded-lg shadow-sm"
+        <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-4 shadow-lg md:hidden">
+          {[
+            { href: ROUTES.home, label: 'Home' },
+            { href: ROUTES.peptides, label: 'Peptides' },
+            { href: ROUTES.researchChemicals, label: 'Research Chemicals' },
+            { href: ROUTES.shop, label: 'Shop / Search' },
+            { href: '/quality', label: 'Quality / Documentation' },
+            { href: '/about', label: 'About' },
+            { href: '/faq', label: 'FAQ' },
+            { href: '/contact', label: 'Contact' },
+            { href: ROUTES.account, label: 'Account' },
+            { href: ROUTES.cart, label: `Cart (${totalCartCount})` },
+          ].map((item) => (
+            <AppLink
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-900 hover:bg-slate-50"
             >
-              Admin Dashboard &amp; Orders
-            </button>
+              {item.label}
+            </AppLink>
+          ))}
+          <div className="my-1 space-y-1 border-l-2 border-[#4353FF] pl-3">
+            {categories
+              .filter((category) => category.isActive)
+              .map((cat) => (
+                <AppLink
+                  key={cat.id}
+                  href={categoryPath(cat.slug)}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex w-full items-center justify-between px-2 py-1 text-xs text-slate-600 hover:text-[#4353FF]"
+                >
+                  <span>{cat.name}</span>
+                  <span className="font-mono text-[10px] text-slate-400">({cat.productCount ?? 0})</span>
+                </AppLink>
+              ))}
+          </div>
+          {isAdminAuthenticated && (
+            <AppLink
+              href={ROUTES.admin}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block w-full rounded-lg bg-[#4353FF] px-3 py-2 text-left text-sm font-bold text-white shadow-sm"
+            >
+              Admin Dashboard
+            </AppLink>
           )}
         </div>
       )}

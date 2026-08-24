@@ -11,7 +11,7 @@ import { ShieldCheck, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 
 export const MaintenanceView: React.FC = () => {
-  const { storeSettings, setUserRole, navigate } = useStore();
+  const { storeSettings, navigate } = useStore();
 
   return (
     <div className="min-h-screen bg-[#0B132B] text-white flex flex-col justify-between p-6 sm:p-12 font-sans selection:bg-blue-500 selection:text-white">
@@ -72,8 +72,7 @@ export const MaintenanceView: React.FC = () => {
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             onClick={() => {
-              setUserRole('ADMIN');
-              navigate('/admin');
+              navigate('/admin/login');
             }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#4353FF] hover:bg-[#3846E0] text-white text-xs font-mono font-bold shadow-md shadow-blue-500/20 transition-all"
           >

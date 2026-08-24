@@ -8,15 +8,23 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "tsx src/lib/run-tests.ts",
+    "db:migrate": "tsx scripts/apply-migrations.ts",
+    "sync:woocommerce": "tsx scripts/woocommerce-sync/index.ts",
+    "sync:woocommerce:dry": "tsx scripts/woocommerce-sync/index.ts --dry-run",
+    "db:push": "drizzle-kit push",
+    "seed:admin": "tsx scripts/seed-admin.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "clsx": "^2.1.1",
+    "@neondatabase/serverless": "^1.0.2",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.2",
+    "sharp": "^0.34.2",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
@@ -33,6 +41,7 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.3",
-    "@types/express": "^4.17.21"
+    "@types/express": "^4.17.21",
+    "drizzle-kit": "^0.31.4"
   }
 }

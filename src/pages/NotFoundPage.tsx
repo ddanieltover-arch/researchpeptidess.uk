@@ -6,16 +6,16 @@
 
 import React from 'react';
 import { useStore } from '../context/StoreContext';
-import { Search, ArrowLeft, Home, FileQuestion, BookOpen, ShieldAlert } from 'lucide-react';
+import { AppLink } from '../components/ui/AppLink';
+import { ROUTES, searchPath } from '../lib/routing';
+import { Search, Home, FileQuestion, BookOpen, ShieldAlert } from 'lucide-react';
 
 export const NotFoundPage: React.FC = () => {
   const { navigate, searchQuery, setSearchQuery } = useStore();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate('/shop');
-    }
+    navigate(searchPath(searchQuery));
   };
 
   return (
@@ -57,27 +57,27 @@ export const NotFoundPage: React.FC = () => {
 
         {/* Quick Action Navigation */}
         <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
-          <button
-            onClick={() => navigate('/')}
+          <AppLink
+            href={ROUTES.home}
             className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-900 bg-white hover:bg-stone-100 border border-stone-300 rounded-lg transition-colors shadow-xs"
           >
             <Home className="w-3.5 h-3.5" />
             Store Overview
-          </button>
-          <button
-            onClick={() => navigate('/shop')}
+          </AppLink>
+          <AppLink
+            href={ROUTES.shop}
             className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs"
           >
             <BookOpen className="w-3.5 h-3.5 text-amber-400" />
             Browse Catalogue
-          </button>
-          <button
-            onClick={() => navigate('/research-use')}
+          </AppLink>
+          <AppLink
+            href="/research-use"
             className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-lg transition-colors shadow-xs"
           >
             <ShieldAlert className="w-3.5 h-3.5 text-stone-500" />
             Compliance Statement
-          </button>
+          </AppLink>
         </div>
       </div>
     </div>

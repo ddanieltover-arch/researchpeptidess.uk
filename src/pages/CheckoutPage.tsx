@@ -102,18 +102,20 @@ export const CheckoutPage: React.FC = () => {
         : cryptoTxInput || 'CRYPTO-TX-PENDING';
 
     setTimeout(() => {
-      const order = createOrder({
-        customerEmail: email,
-        customerName: fullName,
-        shippingAddress,
-        paymentMethod: selectedPaymentMethod,
-        paymentProofReference: paymentProof,
-      });
+      void (async () => {
+        const order = await createOrder({
+          customerEmail: email,
+          customerName: fullName,
+          shippingAddress,
+          paymentMethod: selectedPaymentMethod,
+          paymentProofReference: paymentProof,
+        });
 
-      setCreatedOrder(order);
-      setStep('confirmation');
-      setIsSubmitting(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        setCreatedOrder(order);
+        setStep('confirmation');
+        setIsSubmitting(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })();
     }, 700);
   };
 

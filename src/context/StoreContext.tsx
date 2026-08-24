@@ -30,15 +30,25 @@ import {
 import {
   INITIAL_PRODUCTS,
   INITIAL_CATEGORIES,
-  INITIAL_ORDERS,
-  INITIAL_PAYMENTS,
   INITIAL_SHIPPING_METHODS,
   INITIAL_COUPONS,
   INITIAL_AUDIT_LOGS,
-  INITIAL_INVENTORY_TRANSACTIONS,
 } from '../lib/mock-data';
+import { applyMerchandisingOverlay } from '../lib/merchandising';
+import {
+  fetchBootstrap,
+  persistInventoryRequest,
+  persistMerchandising,
+  persistOrderRequest,
+  persistPaymentRequest,
+  persistShippingRequest,
+  persistStoreSettingsRequest,
+} from '../lib/persistence-api';
+import { MerchandisingRecord } from '../lib/merchandising-persistence';
 import { INITIAL_CMS_PAGES, DEFAULT_STORE_SETTINGS } from '../lib/cms-data';
 import { DEMO_USERS, hasPermission } from '../lib/auth';
+import { fetchAdminSession, loginAdmin, logoutAdmin } from '../lib/admin-api';
+import { AdminSessionUser } from '../lib/admin-session';
 import { calculateOrderTotals, OrderCalculationResult } from '../lib/pricing';
 import { checkVariantStockAvailability, recordInventoryTransaction } from '../lib/inventory';
 import { executeCatalogueImport, exportCatalogueToCsv } from '../lib/catalogue-import';
@@ -51,6 +61,14 @@ import {
 } from '../lib/shipping-engine';
 import { createOrderNotification } from '../lib/notifications';
 import { runAllCommerceTests, TestSuiteReport } from '../lib/commerce-tests';
+import {
+  canonicalizeLocation,
+  getBrowserHref,
+  parseAppPath,
+  productPath,
+  readBrowserLocation,
+  type NavigateOptions,
+} from '../lib/routing';
 
 export interface ToastMessage {
   id: string;
@@ -62,7 +80,7 @@ export interface ToastMessage {
 interface StoreContextType {
   // Navigation & Routing
   currentPath: string;
-  navigate: (path: string) => void;
+  navigate: (path: string, options?: NavigateOptions) => void;
 
   // Catalog (Public vs Admin Draft Preview)
   products: Product[];
@@ -81,6 +99,10 @@ interface StoreContextType {
   // Product CRUD & Lifecycle (Admin)
   createProduct: (productData: Partial<Product>) => Product;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
+  saveProductMerchandising: (
+    productId: string,
+    patch: Partial<MerchandisingRecord>
+  ) => Promise<boolean>;
   setProductStatus: (productId: string, newStatus: ProductStatus) => void;
   deleteProduct: (productId: string) => void;
   bulkUpdateProductStatus: (productIds: string[], newStatus: ProductStatus) => void;
@@ -145,6 +167,10 @@ interface StoreContextType {
   // Auth & Roles
   currentUser: User;
   setUserRole: (role: UserRole) => void;
+  authReady: boolean;
+  isAdminAuthenticated: boolean;
+  signInAdmin: (email: string, password: string) => Promise<{ user: AdminSessionUser } | { error: string }>;
+  signOutAdmin: () => Promise<void>;
 
   // Orders & Payment Operations
   orders: Order[];
@@ -156,7 +182,7 @@ interface StoreContextType {
     shippingAddress: AddressSnapshot;
     paymentMethod: PaymentMethod;
     paymentProofReference?: string;
-  }) => Order | null;
+  }) => Promise<Order | null>;
   updateOrderStatus: (
     orderId: string,
     newStatus: OrderStatus,
@@ -195,7 +221,7 @@ interface StoreContextType {
   cmsPages: CMSPage[];
   updateCmsPage: (slug: string, updates: Partial<CMSPage>) => void;
   storeSettings: StoreSettings;
-  updateStoreSettings: (updates: Partial<StoreSettings>) => void;
+  updateStoreSettings: (updates: Partial<StoreSettings>) => Promise<boolean>;
 
   // Toast System
   toasts: ToastMessage[];
@@ -205,10 +231,26 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
+function getBootRoute() {
+  if (typeof window === 'undefined') {
+    return { href: '/', productSlug: null as string | null, categorySlug: null as string | null, search: '' };
+  }
+  const { href } = canonicalizeLocation(readBrowserLocation());
+  const parsed = parseAppPath(href);
+  return {
+    href: parsed.href,
+    productSlug: parsed.kind === 'product' ? parsed.slug ?? null : null,
+    categorySlug: parsed.kind === 'category' ? parsed.slug ?? null : null,
+    search: parsed.query.q ?? '',
+  };
+}
+
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [bootRoute] = useState(getBootRoute);
+
   // Routing State
-  const [currentPath, setCurrentPath] = useState<string>('/');
-  const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
+  const [currentPath, setCurrentPath] = useState<string>(bootRoute.href);
+  const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(bootRoute.productSlug);
   const [adminDraftPreviewMode, setAdminDraftPreviewMode] = useState<boolean>(false);
 
   // Core Data
@@ -216,11 +258,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [categories, setCategories] = useState<ProductCategory[]>(INITIAL_CATEGORIES);
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>(INITIAL_SHIPPING_METHODS);
   const [coupons, setCoupons] = useState<Coupon[]>(INITIAL_COUPONS);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [payments, setPayments] = useState<Payment[]>(INITIAL_PAYMENTS);
-  const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>(
-    INITIAL_INVENTORY_TRANSACTIONS
-  );
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [inventoryTransactions, setInventoryTransactions] = useState<InventoryTransaction[]>([]);
   const [notifications, setNotifications] = useState<OrderNotification[]>([]);
   const [testSuiteReport, setTestSuiteReport] = useState<TestSuiteReport | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
@@ -230,8 +270,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Selected State
   const [destinationCountryCode, setDestinationCountryCode] = useState<string>('GB');
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(bootRoute.categorySlug);
+  const [searchQuery, setSearchQuery] = useState<string>(bootRoute.search);
   const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string>(
     INITIAL_SHIPPING_METHODS[0]?.id || 'ship-uk-standard'
   );
@@ -243,15 +283,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     {
       id: 'cart-1',
       productId: 'prod-bpc157',
-      productName: 'BPC-157 Reference Standard',
-      productSlug: 'bpc-157-reference-standard',
-      variantId: 'var-bpc157-5mg',
+      productName: 'BPC-157',
+      productSlug: 'bpc-157',
+      variantId: 'var-bpc157-1',
       variantName: '5mg Lyophilized Vial',
       size: '5mg',
-      sku: 'RPUK-BPC157-5MG',
-      unitPrice: 28.5,
+      sku: 'RPUK-BPC-157-5MG',
+      unitPrice: 15.99,
       quantity: 3,
-      image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80',
+      image: '/products/bpc-157/01-primary.webp',
       purityScore: 99.42,
     },
   ]);
@@ -259,6 +299,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [wishlist, setWishlist] = useState<string[]>(['prod-tb500']);
   const [currency, setCurrency] = useState<'GBP' | 'EUR'>('GBP');
   const [currentUser, setCurrentUser] = useState<User>(DEMO_USERS.CUSTOMER);
+  const [adminSession, setAdminSession] = useState<AdminSessionUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   // CMS & Store Settings State
   const [cmsPages, setCmsPages] = useState<CMSPage[]>(INITIAL_CMS_PAGES);
@@ -272,10 +314,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('success', 'Page Saved', `Updated content for /${slug}.`);
   };
 
-  const updateStoreSettings = (updates: Partial<StoreSettings>) => {
-    setStoreSettings((prev) => ({ ...prev, ...updates }));
+  const updateStoreSettings = async (updates: Partial<StoreSettings>): Promise<boolean> => {
+    const next = { ...storeSettings, ...updates };
+    const persisted = await persistStoreSettingsRequest(next);
+    if (!persisted.ok) {
+      addToast(
+        'error',
+        'Settings not saved',
+        persisted.reference
+          ? `Store settings could not be stored. Reference: ${persisted.reference}`
+          : 'Store settings could not be stored.'
+      );
+      return false;
+    }
+    setStoreSettings(next);
     logAuditEvent('STORE_SETTINGS_UPDATED', 'SYSTEM', 'global', { updates });
     addToast('success', 'Store Settings Saved', 'Business configuration and legal parameters updated.');
+    return true;
   };
 
   // Compliance & Feedback
@@ -321,34 +376,91 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return p.status === 'PUBLISHED' && p.visibility === 'PUBLIC';
   });
 
-  const activeCategories = categories.filter((c) => c.isActive);
+  const activeCategories = categories
+    .filter((c) => c.isActive)
+    .map((category) => ({
+      ...category,
+      productCount: publishedProducts.filter((product) => product.categoryId === category.id).length,
+    }));
 
-  const navigate = (path: string) => {
-    setCurrentPath(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (path.startsWith('/product/')) {
-      const slug = path.replace('/product/', '');
-      setSelectedProductSlug(slug);
+  const categoriesWithCounts = categories.map((category) => ({
+    ...category,
+    productCount: publishedProducts.filter((product) => product.categoryId === category.id).length,
+  }));
+
+  const applyParsedRoute = (href: string, options?: NavigateOptions) => {
+    const parsed = parseAppPath(href);
+    setCurrentPath(parsed.href);
+    setSelectedProductSlug(parsed.kind === 'product' ? parsed.slug ?? null : null);
+    setSelectedCategorySlug(parsed.kind === 'category' ? parsed.slug ?? null : null);
+    setSearchQuery(parsed.query.q ?? '');
+
+    if (options?.scroll !== false) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
+  const navigate = (path: string, options?: NavigateOptions) => {
+    const { href, didCanonicalize } = canonicalizeLocation(path);
+    const replace = Boolean(options?.replace || didCanonicalize);
+    if (getBrowserHref() !== href) {
+      if (replace) {
+        window.history.replaceState({ path: href }, '', href);
+      } else {
+        window.history.pushState({ path: href }, '', href);
+      }
+    } else if (didCanonicalize) {
+      window.history.replaceState({ path: href }, '', href);
+    }
+    applyParsedRoute(href, options);
+  };
+
   const selectProductBySlug = (slug: string) => {
-    setSelectedProductSlug(slug);
-    navigate(`/product/${slug}`);
+    navigate(productPath(slug));
   };
 
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.replace('#', '') || '/';
-      if (hash) {
-        setCurrentPath(hash);
-        if (hash.startsWith('/product/')) {
-          setSelectedProductSlug(hash.replace('/product/', ''));
-        }
+    const { href, didCanonicalize } = canonicalizeLocation(readBrowserLocation());
+    if (window.location.hash || didCanonicalize || getBrowserHref() !== href) {
+      window.history.replaceState({ path: href }, '', href);
+    }
+    applyParsedRoute(href, { scroll: false });
+
+    const onPopState = () => {
+      const next = canonicalizeLocation(readBrowserLocation());
+      if (next.didCanonicalize) {
+        window.history.replaceState({ path: next.href }, '', next.href);
       }
+      applyParsedRoute(next.href, { scroll: false });
     };
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+    // Boot-time URL sync only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const snapshot = await fetchBootstrap();
+      if (cancelled || !snapshot) return;
+      if (snapshot.merchandising?.length) {
+        setProducts((prev) => applyMerchandisingOverlay(prev, snapshot.merchandising));
+      }
+      if (snapshot.storeSettings) {
+        setStoreSettings(snapshot.storeSettings);
+      }
+      if (snapshot.shippingMethods?.length) {
+        setShippingMethods(snapshot.shippingMethods);
+      }
+      setOrders(snapshot.orders || []);
+      setPayments(snapshot.payments || []);
+      setInventoryTransactions(snapshot.inventoryTransactions || []);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const acknowledgeResearchOnly = () => {
@@ -440,13 +552,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       molecularWeight: productData.molecularWeight,
       sequence: productData.sequence,
       purityValue: productData.purityValue,
-      manufacturer: productData.manufacturer || 'Research Peptides UK Laboratory Services',
-      origin: productData.origin || 'United Kingdom',
+      manufacturer: productData.manufacturer,
+      origin: productData.origin,
       appearance: productData.appearance || 'Lyophilized White Powder',
       storageRequirements: productData.storageRequirements || 'Store sealed at -20°C in desiccated laboratory freezer',
       solubility: productData.solubility || 'Sterile Water / Bacteriostatic Laboratory Solvent',
       documentationStatus: productData.documentationStatus || 'PENDING',
       analyticalDataSource: productData.analyticalDataSource || 'UNAVAILABLE',
+      merchandising: productData.merchandising,
       createdBy: currentUser.email,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -503,6 +616,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       })
     );
     addToast('success', 'Product Updated', 'Product record saved successfully.');
+  };
+
+  const saveProductMerchandising = async (
+    productId: string,
+    patch: Partial<MerchandisingRecord>
+  ): Promise<boolean> => {
+    const result = await persistMerchandising(productId, patch);
+    if (!result.ok || !result.record) {
+      addToast(
+        'error',
+        'Merchandising not saved',
+        result.reference
+          ? `The change could not be stored. Reference: ${result.reference}`
+          : 'The change could not be stored.'
+      );
+      return false;
+    }
+    setProducts((prev) => applyMerchandisingOverlay(prev, [result.record as MerchandisingRecord]));
+    logAuditEvent('MERCHANDISING_UPDATED', 'PRODUCT', productId, patch as Record<string, unknown>);
+    addToast('success', 'Merchandising saved', 'The catalogue control is now stored persistently.');
+    return true;
   };
 
   const setProductStatus = (productId: string, newStatus: ProductStatus) => {
@@ -587,6 +721,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             currentUser.id
           );
           setInventoryTransactions((prev) => [tx, ...prev]);
+          void persistInventoryRequest(tx);
           return { ...p, variants: updatedVars };
         }
         return p;
@@ -740,7 +875,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Shipping CRUD
-  const updateShippingMethod = (id: string, updates: Partial<ShippingMethod>) => {
+  const updateShippingMethod = async (id: string, updates: Partial<ShippingMethod>) => {
+    const result = await persistShippingRequest(id, updates);
+    if (!result.ok) {
+      addToast(
+        'error',
+        'Shipping not saved',
+        result.reference
+          ? `Courier configuration could not be stored. Reference: ${result.reference}`
+          : 'Courier configuration could not be stored.'
+      );
+      return;
+    }
     setShippingMethods((prev) =>
       prev.map((m) => (m.id === id ? { ...m, ...updates } : m))
     );
@@ -859,24 +1005,89 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addToast('info', 'Saved Requisition', `${prod?.name || 'Item'} updated in saved list.`);
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const sessionUser = await fetchAdminSession();
+        if (cancelled || !sessionUser) return;
+        setAdminSession(sessionUser);
+        setCurrentUser({
+          id: sessionUser.id,
+          email: sessionUser.email,
+          name: sessionUser.name,
+          role: 'ADMIN',
+          institution: 'Research Peptides UK',
+          createdAt: new Date().toISOString(),
+        });
+      } catch {
+        // Public catalogue remains available without an admin session.
+      } finally {
+        if (!cancelled) setAuthReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isAdminAuthenticated = adminSession?.role === 'ADMIN';
+
+  const applyAdminUser = (sessionUser: AdminSessionUser) => {
+    setAdminSession(sessionUser);
+    setCurrentUser({
+      id: sessionUser.id,
+      email: sessionUser.email,
+      name: sessionUser.name,
+      role: 'ADMIN',
+      institution: 'Research Peptides UK',
+      createdAt: new Date().toISOString(),
+    });
+  };
+
+  const signInAdmin = async (email: string, password: string) => {
+    const result = await loginAdmin(email, password);
+    if ('user' in result) {
+      applyAdminUser(result.user);
+      addToast('success', 'Signed in', 'Admin session established.');
+    }
+    return result;
+  };
+
+  const signOutAdmin = async () => {
+    await logoutAdmin();
+    setAdminSession(null);
+    setAdminDraftPreviewMode(false);
+    setCurrentUser(DEMO_USERS.CUSTOMER);
+    addToast('info', 'Signed out', 'Admin session ended.');
+  };
+
   const setUserRole = (role: UserRole | string) => {
     const key = (typeof role === 'string' ? role.toUpperCase() : role) as UserRole;
+    if (key === 'ADMIN') {
+      if (adminSession) {
+        applyAdminUser(adminSession);
+        return;
+      }
+      addToast('error', 'Sign in required', 'Admin access requires the authorised operator account.');
+      navigate('/admin/login');
+      return;
+    }
     const targetUser = DEMO_USERS[key] || DEMO_USERS.CUSTOMER;
     setCurrentUser(targetUser);
-    addToast('info', 'Role Switched', `Switched active session role to: ${targetUser.role}`);
   };
 
   // ==========================================
   // HARDENED ORDERS & PAYMENT LIFECYCLE
   // ==========================================
 
-  const createOrder = (orderData: {
+  const createOrder = async (orderData: {
     customerEmail?: string;
     customerName?: string;
     shippingAddress: AddressSnapshot;
     paymentMethod: PaymentMethod;
     paymentProofReference?: string;
-  }): Order | null => {
+  }): Promise<Order | null> => {
     if (cart.length === 0) {
       addToast('error', 'Empty Basket', 'Cannot create order with an empty requisition basket.');
       return null;
@@ -912,21 +1123,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
 
-    // 3. Atomically reserve inventory
-    setProducts((prevProds) =>
-      prevProds.map((prod) => {
-        const cartVariantIds = new Set(cart.map((c) => c.variantId));
-        const updatedVariants = prod.variants.map((v) => {
-          if (cartVariantIds.has(v.id)) {
-            const cartItem = cart.find((c) => c.variantId === v.id)!;
-            const newReserved = (v.reservedStock || 0) + cartItem.quantity;
-            return { ...v, reservedStock: newReserved };
-          }
-          return v;
-        });
-        return { ...prod, variants: updatedVariants };
-      })
-    );
+    // 3. Build reservation ledger events (applied only after database persist)
+    const reservationEvents: InventoryTransaction[] = cart.map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      const variant = product?.variants.find((v) => v.id === item.variantId);
+      const reserved = (variant?.reservedStock || 0) + item.quantity;
+      return recordInventoryTransaction(
+        item.variantId,
+        'RESERVATION',
+        -item.quantity,
+        Math.max(0, (variant?.stock || 0) - reserved),
+        undefined,
+        `Reservation for pending order`,
+        currentUser.id
+      );
+    });
 
     // 4. Generate unique IDs and references
     const orderId = `ord-${Date.now()}`;
@@ -1053,6 +1264,40 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updatedAt: nowIso,
     };
 
+    const reservationWithOrder = reservationEvents.map((event) => ({ ...event, orderId }));
+    const persistResult = await persistOrderRequest({
+      order: newOrder,
+      payment: initialPayment,
+      inventory: reservationWithOrder,
+      idempotencyKey: `${currentUser.email}:${orderNumber}:${cart.map((item) => item.variantId).join(',')}`,
+    });
+    if (!persistResult.ok) {
+      addToast(
+        'error',
+        'Order not registered',
+        persistResult.reference
+          ? `The requisition could not be stored. Reference: ${persistResult.reference}`
+          : 'The requisition could not be stored. Please try again.'
+      );
+      return null;
+    }
+
+    setProducts((prevProds) =>
+      prevProds.map((prod) => {
+        const cartVariantIds = new Set(cart.map((c) => c.variantId));
+        const updatedVariants = prod.variants.map((v) => {
+          if (cartVariantIds.has(v.id)) {
+            const cartItem = cart.find((c) => c.variantId === v.id)!;
+            const newReserved = (v.reservedStock || 0) + cartItem.quantity;
+            return { ...v, reservedStock: newReserved };
+          }
+          return v;
+        });
+        return { ...prod, variants: updatedVariants };
+      })
+    );
+    setInventoryTransactions((prev) => [...reservationWithOrder, ...prev]);
+
     // 9. Increment coupon usage
     if (appliedCoupon) {
       setCoupons((prev) =>
@@ -1144,7 +1389,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     logAuditEvent('PAYMENT_SUBMITTED', 'PAYMENT', payment?.id || orderId, {
       orderNumber: order.orderNumber,
       reference: referenceOrTxHash,
+      notes,
     });
+
+    const nextPayment: Payment = {
+      ...(payment as Payment),
+      status: 'SUBMITTED',
+      transactionHash: referenceOrTxHash,
+      evidenceNotes: notes || payment?.evidenceNotes,
+      submittedAt: nowIso,
+      updatedAt: nowIso,
+    };
+    const nextOrder: Order = {
+      ...order,
+      status: 'PAYMENT_SUBMITTED',
+      paymentStatus: 'SUBMITTED',
+      paymentProofReference: referenceOrTxHash,
+      history: [...(order.history || []), historyEvent],
+      updatedAt: nowIso,
+    };
+    void persistPaymentRequest(nextOrder, nextPayment);
 
     addToast('success', 'Evidence Submitted', `Payment reference for #${order.orderNumber} queued for Finance Audit.`);
     return true;
@@ -1156,7 +1420,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return false;
     }
 
-    const order = orders.find((o) => o.id === orderId);
+    const linkedPayment = payments.find((p) => p.id === orderId || p.id === paymentId || p.orderId === orderId);
+    const order =
+      orders.find((o) => o.id === orderId) ||
+      orders.find((o) => o.id === linkedPayment?.orderId) ||
+      orders.find((o) => o.paymentId === orderId);
     if (!order) {
       addToast('error', 'Order Not Found', 'Order does not exist.');
       return false;
@@ -1167,7 +1435,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Verify payment entity
     setPayments((prev) =>
       prev.map((p) =>
-        p.orderId === orderId || p.id === paymentId
+        p.orderId === order.id || p.id === paymentId || p.id === linkedPayment?.id
           ? {
               ...p,
               status: 'VERIFIED',
@@ -1194,7 +1462,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === orderId
+        o.id === order.id
           ? {
               ...o,
               status: 'PAYMENT_VERIFIED',
@@ -1216,6 +1484,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       notes,
     });
 
+    const nextPayment: Payment = {
+      ...(payments.find((p) => p.orderId === order.id || p.id === paymentId) as Payment),
+      status: 'VERIFIED',
+      verifiedAt: nowIso,
+      verifiedBy: currentUser.email,
+      notes: notes || undefined,
+      updatedAt: nowIso,
+    };
+    const nextOrder: Order = {
+      ...order,
+      status: 'PAYMENT_VERIFIED',
+      paymentStatus: 'VERIFIED',
+      history: [...(order.history || []), historyEvent],
+      updatedAt: nowIso,
+    };
+    void persistPaymentRequest(nextOrder, nextPayment);
+
     addToast('success', 'Payment Verified', `Order #${order.orderNumber} verified. Requisition ready for processing.`);
     return true;
   };
@@ -1231,14 +1516,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return false;
     }
 
-    const order = orders.find((o) => o.id === orderId);
+    const linkedPayment = payments.find((p) => p.id === orderId || p.orderId === orderId);
+    const order =
+      orders.find((o) => o.id === orderId) ||
+      orders.find((o) => o.id === linkedPayment?.orderId);
     if (!order) return false;
 
     const nowIso = new Date().toISOString();
 
     setPayments((prev) =>
       prev.map((p) =>
-        p.orderId === orderId
+        p.orderId === order.id || p.id === linkedPayment?.id
           ? {
               ...p,
               status: 'FAILED',
@@ -1263,7 +1551,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === orderId
+        o.id === order.id
           ? {
               ...o,
               status: 'PENDING_PAYMENT',
@@ -1280,11 +1568,32 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const notif = createOrderNotification('PAYMENT_REJECTED', updatedOrder);
     setNotifications((prev) => [notif, ...prev]);
 
-    logAuditEvent('PAYMENT_REJECTED', 'PAYMENT', orderId, {
+    logAuditEvent('PAYMENT_REJECTED', 'PAYMENT', order.id, {
       orderNumber: order.orderNumber,
       reason,
       notes,
     });
+
+    const failedPayment: Payment = {
+      ...(linkedPayment as Payment),
+      status: 'FAILED',
+      rejectionReason: reason,
+      notes: notes || linkedPayment?.notes,
+      updatedAt: nowIso,
+    };
+    void persistPaymentRequest(
+      {
+        ...order,
+        status: 'PENDING_PAYMENT',
+        paymentStatus: 'FAILED',
+        paymentProofReference: undefined,
+        history: [...(order.history || []), historyEvent],
+        updatedAt: nowIso,
+      },
+      failedPayment
+    );
+
+    addToast('warning', 'Payment Rejected', `Payment evidence for #${order.orderNumber} rejected.`);
 
     addToast('warning', 'Payment Rejected', `Payment evidence for #${order.orderNumber} rejected.`);
     return true;
@@ -1552,7 +1861,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         navigate,
         products,
         publishedProducts,
-        categories,
+        categories: categoriesWithCounts,
         activeCategories,
         selectedCategorySlug,
         setSelectedCategorySlug,
@@ -1564,6 +1873,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setAdminDraftPreviewMode,
         createProduct,
         updateProduct,
+        saveProductMerchandising,
         setProductStatus,
         deleteProduct,
         bulkUpdateProductStatus,
@@ -1610,6 +1920,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setCurrency,
         currentUser,
         setUserRole,
+        authReady,
+        isAdminAuthenticated,
+        signInAdmin,
+        signOutAdmin,
         orders,
         payments,
         notifications,

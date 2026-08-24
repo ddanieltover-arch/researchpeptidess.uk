@@ -26,6 +26,9 @@ import { StoreSettingsView } from '../components/admin/StoreSettingsView';
 import { LaunchChecklistView } from '../components/admin/LaunchChecklistView';
 import { PreLaunchQAMatrixView } from '../components/admin/PreLaunchQAMatrixView';
 import { ObservabilityView } from '../components/admin/ObservabilityView';
+import { AdminSignOutButton } from '../components/admin/AdminSignOutButton';
+import { WidgetErrorBoundary } from '../components/system/ErrorBoundaries';
+import { MerchandisingView } from '../components/admin/MerchandisingView';
 import {
   ShieldAlert,
   CheckCircle2,
@@ -55,6 +58,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   RefreshCw,
+  Sparkles,
   FlaskConical,
   CreditCard,
   ClipboardList,
@@ -120,7 +124,8 @@ export const AdminPage: React.FC = () => {
     | 'store_settings'
     | 'launch_checklist'
     | 'pre_launch_qa'
-    | 'observability';
+    | 'observability'
+    | 'merchandising';
 
   const [activeTab, setActiveTab] = useState<AdminTab>('products');
 
@@ -426,7 +431,7 @@ export const AdminPage: React.FC = () => {
               Operations & Catalogue Pipeline
             </span>
             <Badge variant="scientific" size="sm">
-              Role: {currentUser.role}
+              {currentUser.email}
             </Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-slate-950 tracking-tight mt-1">
@@ -465,6 +470,8 @@ export const AdminPage: React.FC = () => {
             <Download className="h-4 w-4 text-amber-700" />
             <span>Export CSV</span>
           </Button>
+
+          <AdminSignOutButton className="font-mono text-xs bg-white" />
         </div>
       </div>
 
@@ -505,6 +512,7 @@ export const AdminPage: React.FC = () => {
           { id: 'categories', label: `Categories (${categories.length})`, icon: Layers },
           { id: 'batches_docs', label: `Batches & COAs (${batches.length})`, icon: FileCheck2 },
           { id: 'pricing_promotions', label: 'Pricing & Coupons', icon: Tag },
+          { id: 'merchandising', label: 'Merchandising', icon: Sparkles },
           { id: 'orders_operations', label: `Orders (${orders.length})`, icon: Truck, badge: pendingOrders.length > 0 ? `${pendingOrders.length}` : undefined },
           { id: 'payments_verification', label: `Payments Queue (${payments.length})`, icon: CreditCard, badge: pendingPayments.length > 0 ? `${pendingPayments.length}` : undefined },
           { id: 'inventory_ledger', label: `Inventory & Stock`, icon: Box },
@@ -1229,25 +1237,37 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
+      {activeTab === 'merchandising' && (
+        <WidgetErrorBoundary name="Merchandising">
+          <MerchandisingView />
+        </WidgetErrorBoundary>
+      )}
+
       {/* ========================================================================= */}
       {/* TAB 6: ORDER OPERATIONS & FULFILLMENT */}
       {/* ========================================================================= */}
       {activeTab === 'orders_operations' && (
-        <OrderOperationsManager />
+        <WidgetErrorBoundary name="Order operations">
+          <OrderOperationsManager />
+        </WidgetErrorBoundary>
       )}
 
       {/* ========================================================================= */}
       {/* TAB 7: PAYMENT AUDIT & VERIFICATION QUEUE */}
       {/* ========================================================================= */}
       {activeTab === 'payments_verification' && (
-        <PaymentVerificationQueue />
+        <WidgetErrorBoundary name="Payment verification">
+          <PaymentVerificationQueue />
+        </WidgetErrorBoundary>
       )}
 
       {/* ========================================================================= */}
       {/* TAB 8: INVENTORY LEDGER & STOCK CONTROL */}
       {/* ========================================================================= */}
       {activeTab === 'inventory_ledger' && (
-        <InventoryLedgerView />
+        <WidgetErrorBoundary name="Inventory ledger">
+          <InventoryLedgerView />
+        </WidgetErrorBoundary>
       )}
 
       {/* ========================================================================= */}
@@ -1336,7 +1356,9 @@ export const AdminPage: React.FC = () => {
       {/* TAB 15: OBSERVABILITY & CORRELATION LOGS */}
       {/* ========================================================================= */}
       {activeTab === 'observability' && (
-        <ObservabilityView />
+        <WidgetErrorBoundary name="Observability">
+          <ObservabilityView />
+        </WidgetErrorBoundary>
       )}
 
       {/* ========================================================================= */}

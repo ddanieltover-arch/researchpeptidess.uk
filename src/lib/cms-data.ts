@@ -56,22 +56,22 @@ export const INITIAL_CMS_PAGES: CMSPage[] = [
     contentMarkdown: `
 ### Who We Are
 
-**Research Peptides UK** operates as a specialized British chemical supply service dedicated exclusively to providing verified biochemical reagents, synthetic peptide sequences, and reference materials for in-vitro laboratory research, academic institutions, and analytical testing facilities.
+**Research Peptides UK** supplies biochemical reagents, synthetic peptide sequences, and reference materials for in-vitro laboratory research. The public catalogue is limited to research-use listings.
 
-Founded on the principles of analytical transparency and chemical precision, our mission is to eliminate variance in preclinical research by supplying consistently documented, high-purity compounds backed by traceable batch documentation.
+We operate from the United Kingdom and ship to destinations that are configured in the storefront shipping engine.
 
 ---
 
 ### Our Operating Philosophy
 
-1. **Analytical Transparency**
-   Every compound batch listed in our catalogue is subject to identity and purity verification. We make analytical documentation—including High-Performance Liquid Chromatography (HPLC) and Mass Spectrometry (MS)—accessible to qualified researchers.
+1. **Documentation where it exists**
+   Product pages show batch numbers, document type, and file access only when those records are attached. Unavailable, pending, and demonstration states are labelled as such.
 
-2. **Strict In-Vitro Positioning**
-   We operate strictly within the legal and regulatory frameworks governing chemical supply in the United Kingdom. All products are supplied solely for in-vitro scientific investigations, receptor binding assays, and analytical chromatography.
+2. **In-vitro positioning**
+   All products are supplied for laboratory research and analytical work. They are not medicines and are not for human or veterinary administration.
 
-3. **Responsible Cold-Chain Logistics**
-   Lyophilized peptide compounds are packaged under desiccated, temperature-controlled laboratory conditions to safeguard chemical integrity from synthesis through to laboratory receipt.
+3. **Configured logistics**
+   Shipping methods, prices, estimated windows, and tracking availability are taken from the configured shipping engine rather than promotional slogans.
 
 ---
 
@@ -137,8 +137,8 @@ To maintain the physicochemical stability of synthetic peptides:
   {
     id: 'cms_quality',
     slug: 'quality',
-    title: 'Quality & Analytical Standards',
-    subtitle: 'High-Performance Liquid Chromatography & Mass Spectrometry Verification',
+    title: 'Quality & Analytical Documentation',
+    subtitle: 'How batch records, COAs, and documentation states work on this storefront',
     category: 'QUALITY',
     lastUpdated: '2026-08-18',
     isPublished: true,
@@ -146,32 +146,48 @@ To maintain the physicochemical stability of synthetic peptides:
     seoTitle: 'Quality Standards & HPLC Testing | Research Peptides UK',
     seoDescription: 'Discover our analytical quality assurance protocols, third-party HPLC chromatography verification, and batch-level Certificate of Analysis standards.',
     contentMarkdown: `
-### Analytical Assurance Standards
+### Our approach
 
-At **Research Peptides UK**, product quality is defined by empirical analytical data rather than marketing assertions. We hold our product catalogue to stringent chemical specifications:
+Quality on this storefront means showing the records that exist for a listing, and not inventing the ones that do not. Research Peptides UK is a catalogue and fulfilment service. Independent laboratory accreditations are not claimed for the merchant entity unless a supporting document is attached to a specific batch.
 
-1. **Identity Confirmation via Mass Spectrometry (MS)**
-   Mass spectrometry confirms that the observed molecular mass of the synthetic peptide matches the theoretical calculated weight (Da), verifying sequence integrity and full-length synthesis.
+### Product traceability
 
-2. **Purity Determination via Analytical HPLC**
-   Reversed-Phase High-Performance Liquid Chromatography (RP-HPLC) separates the target peptide from synthesis deletions and truncation artifacts. Purity percentages reflect the area-under-the-curve (AUC) of the principal chromatographic peak at 214nm / 220nm.
+Where a batch record is uploaded, the product page can show:
+- batch number
+- batch status
+- test or document date, if recorded
+- linked files
 
-3. **Net Peptide Content & Residual Moisture**
-   Where documented, net peptide content accounts for counter-ion weight (e.g., acetate or trifluoroacetate salts) and residual moisture content following lyophilization.
+If no batch is attached, the listing states that no batch record is available.
 
----
+### Batch documentation
 
-### Independent Laboratory Testing
+Batch documentation is optional per product. Administrators upload files against a product and, where relevant, a batch. Storefront visitors see only documents marked public or otherwise authorised for their role.
 
-Where indicated on individual product listings, analytical testing is performed by independent chemical analysis laboratories. 
+### Analytical documentation
 
-*Note: Research Peptides UK ([LEGAL_ENTITY_NAME]) is a commercial chemical supplier. Reference to independent testing laboratories does not imply that Research Peptides UK holds third-party laboratory accreditations directly, but rather that our documented batches are tested in accordance with recognized analytical methodologies.*
+HPLC, mass spectrometry, specification sheets, and similar files appear only when they are stored against the product. A purity percentage is displayed only when a documented value exists on the product or batch record.
 
----
+### COA access
 
-### Requesting Custom Batch Documentation
+Certificates of analysis, where present, can be viewed or downloaded from the product’s batch documentation panel. If a file URL is missing, the listing says the file is not attached.
 
-Qualified institutional purchasers requiring specific batch analysis certificates or extended technical dossiers may contact our laboratory support team with the relevant Batch Number.
+### Storage and handling information
+
+Storage statements on product pages come from the product record (for example a listed storage temperature). They describe laboratory handling of the supplied material. They are not reconstitution, dosing, or administration instructions.
+
+### What “documentation available” means
+
+| Storefront state | Meaning |
+| :--- | :--- |
+| **Available** | A document or verified/available documentation status is recorded for the listing. |
+| **Pending** | A record is expected or in review, but the file may not yet be public. |
+| **Unavailable** | No documentation is attached. |
+| **Demo** | Interface demonstration data only — not an official analytical record. |
+
+### What the customer receives
+
+The customer receives the published catalogue item, any public documents attached to that listing, and shipping according to the method selected at checkout. Documentation is not guaranteed for every SKU.
     `,
   },
 
@@ -214,10 +230,10 @@ Once you complete checkout and transfer funds, enter your payment reference code
 ### Shipping & Fulfilment
 
 #### How quickly are orders dispatched?
-Orders verified before 14:00 GMT (Monday–Friday) are typically packaged and dispatched the same working day.
+Dispatch timing follows the shipping method selected at checkout and the status of payment verification. The storefront does not promise same-day or next-day dispatch unless that window is the configured estimate for the selected method.
 
 #### How are peptides packaged during transit?
-All compounds are sealed in amber or neutral glass vials with rubber stoppers and flip-off seals, accompanied by desiccant packets and insulated packaging to protect against ambient heat and humidity during transit.
+Packaging follows the operational process used at dispatch. The storefront does not claim temperature-controlled or cold-chain handling unless a shipping method is configured with that service.
 
 #### Do you ship to European destinations?
 Yes. We deliver to selected European countries with compliant customs documentation. Full shipping rates and country lists are detailed on our **Shipping Policy** page.
@@ -266,39 +282,38 @@ Universities, research institutes, and commercial laboratories requiring custom 
   {
     id: 'cms_shipping',
     slug: 'shipping',
-    title: 'Cold-Chain & Shipping Policy',
-    subtitle: 'Transit Times, Packaging Protocols, Free Shipping Thresholds & European Logistics',
+    title: 'Shipping Policy',
+    subtitle: 'Destinations, methods, prices, windows and tracking from the configured shipping engine',
     category: 'SUPPORT',
     lastUpdated: '2026-08-18',
     isPublished: true,
     requiredBusinessInputs: ['[SUPPORT_CONTACT_EMAIL]'],
     seoTitle: 'Shipping & Delivery Policy | Research Peptides UK',
-    seoDescription: 'Information on cold-chain packaging, Royal Mail Tracked 24 delivery, European courier transit times, and free shipping thresholds.',
+    seoDescription: 'Shipping destinations, methods, prices, estimated windows, and tracking availability for Research Peptides UK orders.',
     contentMarkdown: `
-### Shipping Zones & Transit Times
+### How shipping is calculated
 
-We dispatch all orders from our temperature-monitored facility in the United Kingdom.
+Checkout uses the configured shipping engine. Destination, method name, price, estimated window, and whether tracking is available are taken from those records. Marketing phrases such as same-day dispatch or cold-chain handling are not used unless a method is actually configured that way.
 
-| Destination | Carrier Service | Estimated Delivery | Standard Cost | Free Delivery Threshold |
-| :--- | :--- | :--- | :--- | :--- |
-| **UK Mainland** | Royal Mail Tracked 24 | 1 Working Day | £4.99 | **Free on orders over £75.00** |
-| **UK Highlands & Islands** | Royal Mail Tracked 24 | 1–2 Working Days | £6.99 | **Free on orders over £95.00** |
-| **Europe Zone 1** *(FR, DE, NL, IE, BE)* | DPD / DHL Air Priority | 2–4 Working Days | £14.99 | **Free on orders over £150.00** |
-| **Europe Zone 2** *(IT, ES, AT, SE, PL)* | DHL International Express | 3–6 Working Days | £18.99 | **Free on orders over £180.00** |
+Current default UK mainland method (from store configuration):
+- **Method:** Royal Mail Tracked 24 (Next Business Day)
+- **Price:** £4.99
+- **Free threshold:** £75.00
+- **Estimated window:** 1 working day (order by 3 PM) as configured
+- **Tracking:** available after dispatch
 
----
+Other zones (Highlands, Europe, international) use the methods listed in store settings. Always confirm the live options at checkout, because administrators can change them.
 
-### Packaging & Temperature Integrity
+### What we do not claim by default
 
-1. **Insulated Desiccant Enclosures:** Lyophilized compounds are shipped in tamper-evident sealed vials with desiccant protection against atmospheric condensation.
-2. **Discreet Factual Labelling:** Outer packaging contains only standard shipping addresses and commercial logistics declarations without sensitive compound descriptions.
-3. **Full Tracking:** A carrier tracking reference is automatically assigned and updated upon dispatch.
+Unless a matching method exists in the shipping engine, this site does not claim:
+- same-day dispatch as a universal promise
+- temperature-controlled shipping
+- cold-chain handling
 
----
+### Customs
 
-### Customs & Cross-Border Compliance for European Shipments
-
-For orders dispatched to European Union destinations, all required commercial invoices and chemical classification codes (HS Code: 2937.19.00 / 3822.00.00) are attached. Purchasers are responsible for ensuring that imported research biochemicals comply with relevant local import regulations.
+For cross-border orders, purchasers remain responsible for local import rules. Commercial paperwork is prepared according to the operational process in use at dispatch.
     `,
   },
 

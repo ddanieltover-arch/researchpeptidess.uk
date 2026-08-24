@@ -11,6 +11,7 @@
  */
 
 import { Product, ProductCategory, CMSPage } from '../types';
+import { categoryPath } from './routing';
 
 export const PRIMARY_DOMAIN = 'https://researchpeptidess.uk';
 
@@ -56,11 +57,14 @@ export function getSeoMetadataForPath(
     const lowestPrice = p.variants?.length
       ? Math.min(...p.variants.map((v) => v.price))
       : 0;
-    const activeVariants = p.variants?.filter((v) => v.status === 'ACTIVE') || [];
+    const highestPrice = p.variants?.length
+      ? Math.max(...p.variants.map((v) => v.price))
+      : lowestPrice;
+    const activeVariants = p.variants?.filter((v) => v.status === 'ACTIVE' || v.status === 'LOW_STOCK') || [];
     const inStock = activeVariants.some((v) => (v.stock - (v.reservedStock || 0)) > 0);
 
-    const title = `${p.name} (${p.shortDescription || 'In-Vitro Reference'}) | Research Peptides UK`;
-    const description = `Buy ${p.name} for laboratory research. CAS: ${p.casNumber || 'N/A'}. HPLC tested reference standard with batch documentation.`;
+    const title = `${p.name} | Research Peptides UK`;
+    const description = `${p.shortDescription || p.name} for laboratory research.${p.casNumber ? ` CAS ${p.casNumber}.` : ''} Documentation is shown only where a batch record exists.`;
     const primaryImg = p.images?.find((img) => img.isPrimary)?.url || p.images?.[0]?.url || `${PRIMARY_DOMAIN}/og-image.png`;
 
     // Only index published products
@@ -83,18 +87,29 @@ export function getSeoMetadataForPath(
           name: 'Research Peptides UK',
         },
         category: p.categoryName || 'Biochemical Reagents',
-        offers: {
-          '@type': 'Offer',
-          url: canonicalUrl,
-          priceCurrency: 'GBP',
-          price: lowestPrice.toFixed(2),
-          availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-          itemCondition: 'https://schema.org/NewCondition',
-          seller: {
-            '@type': 'Organization',
-            name: 'Research Peptides UK',
-          },
-        },
+        offers:
+          activeVariants.length > 1
+            ? {
+                '@type': 'AggregateOffer',
+                url: canonicalUrl,
+                priceCurrency: 'GBP',
+                lowPrice: lowestPrice.toFixed(2),
+                highPrice: highestPrice.toFixed(2),
+                offerCount: activeVariants.length,
+                availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              }
+            : {
+                '@type': 'Offer',
+                url: canonicalUrl,
+                priceCurrency: 'GBP',
+                price: lowestPrice.toFixed(2),
+                availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                itemCondition: 'https://schema.org/NewCondition',
+                seller: {
+                  '@type': 'Organization',
+                  name: 'Research Peptides UK',
+                },
+              },
       },
       {
         '@context': 'https://schema.org',
@@ -110,7 +125,9 @@ export function getSeoMetadataForPath(
             '@type': 'ListItem',
             position: 2,
             name: p.categoryName || 'Catalogue',
-            item: `${PRIMARY_DOMAIN}/shop`,
+            item: context?.category
+              ? `${PRIMARY_DOMAIN}${categoryPath(context.category.slug)}`
+              : `${PRIMARY_DOMAIN}/shop`,
           },
           {
             '@type': 'ListItem',
@@ -121,6 +138,30 @@ export function getSeoMetadataForPath(
         ],
       },
     ];
+
+    if (activeVariants.length > 1) {
+      jsonLd.unshift({
+        '@context': 'https://schema.org',
+        '@type': 'ProductGroup',
+        name: p.name,
+        description: p.longDescription || p.shortDescription,
+        url: canonicalUrl,
+        productGroupID: p.sku,
+        variesBy: ['https://schema.org/size'],
+        hasVariant: activeVariants.map((variant) => ({
+          '@type': 'Product',
+          name: `${p.name} ${variant.size}`,
+          sku: variant.sku,
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'GBP',
+            price: variant.price.toFixed(2),
+            availability:
+              variant.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          },
+        })),
+      });
+    }
 
     return {
       title,
@@ -138,24 +179,37 @@ export function getSeoMetadataForPath(
   // 2. Category / Shop Page
   if (context?.category) {
     const c = context.category;
-    const title = `${c.name} | Laboratory Research Peptides UK`;
-    const description = c.seoDescription || `Explore high-purity ${c.name.toLowerCase()} for in-vitro research and biochemical assays. Verified batch HPLC standards with cold-chain UK dispatch.`;
+    const title = `${c.name} | Research Peptides UK`;
+    const description =
+      c.seoDescription ||
+      `${c.name} for in-vitro laboratory research. Browse published catalogue items in this collection.`;
+    const categoryUrl = `${PRIMARY_DOMAIN}${categoryPath(c.slug)}`;
+
+    const hasSearch = Boolean(context?.searchQuery && context.searchQuery.trim().length > 0);
 
     return {
       title,
       description,
-      canonicalUrl: `${PRIMARY_DOMAIN}/shop?category=${c.slug}`,
+      canonicalUrl: categoryUrl,
       ogTitle: title,
       ogDescription: description,
       ogType: 'website',
-      robots: 'index, follow',
+      robots: hasSearch ? 'noindex, follow' : 'index, follow',
       jsonLd: [
         {
           '@context': 'https://schema.org',
           '@type': 'CollectionPage',
           name: c.name,
           description,
-          url: `${PRIMARY_DOMAIN}/shop?category=${c.slug}`,
+          url: categoryUrl,
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: PRIMARY_DOMAIN },
+            { '@type': 'ListItem', position: 2, name: c.name, item: categoryUrl },
+          ],
         },
       ],
     };
@@ -198,20 +252,20 @@ export function getSeoMetadataForPath(
     };
   }
 
-  // 5. Shop / Search Page
-  if (path.startsWith('/shop')) {
+  // 5. Shop / Search / Category Page
+  if (path.startsWith('/shop') || path.startsWith('/search') || path.startsWith('/category/') || path === '/peptides' || path === '/research-chemicals') {
     const hasSearch = Boolean(context?.searchQuery && context.searchQuery.trim().length > 0);
     return {
       title: hasSearch
         ? `Search: "${context?.searchQuery}" | Research Peptides UK`
         : 'Buy In-Vitro Research Peptides | Verified Laboratory Standards UK',
       description:
-        'Browse high-purity analytical peptide reference standards. Certified HPLC and Mass Spectrometry documentation for academic and institutional research in the UK and Europe.',
+        'Browse published research peptides and laboratory catalogue items. Documentation is shown only where batch records exist.',
       canonicalUrl: `${PRIMARY_DOMAIN}/shop`,
       ogTitle: 'Catalogue | Research Peptides UK',
       ogDescription: 'High-purity in-vitro research peptides and analytical biochemical standards.',
       ogType: 'website',
-      robots: hasSearch ? 'noindex, follow' : 'index, follow', // Do not index arbitrary search queries
+      robots: hasSearch ? 'noindex, follow' : 'index, follow',
     };
   }
 
@@ -219,11 +273,11 @@ export function getSeoMetadataForPath(
   return {
     title: 'Research Peptides UK | High-Purity In-Vitro Biochemicals & Analytical Standards',
     description:
-      'Dedicated British supplier of high-purity in-vitro research peptides, reference standards, and analytical reagents. HPLC-verified batch documentation and cold-chain UK dispatch.',
+      'UK laboratory catalogue of research peptides and biochemical reagents for in-vitro use. Documentation is shown only where records exist.',
     canonicalUrl: PRIMARY_DOMAIN,
     ogTitle: 'Research Peptides UK | Analytical & In-Vitro Research Compounds',
     ogDescription:
-      'High-purity synthetic peptides with HPLC and MS batch documentation for scientific laboratories in the UK & Europe.',
+      'Research peptides and laboratory reagents for in-vitro use, with documentation shown only where records exist.',
     ogType: 'website',
     robots: 'index, follow, max-snippet:-1, max-image-preview:large',
     jsonLd: [
@@ -248,7 +302,7 @@ export function getSeoMetadataForPath(
         url: PRIMARY_DOMAIN,
         potentialAction: {
           '@type': 'SearchAction',
-          target: `${PRIMARY_DOMAIN}/shop?q={search_term_string}`,
+          target: `${PRIMARY_DOMAIN}/search?q={search_term_string}`,
           'query-input': 'required name=search_term_string',
         },
       },
@@ -286,7 +340,7 @@ export function generateXmlSitemap(
   // Published Categories
   for (const cat of categories.filter((c) => c.isActive)) {
     urls.push({
-      loc: `${PRIMARY_DOMAIN}/shop?category=${cat.slug}`,
+      loc: `${PRIMARY_DOMAIN}${categoryPath(cat.slug)}`,
       lastmod: today,
       changefreq: 'weekly',
       priority: '0.8',
@@ -338,6 +392,8 @@ export function generateRobotsTxt(): string {
 User-agent: *
 Allow: /
 Allow: /shop
+Allow: /peptides
+Allow: /research-chemicals
 Allow: /product/
 Allow: /about
 Allow: /research

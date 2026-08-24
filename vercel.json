@@ -1,0 +1,250 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api/|assets/|products/|favicon\\.svg|og-image\\.svg|robots\\.txt|logo\\.svg|index\\.html).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/product/bpc-157-reference-standard",
+      "destination": "/product/bpc-157",
+      "permanent": true
+    },
+    {
+      "source": "/product/tb-500-thymosin-beta-4-derivative",
+      "destination": "/product/thymosin-beta-4-tb500-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/semaglutide-reference-standard",
+      "destination": "/product/sema",
+      "permanent": true
+    },
+    {
+      "source": "/product/tirzepatide-reference-standard",
+      "destination": "/product/tirzepatide",
+      "permanent": true
+    },
+    {
+      "source": "/product/retatrutide-glp3-triple-agonist-standard",
+      "destination": "/product/reta",
+      "permanent": true
+    },
+    {
+      "source": "/product/cagrilintide-reference-standard",
+      "destination": "/product/gagrilintide-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/cjc-1295-wo-dac-mod-grf-1-29",
+      "destination": "/product/cjc-1295-no-dac-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/cjc-1295-dac",
+      "destination": "/product/cjc-1295-with-dac-2mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ipamorelin-selective-ghrp-standard",
+      "destination": "/product/ipamorelin-5mg-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ghrp2-analytical-grade-compound",
+      "destination": "/product/ghrp-2-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ghrp6-analytical-grade-compound",
+      "destination": "/product/ghrp-6-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/hexarelin-analytical-grade-standard",
+      "destination": "/product/hexarelin-acetate",
+      "permanent": true
+    },
+    {
+      "source": "/product/sermorelin-grf-1-29-standard",
+      "destination": "/product/sermorelin-acetate",
+      "permanent": true
+    },
+    {
+      "source": "/product/tesamorelin-analytical-reference-standard",
+      "destination": "/product/tesamorelin",
+      "permanent": true
+    },
+    {
+      "source": "/product/hgh-frag-176-191-standard",
+      "destination": "/product/hgh-fragment-176-191-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/aod-9604-c-terminal-peptide-standard",
+      "destination": "/product/aod-9604-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/igf-1-lr3-long-r3-recombinant-standard",
+      "destination": "/product/igf-1-lr3-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/igf-1-des-truncated-standard",
+      "destination": "/product/igf-1-1-3-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/follistatin-344-recombinant-peptide-standard",
+      "destination": "/product/follistatin-344-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ace-031-actriib-receptor-fusion-standard",
+      "destination": "/product/ace-031-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/gdf-8-myostatin-propeptide-standard",
+      "destination": "/product/myostatin-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/melanotan-1-afamelanotide-standard",
+      "destination": "/product/mt-1-melanotan-1-acetate-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/melanotan-2-acetate-standard",
+      "destination": "/product/mt-2-melanotan-2-acetate-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/pt-141-bremelanotide-acetate",
+      "destination": "/product/pt-141-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/epithalon-synthetic-tetrapeptide-standard",
+      "destination": "/product/epithalon",
+      "permanent": true
+    },
+    {
+      "source": "/product/thymosin-alpha-1-standard",
+      "destination": "/product/thymosin-alpha-1",
+      "permanent": true
+    },
+    {
+      "source": "/product/ghk-cu-copper-tripeptide-1-standard",
+      "destination": "/product/ghk-cu",
+      "permanent": true
+    },
+    {
+      "source": "/product/mots-c-mitochondrial-derived-peptide-standard",
+      "destination": "/product/mots-c-mitochondrial-derived-peptide",
+      "permanent": true
+    },
+    {
+      "source": "/product/ss-31-elamipretide-mitochondrial-standard",
+      "destination": "/product/ss-31",
+      "permanent": true
+    },
+    {
+      "source": "/product/selank-tp-7-synthetic-heptapeptide",
+      "destination": "/product/selank-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/semax-heptapeptide-acth-analogue",
+      "destination": "/product/semax",
+      "permanent": true
+    },
+    {
+      "source": "/product/oxytocin-nonapeptide-reference-standard",
+      "destination": "/product/oxytocin-acetate",
+      "permanent": true
+    },
+    {
+      "source": "/product/kisspeptin-10-metastin-standard",
+      "destination": "/product/kisspeptin",
+      "permanent": true
+    },
+    {
+      "source": "/product/kpv-tripeptide-reference-standard",
+      "destination": "/product/kpv",
+      "permanent": true
+    },
+    {
+      "source": "/product/ll-37-antimicrobial-peptide-standard",
+      "destination": "/product/ll-37",
+      "permanent": true
+    },
+    {
+      "source": "/product/bpc-157-tb-500-dual-blend-standard",
+      "destination": "/product/bpc-10mg-tb-10mg-20mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/cjc-1295-ipamorelin-blend",
+      "destination": "/product/cjc-1295-no-dac-5mg-ipamorelin-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/glow-tri-peptide-blend-70mg-standard",
+      "destination": "/product/glow-blend-ghk-cu-bpc157-tb500",
+      "permanent": true
+    },
+    {
+      "source": "/product/klow-quad-peptide-blend-80mg-standard",
+      "destination": "/product/klow-blend-ghk-cu-bpc157-tb500-kpv",
+      "permanent": true
+    },
+    {
+      "source": "/product/tesamorelin-ipamorelin-blend",
+      "destination": "/product/tesamorelin-5mg-ipamorelin-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/nad-plus-nicotinamide-adenine-dinucleotide-standard",
+      "destination": "/product/nad-250mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/aicar-acadesine-ampk-activator-standard",
+      "destination": "/product/aicar",
+      "permanent": true
+    },
+    {
+      "source": "/product/ftpp-adipotide-prohibitin-targeting-peptide",
+      "destination": "/product/adipotide",
+      "permanent": true
+    },
+    {
+      "source": "/product/bacteriostatic-water-10ml-vial",
+      "destination": "/product/bacteriostatic-water-0-9-benzyl",
+      "permanent": true
+    }
+  ]
+}

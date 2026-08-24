@@ -1,11 +1,15 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { config as loadEnv } from 'dotenv';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
+import { adminApiPlugin } from './src/server/vite-admin-api-plugin';
+
+loadEnv();
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), adminApiPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

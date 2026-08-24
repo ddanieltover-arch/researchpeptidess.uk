@@ -12,9 +12,11 @@ import { hasPermission } from './auth';
 import { validateCatalogueImport, executeCatalogueImport } from './catalogue-import';
 import { authorizeDocumentAccess, authorizeOrderAccess } from './security';
 import { CartItem, ProductVariant, Coupon, ShippingMethod, Product, ProductCategory } from '../types';
+import { runParityTests } from './parity-tests';
+import { runPersistenceTests } from './persistence-tests';
 
 export interface TestResult {
-  category: 'PRICING' | 'INVENTORY' | 'STATE_MACHINE' | 'PAYMENTS' | 'SHIPPING' | 'SECURITY' | 'IMPORT';
+  category: 'PRICING' | 'INVENTORY' | 'STATE_MACHINE' | 'PAYMENTS' | 'SHIPPING' | 'SECURITY' | 'IMPORT' | 'PARITY' | 'PERSISTENCE';
   name: string;
   passed: boolean;
   expected: string;
@@ -592,15 +594,15 @@ export function runAllCommerceTests(): TestSuiteReport {
 
     // Import batch containing a duplicate variant SKU
     const duplicateBatch = [
-      { name: 'Import 1', sku: 'RP-IMP-1', category: 'Peptides', short_description: 'Desc', variant_sku: 'RP-DUP-VAR', price: '35.00', stock: '20' },
-      { name: 'Import 2', sku: 'RP-IMP-2', category: 'Peptides', short_description: 'Desc', variant_sku: 'RP-DUP-VAR', price: '40.00', stock: '15' },
+      { name: 'Import 1', sku: 'RP-IMP-1', slug: 'import-1', category: 'Peptides', short_description: 'Desc', variant_sku: 'RP-DUP-VAR', price: '35.00', stock: '20' },
+      { name: 'Import 2', sku: 'RP-IMP-2', slug: 'import-2', category: 'Peptides', short_description: 'Desc', variant_sku: 'RP-DUP-VAR', price: '40.00', stock: '15' },
     ];
 
     const summary = validateCatalogueImport(duplicateBatch, existingProducts, categories);
 
     // Valid single batch
     const validBatch = [
-      { name: 'New Research Reagent', sku: 'RP-NEW-REAG', category: 'Peptides', short_description: 'Pure reagent', variant_sku: 'RP-NEW-REAG-5MG', price: '50.00', stock: '25' },
+      { name: 'New Research Reagent', sku: 'RP-NEW-REAG', slug: 'new-research-reagent', category: 'Peptides', short_description: 'Pure reagent', variant_sku: 'RP-NEW-REAG-5MG', price: '50.00', stock: '25' },
     ];
     const validSummary = validateCatalogueImport(validBatch, existingProducts, categories);
     const executionResult = executeCatalogueImport(validSummary, existingProducts, categories, 'admin@rp.uk');
@@ -646,6 +648,9 @@ export function runAllCommerceTests(): TestSuiteReport {
       actual: `GuestPub: ${guestOnPub}, GuestCust: ${guestOnCust}, CustCust: ${custOnCust}, CustAdmin: ${custOnAdmin}, AdminAdmin: ${adminOnAdmin}`,
     };
   });
+
+  results.push(...runPersistenceTests());
+  results.push(...runParityTests());
 
   const passedTests = results.filter((r) => r.passed).length;
   const failedTests = results.length - passedTests;

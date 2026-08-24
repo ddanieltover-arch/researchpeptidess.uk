@@ -377,6 +377,10 @@ export const orders = pgTable(
     shippingAddressJson: text('shipping_address_json').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    payloadJson: text('payload_json'),
+    appStatus: text('app_status'),
+    paymentStatus: text('payment_status'),
+    idempotencyKey: text('idempotency_key'),
   },
   (table) => [
     index('orders_user_id_idx').on(table.userId),
@@ -426,6 +430,127 @@ export const auditLogs = pgTable(
   ]
 );
 
+export const productMerchandising = pgTable(
+  'product_merchandising',
+  {
+    productId: text('product_id').primaryKey(),
+    featured: boolean('featured').default(false).notNull(),
+    bestsellerOverride: boolean('bestseller_override').default(false).notNull(),
+    bestsellerExcluded: boolean('bestseller_excluded').default(false).notNull(),
+    newArrivalOverride: boolean('new_arrival_override').default(false).notNull(),
+    hideFromHomepage: boolean('hide_from_homepage').default(false).notNull(),
+    merchandisingPriority: integer('merchandising_priority').default(0).notNull(),
+    merchandisingUpdatedAt: timestamp('merchandising_updated_at').defaultNow().notNull(),
+    merchandisingUpdatedBy: text('merchandising_updated_by'),
+  },
+  (table) => [
+    index('product_merchandising_featured_idx').on(table.featured),
+    index('product_merchandising_priority_idx').on(table.merchandisingPriority),
+  ]
+);
+
+export const merchandisingAudit = pgTable(
+  'merchandising_audit',
+  {
+    id: text('id').primaryKey(),
+    actor: text('actor').notNull(),
+    actorId: text('actor_id'),
+    productId: text('product_id').notNull(),
+    action: text('action').notNull(),
+    oldValue: text('old_value'),
+    newValue: text('new_value'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('merchandising_audit_product_idx').on(table.productId),
+    index('merchandising_audit_created_at_idx').on(table.createdAt),
+  ]
+);
+
+export const newsletterSubscriptions = pgTable(
+  'newsletter_subscriptions',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').notNull(),
+    topics: text('topics').notNull(),
+    consentTimestamp: timestamp('consent_timestamp').notNull(),
+    consentSource: text('consent_source').notNull(),
+    status: text('status').default('ACTIVE').notNull(),
+    unsubscribeStatus: text('unsubscribe_status').default('SUBSCRIBED').notNull(),
+    providerStatus: text('provider_status').default('NOT_CONNECTED_TO_EMAIL_PROVIDER').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('newsletter_subscriptions_email_idx').on(table.email)]
+);
+
+export const contactMessages = pgTable(
+  'contact_messages',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    subject: text('subject'),
+    message: text('message').notNull(),
+    consent: boolean('consent').notNull(),
+    status: text('status').default('NEW').notNull(),
+    idempotencyKey: text('idempotency_key'),
+    ipHash: text('ip_hash'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('contact_messages_status_idx').on(table.status),
+    index('contact_messages_ip_hash_idx').on(table.ipHash),
+  ]
+);
+
+export const storeSettingsRecords = pgTable('store_settings', {
+  id: text('id').primaryKey(),
+  payloadJson: text('payload_json').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedBy: text('updated_by'),
+});
+
+export const orderPayments = pgTable(
+  'order_payments',
+  {
+    id: text('id').primaryKey(),
+    orderId: text('order_id').notNull(),
+    method: text('method').notNull(),
+    amountPence: integer('amount_pence').notNull(),
+    currency: text('currency').default('GBP').notNull(),
+    status: text('status').notNull(),
+    reference: text('reference'),
+    transactionHash: text('transaction_hash'),
+    evidenceNotes: text('evidence_notes'),
+    payloadJson: text('payload_json'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => [index('order_payments_order_idx').on(table.orderId)]
+);
+
+export const inventoryEvents = pgTable(
+  'inventory_events',
+  {
+    id: text('id').primaryKey(),
+    variantId: text('variant_id').notNull(),
+    orderId: text('order_id'),
+    transactionType: text('transaction_type').notNull(),
+    quantityChange: integer('quantity_change').notNull(),
+    balanceAfter: integer('balance_after').notNull(),
+    notes: text('notes'),
+    actorId: text('actor_id'),
+    payloadJson: text('payload_json'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('inventory_events_variant_idx').on(table.variantId),
+    index('inventory_events_order_idx').on(table.orderId),
+  ]
+);
+
 // Relations
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -437,6 +562,10 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   images: many(productImages),
   documents: many(productDocuments),
   pricingTiers: many(pricingTiers),
+  merchandising: one(productMerchandising, {
+    fields: [products.id],
+    references: [productMerchandising.productId],
+  }),
 }));
 
 export const productVariantsRelations = relations(productVariants, ({ one, many }) => ({

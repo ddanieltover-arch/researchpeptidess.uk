@@ -16,14 +16,15 @@ import { CMSPage } from '../../types';
 import { useStore } from '../../context/StoreContext';
 import { MetaTags } from '../seo/MetaTags';
 import { getSeoMetadataForPath } from '../../lib/seo';
+import { AppLink } from '../ui/AppLink';
+import { ROUTES } from '../../lib/routing';
+import { ContactEnquiryForm } from './ContactEnquiryForm';
 import {
   ShieldAlert,
   Printer,
   ChevronRight,
   Building,
-  Mail,
   Calendar,
-  AlertTriangle,
   FileCheck,
 } from 'lucide-react';
 
@@ -32,7 +33,7 @@ interface CMSPageViewProps {
 }
 
 export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
-  const { storeSettings, navigate } = useStore();
+  const { storeSettings } = useStore();
 
   const seo = getSeoMetadataForPath(`/${page.slug}`, { cmsPage: page });
 
@@ -213,9 +214,9 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Breadcrumb Navigation */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-stone-500 font-mono">
-          <button onClick={() => navigate('/')} className="hover:text-stone-900 transition-colors">
+          <AppLink href={ROUTES.home} className="hover:text-stone-900 transition-colors">
             HOME
-          </button>
+          </AppLink>
           <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
           <span className="text-amber-700 font-semibold uppercase">{page.category}</span>
           <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
@@ -282,19 +283,20 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           {renderMarkdownElements(resolvedMarkdown)}
         </article>
 
+        {page.slug === 'contact' && <ContactEnquiryForm />}
+
         {/* Footer Support Prompt */}
         <footer className="bg-stone-900 text-stone-200 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1 text-center sm:text-left">
-            <h4 className="font-bold text-white text-sm">Need institutional assistance or custom documentation?</h4>
-            <p className="text-xs text-stone-400">Our British chemical support desk is available to assist qualified researchers.</p>
+            <h4 className="font-bold text-white text-sm">Need catalogue or order help?</h4>
+            <p className="text-xs text-stone-400">Use the contact page or email the published support address. We do not claim specialist scientific advisory services.</p>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate('/contact')}
+          <AppLink
+            href="/contact"
             className="px-4 py-2 text-xs font-mono font-bold uppercase bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-lg transition-colors shrink-0"
           >
             Contact Support Desk
-          </button>
+          </AppLink>
         </footer>
       </div>
     </div>

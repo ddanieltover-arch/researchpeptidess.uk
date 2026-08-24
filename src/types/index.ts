@@ -169,12 +169,25 @@ export interface Product {
   publishedAt?: string;
   archivedAt?: string;
 
+  // Optional merchandising controls (admin). Bestseller labels still require sales data.
+  merchandising?: ProductMerchandising;
+
   // Relations
   variants: ProductVariant[];
   images: ProductImage[];
   documents: ProductDocument[];
   batches?: ProductBatch[];
   pricingTiers?: PricingTier[];
+}
+
+export interface ProductMerchandising {
+  bestsellerPinned?: boolean;
+  excludeFromBestsellers?: boolean;
+  newArrivalPinned?: boolean;
+  hideFromHomepage?: boolean;
+  priority?: number;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface CartItem {
@@ -556,6 +569,31 @@ export interface CookieConsentPreferences {
   analytics: boolean;
   marketing: boolean;
   decidedAt: string;
+}
+
+export type NewsletterTopic =
+  | 'NEW_CATALOGUE'
+  | 'RESTOCKS'
+  | 'DOCUMENTATION'
+  | 'OPERATIONS'
+  | 'RESEARCH_RESOURCES'
+  | 'PROMOTIONS';
+
+export interface NewsletterSubscription {
+  id: string;
+  email: string;
+  topics: NewsletterTopic[];
+  marketingConsent: boolean;
+  createdAt: string;
+}
+
+export interface ContactEnquiry {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  consent: boolean;
+  createdAt: string;
 }
 
 export interface AnalyticsEventRecord {

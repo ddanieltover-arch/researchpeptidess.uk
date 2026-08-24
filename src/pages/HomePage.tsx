@@ -1,314 +1,291 @@
 import React from 'react';
 import { useStore } from '../context/StoreContext';
 import { ProductCard } from '../components/ui/ProductCard';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
+import { AppLink } from '../components/ui/AppLink';
+import { NewsletterSignup } from '../components/content/NewsletterSignup';
+import { RecentlyViewedRail } from '../components/catalogue/RecentlyViewedRail';
+import { categoryPath, ROUTES } from '../lib/routing';
+import { getStorefrontTrustMetrics } from '../lib/trust-metrics';
 import {
-  FlaskConical,
-  ShieldCheck,
-  Zap,
-  Truck,
-  FileCheck2,
-  FileSpreadsheet,
-  ArrowRight,
-  Sparkles,
-  Lock,
-  Layers,
-  ChevronRight,
-  Award,
-} from 'lucide-react';
-import { formatPrice } from '../lib/utils';
+  getBestsellerEntries,
+  getFeaturedProducts,
+  getNewArrivalProducts,
+  getBackInStockProducts,
+} from '../lib/merchandising';
+import { FileCheck2, FlaskConical, ShieldCheck } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
-  const { products, categories, setSelectedCategorySlug, navigate, currency } = useStore();
-
-  const featuredProducts = products.filter((p) => p.isFeatured).slice(0, 4);
+  const { publishedProducts, categories, orders, inventoryTransactions, shippingMethods, storeSettings } = useStore();
+  const metrics = getStorefrontTrustMetrics(publishedProducts, categories, shippingMethods);
+  const bestsellers = getBestsellerEntries(publishedProducts, orders, 4);
+  const featured = getFeaturedProducts(publishedProducts, 4);
+  const newArrivals = getNewArrivalProducts(publishedProducts, Date.now(), 4);
+  const restocked = getBackInStockProducts(publishedProducts, inventoryTransactions, Date.now(), 4);
+  const discoveryCategories = categories.filter((category) => category.isActive);
 
   return (
-    <div className="space-y-12 sm:space-y-16 pb-16 bg-slate-50">
-      {/* 1. HERO SECTION */}
-      <section className="relative bg-gradient-to-b from-blue-50/50 via-slate-50 to-slate-50 border-b border-slate-200 flex items-center overflow-hidden py-14 sm:py-20">
-        {/* Subtle geometric ring accent */}
-        <div className="absolute right-0 top-0 w-1/2 h-full opacity-10 flex items-center justify-center pointer-events-none">
-          <div className="w-80 h-80 border-[24px] border-[#4353FF] rounded-full"></div>
+    <div className="space-y-12 bg-slate-50 pb-16 sm:space-y-16">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-blue-50/50 via-slate-50 to-slate-50 py-14 sm:py-20">
+        <div className="pointer-events-none absolute top-0 right-0 flex h-full w-1/2 items-center justify-center opacity-10">
+          <div className="h-80 w-80 rounded-full border-[24px] border-[#4353FF]" />
         </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 z-10 w-full">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-10">
           <div className="max-w-2xl">
-            {/* Tag */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-blue-200 text-[#4353FF] text-xs font-mono font-bold uppercase tracking-wider rounded-full mb-4 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-[#4353FF]"></span>
-              Precision Laboratory Synthesis
+            <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-3 py-1 font-mono text-xs font-bold tracking-wider text-[#4353FF] uppercase shadow-xs">
+              <span className="h-2 w-2 rounded-full bg-[#4353FF]" />
+              UK laboratory catalogue
             </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-4 text-slate-900 font-mono">
-              The Gold Standard in <br />
-              <span className="text-[#4353FF]">Biochemical Research</span>
+            <h1 className="mb-4 font-mono text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+              Research peptides and biochemical reagents for <span className="text-[#4353FF]">in-vitro work</span>
             </h1>
-
-            {/* Subtitle */}
-            <p className="text-slate-600 text-sm sm:text-base max-w-lg mb-6 leading-relaxed">
-              Providing the UK scientific and institutional community with high-purity peptides, rigorous HPLC batch testing, and comprehensive analytical documentation for in-vitro research.
+            <p className="mb-6 max-w-lg text-sm leading-relaxed text-slate-600 sm:text-base">
+              Research Peptides UK supplies published catalogue items to laboratories and qualified research purchasers.
+              Documentation is shown only when a batch record exists. Products are not for human or veterinary use.
             </p>
-
-            {/* CTAs */}
             <div className="flex flex-wrap gap-4 pt-1">
-              <Button
-                variant="primary"
-                onClick={() => {
-                  setSelectedCategorySlug(null);
-                  navigate('/shop');
-                }}
-                className="px-8 py-3.5 text-xs shadow-md shadow-blue-500/20"
+              <AppLink
+                href={ROUTES.peptides}
+                className="inline-flex items-center justify-center rounded-lg border border-[#4353FF] bg-[#4353FF] px-8 py-3.5 font-mono text-xs font-bold tracking-wider text-white uppercase shadow-md shadow-blue-500/20 hover:bg-[#3846E0]"
               >
-                Browse Catalogue
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate('/product/bpc-157-reference-standard')}
-                className="px-8 py-3.5 text-xs"
+                Browse peptides
+              </AppLink>
+              <AppLink
+                href="/quality"
+                className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-transparent px-8 py-3.5 font-mono text-xs font-bold tracking-wider text-slate-800 uppercase hover:border-[#4353FF] hover:bg-blue-50 hover:text-[#4353FF]"
               >
-                View COA Library
-              </Button>
-            </div>
-
-            {/* Micro Trust Points */}
-            <div className="pt-8 mt-6 border-t border-slate-200 grid grid-cols-3 gap-4 text-xs font-mono">
-              <div>
-                <span className="block text-slate-900 font-extrabold text-base">≥99.0%</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">HPLC Purity</span>
-              </div>
-              <div>
-                <span className="block text-slate-900 font-extrabold text-base">Next Day</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">UK Tracked 24</span>
-              </div>
-              <div>
-                <span className="block text-[#4353FF] font-extrabold text-base">-5% Auto</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Crypto Discount</span>
-              </div>
+                Documentation &amp; quality
+              </AppLink>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. BRITISH SCIENTIFIC ASSURANCE & CERTIFICATIONS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200 p-5 rounded-xl space-y-2 hover:border-[#4353FF] hover:shadow-md transition-all">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-blue-50 text-[#4353FF] flex items-center justify-center rounded-lg shrink-0">
-                <Award className="w-4 h-4" />
-              </div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">≥99% HPLC Certified</h4>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Every compound is verified via reverse-phase HPLC chromatography prior to batch release.
-            </p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-5 rounded-xl space-y-2 hover:border-[#4353FF] hover:shadow-md transition-all">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-blue-50 text-[#4353FF] flex items-center justify-center rounded-lg shrink-0">
-                <FlaskConical className="w-4 h-4" />
-              </div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">ISO 9001 Synthesis</h4>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Lyophilized in sterile ISO-certified UK facilities with full batch segregation and inert atmosphere.
-            </p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-5 rounded-xl space-y-2 hover:border-[#4353FF] hover:shadow-md transition-all">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-blue-50 text-[#4353FF] flex items-center justify-center rounded-lg shrink-0">
-                <Truck className="w-4 h-4" />
-              </div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">Royal Mail Tracked 24</h4>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Same-day dispatch for UK orders placed before 3 PM. Insulated temperature-controlled dispatch.
-            </p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-5 rounded-xl space-y-2 hover:border-[#4353FF] hover:shadow-md transition-all">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-blue-50 text-[#4353FF] flex items-center justify-center rounded-lg shrink-0">
-                <Zap className="w-4 h-4" />
-              </div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">5% Crypto Discount</h4>
-            </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Automatic 5% pricing deduction on Bitcoin, USDT &amp; crypto settlement with instant confirmation.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. FEATURED ANALYTICAL COMPOUNDS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10">
-        <div className="flex justify-between items-end mb-8 border-b border-slate-200 pb-4">
-          <div>
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#4353FF] block mb-1">
-              Analytical Standards
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-mono">
-              Featured Reference Compounds
-            </h2>
-          </div>
-          <button
-            onClick={() => {
-              setSelectedCategorySlug(null);
-              navigate('/shop');
-            }}
-            className="text-xs font-bold uppercase font-mono tracking-wider text-[#4353FF] hover:text-[#3846E0] transition-colors"
-          >
-            View All Products →
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
-      {/* 3. CATEGORIES SHOWCASE */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10 space-y-6">
-        <div className="flex justify-between items-end border-b border-slate-200 pb-4">
-          <div>
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#4353FF] block mb-1">
-              Catalogue Taxonomy
-            </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-mono">
-              Research Classifications
-            </h2>
-          </div>
-          <button
-            onClick={() => {
-              setSelectedCategorySlug(null);
-              navigate('/shop');
-            }}
-            className="text-xs font-mono font-bold uppercase tracking-wider text-[#4353FF] hover:text-[#3846E0] transition-colors"
-          >
-            Explore Taxonomy →
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategorySlug(cat.slug);
-                navigate('/shop');
-              }}
-              className="group bg-white border border-slate-200 p-6 hover:border-[#4353FF] hover:shadow-lg hover:shadow-blue-500/5 transition-all cursor-pointer space-y-3 rounded-xl"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-mono font-bold text-[#4353FF] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md">
-                  {cat.productCount} Compounds
-                </span>
-                <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-[#4353FF] group-hover:translate-x-0.5 transition-all" />
-              </div>
-              <h3 className="font-bold text-sm text-slate-900 group-hover:text-[#4353FF] transition-colors font-mono">
-                {cat.name}
-              </h3>
-              <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{cat.description}</p>
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[
+            { value: String(metrics.publishedProductCount), label: 'Published catalogue items' },
+            { value: String(metrics.documentedProductCount), label: 'Listings with documentation records' },
+            { value: String(metrics.activeCategoryCount), label: 'Active catalogue categories' },
+            { value: String(metrics.fulfilmentRegionCount), label: 'Configured fulfilment zones' },
+          ].map((item) => (
+            <div key={item.label} className="rounded-xl border border-slate-200 bg-white p-5">
+              <p className="font-mono text-2xl font-extrabold text-slate-900">{item.value}</p>
+              <p className="mt-1 text-[11px] font-medium tracking-wide text-slate-500 uppercase">{item.label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 4. QUALITY & HPLC ASSURANCE */}
-      <section className="bg-white border-y border-slate-200 py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            <div className="lg:col-span-6 space-y-4">
-              <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#4353FF] block">
-                Quality &amp; Verification
+      {bestsellers.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+          <div className="mb-8 flex items-end justify-between border-b border-slate-200 pb-4">
+            <div>
+              <span className="mb-1 block font-mono text-xs font-bold tracking-widest text-[#4353FF] uppercase">
+                From completed orders
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-mono">
-                Dual-Stage <span className="text-[#4353FF]">HPLC &amp; Mass Spec Analysis</span>
-              </h2>
-              <p className="text-xs sm:text-base text-slate-600 leading-relaxed">
-                We believe scientific research demands complete analytical clarity. Every batch of Research Peptides UK lyophilized vials carries an immutable batch ID correlating directly with an unedited third-party HPLC spectrogram and Mass Spectrometry (ESI-MS) readout.
-              </p>
-
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3 text-xs sm:text-sm text-slate-800">
-                  <div className="w-5 h-5 rounded-full bg-[#4353FF] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-xs">
-                    ✓
-                  </div>
-                  <div>
-                    <strong className="font-bold">RP-HPLC Chromatograms:</strong> Peak area integration confirming absence of synthesis truncations.
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 text-xs sm:text-sm text-slate-800">
-                  <div className="w-5 h-5 rounded-full bg-[#4353FF] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-xs">
-                    ✓
-                  </div>
-                  <div>
-                    <strong className="font-bold">Electrospray Ionization MS:</strong> Exact mass matching within ±0.5 Daltons of theoretical molecular mass.
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3">
-                <Button
-                  variant="primary"
-                  onClick={() => navigate('/product/bpc-157-reference-standard')}
-                  className="text-xs shadow-md shadow-blue-500/20"
-                >
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  <span>View Sample Certificate of Analysis</span>
-                </Button>
-              </div>
+              <h2 className="font-mono text-xl font-bold text-slate-900 sm:text-2xl">Bestsellers</h2>
             </div>
+            <AppLink href={ROUTES.shop} className="font-mono text-xs font-bold tracking-wider text-[#4353FF] uppercase">
+              Shop catalogue →
+            </AppLink>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {bestsellers.map((entry) => (
+              <ProductCard key={entry.product.id} product={entry.product} />
+            ))}
+          </div>
+        </section>
+      )}
 
-            <div className="lg:col-span-6">
-              <div className="border border-slate-200 bg-slate-900 text-white p-6 space-y-4 font-mono text-xs rounded-xl shadow-xl">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="font-bold text-slate-100 uppercase tracking-wider text-xs">HPLC Trace &amp; Peak Area Log</span>
-                  <span className="text-[10px] text-sky-400 font-bold bg-sky-950/60 border border-sky-500/40 px-2.5 py-0.5 rounded-md uppercase">
-                    PASS ≥99.0%
-                  </span>
-                </div>
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+          <div className="mb-8 flex items-end justify-between border-b border-slate-200 pb-4">
+            <div>
+              <span className="mb-1 block font-mono text-xs font-bold tracking-widest text-[#4353FF] uppercase">
+                Admin merchandising
+              </span>
+              <h2 className="font-mono text-xl font-bold text-slate-900 sm:text-2xl">Featured catalogue</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
 
-                <div className="h-36 bg-slate-950 p-3 relative overflow-hidden flex flex-col justify-between rounded-lg border border-slate-800">
-                  <div className="flex justify-between text-[10px] text-slate-400">
-                    <span>mAU @ 214nm</span>
-                    <span>Retention Time: 14.82 min</span>
-                  </div>
-                  <svg className="w-full h-20 text-[#38BDF8]" viewBox="0 0 300 80" fill="none">
-                    <path
-                      d="M0,75 L60,75 L90,74 L120,73 L140,70 L150,8 L160,70 L180,74 L240,75 L300,75"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                    />
-                  </svg>
-                  <div className="flex justify-between text-[10px] text-slate-400 border-t border-slate-800 pt-1">
-                    <span>0.00 min</span>
-                    <span className="text-sky-400 font-bold">Main Peak Area: 99.58%</span>
-                    <span>30.00 min</span>
-                  </div>
-                </div>
+      {newArrivals.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+          <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">New arrivals</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {newArrivals.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
 
-                <div className="grid grid-cols-2 gap-3 text-[10px] pt-1">
-                  <div className="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
-                    <span className="text-slate-400 block uppercase text-[9px]">Solvent Gradient</span>
-                    <span className="font-bold text-white">0.1% TFA in H2O / ACN</span>
+      {restocked.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+          <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">Back in stock</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {restocked.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="border-y border-slate-200 bg-white py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12">
+            <div className="space-y-4 lg:col-span-7">
+              <span className="block font-mono text-xs font-bold tracking-widest text-[#4353FF] uppercase">
+                Quality &amp; documentation
+              </span>
+              <h2 className="font-mono text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                Batch records are a storefront feature, not a slogan
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-600">
+                Listings can carry batch numbers, document type, test dates, and file access when those records exist.
+                If a document is pending, unavailable, or demonstration-only, that state is shown instead of a generic
+                purity claim.
+              </p>
+              <AppLink
+                href="/quality"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#4353FF] bg-[#4353FF] px-5 py-2.5 font-mono text-xs font-bold text-white uppercase"
+              >
+                <FileCheck2 className="h-4 w-4" />
+                Read the quality approach
+              </AppLink>
+            </div>
+            <div className="grid gap-3 lg:col-span-5">
+              {[
+                { icon: ShieldCheck, title: 'Traceability', copy: 'Batch identifiers stay attached to the product record when uploaded.' },
+                { icon: FileCheck2, title: 'COA access', copy: 'Available files can be viewed or downloaded from the product page.' },
+                { icon: FlaskConical, title: 'Document states', copy: 'Available, pending, unavailable, and demo are distinct statuses.' },
+              ].map((item) => (
+                <div key={item.title} className="rounded-xl border border-slate-200 p-4">
+                  <div className="mb-1 flex items-center gap-2 font-mono text-xs font-bold text-slate-900 uppercase">
+                    <item.icon className="h-4 w-4 text-[#4353FF]" />
+                    {item.title}
                   </div>
-                  <div className="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
-                    <span className="text-slate-400 block uppercase text-[9px]">Column Type</span>
-                    <span className="font-bold text-white">C18 4.6 × 250mm (5μm)</span>
-                  </div>
+                  <p className="text-xs text-slate-600">{item.copy}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">Why this catalogue</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Research-only supply</h3>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              Purchasers confirm in-vitro laboratory use. The storefront does not provide dosing or administration advice.
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Documented where recorded</h3>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              HPLC values, COAs, and certificates appear only from product and batch records.
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Configured shipping</h3>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              Destination, method, price, window, and tracking come from the shipping engine at checkout.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <div className="mb-6 flex items-end justify-between border-b border-slate-200 pb-4">
+          <div>
+            <span className="mb-1 block font-mono text-xs font-bold tracking-widest text-[#4353FF] uppercase">
+              Browse by category
+            </span>
+            <h2 className="font-mono text-xl font-bold text-slate-900 sm:text-2xl">Catalogue collections</h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {discoveryCategories.map((cat) => (
+            <AppLink
+              key={cat.id}
+              href={categoryPath(cat.slug)}
+              className="group space-y-3 rounded-xl border border-slate-200 bg-white p-6 transition-all hover:border-[#4353FF] hover:shadow-lg"
+            >
+              <span className="inline-flex rounded-md border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#4353FF] uppercase">
+                {cat.productCount ?? 0} published
+              </span>
+              <h3 className="font-mono text-sm font-bold text-slate-900 group-hover:text-[#4353FF]">{cat.name}</h3>
+              <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{cat.description}</p>
+              <span className="inline-flex font-mono text-[11px] font-bold tracking-wider text-[#4353FF] uppercase">
+                View collection
+              </span>
+            </AppLink>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <div className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 md:grid-cols-2">
+          <div>
+            <h2 className="font-mono text-lg font-bold text-slate-900">Research account</h2>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              A customer account already provides order history, saved compounds, and checkout of quantity pricing shown
+              on product pages. This is not a paid membership and does not claim exclusive catalogue prices.
+            </p>
+            <AppLink href={ROUTES.account} className="mt-4 inline-flex font-mono text-xs font-bold text-[#4353FF] uppercase">
+              Open account →
+            </AppLink>
+          </div>
+          <div>
+            <h2 className="font-mono text-lg font-bold text-slate-900">How purchasing works</h2>
+            <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-600">
+              <li>Choose a category or search the catalogue.</li>
+              <li>Select a format, quantity, and add it to the cart.</li>
+              <li>Check out as a guest or with an account using bank transfer or cryptocurrency.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
+          <NewsletterSignup />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <div className="flex items-end justify-between">
+          <h2 className="font-mono text-xl font-bold text-slate-900">Support</h2>
+          <AppLink href="/faq" className="font-mono text-xs font-bold text-[#4353FF] uppercase">
+            FAQ →
+          </AppLink>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <AppLink href="/faq" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+            <h3 className="font-mono text-sm font-bold text-slate-900">FAQ</h3>
+            <p className="mt-1">Ordering, payments, and research-use questions.</p>
+          </AppLink>
+          <AppLink href="/contact" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Contact</h3>
+            <p className="mt-1">Email {storeSettings.supportEmail} or use the contact form.</p>
+          </AppLink>
+          <AppLink href="/shipping" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Shipping</h3>
+            <p className="mt-1">Configured destinations, prices, and tracking.</p>
+          </AppLink>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <RecentlyViewedRail products={publishedProducts} />
       </section>
     </div>
   );

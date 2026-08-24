@@ -1,8 +1,6 @@
 {
-  "name": "Remix Research Peptides UK",
+  "name": "Research Peptides UK",
   "description": "Premium British scientific research peptides e-commerce web platform and architecture.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": []
 }

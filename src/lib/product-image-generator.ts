@@ -48,7 +48,7 @@ export function getProductColorScheme(name: string, category: string = ''): 'cob
   if (catLower.includes('blend') || lower.includes('blend') || lower.includes('+')) return 'gold';
   if (catLower.includes('nasal') || lower.includes('nasal') || lower.includes('spray')) return 'sky';
   if (catLower.includes('reagent') || lower.includes('water') || lower.includes('bacteriostatic') || lower.includes('solvent')) return 'teal';
-  if (catLower.includes('equipment') || lower.includes('syringe') || lower.includes('filter')) return 'slate' as any || 'cobalt';
+  if (catLower.includes('equipment') || lower.includes('syringe') || lower.includes('filter')) return 'cobalt';
   
   if (lower.includes('semaglutide') || lower.includes('tirzepatide') || lower.includes('retatrutide') || lower.includes('glp')) return 'emerald';
   if (lower.includes('bpc') || lower.includes('tb-500') || lower.includes('tb500') || lower.includes('kpv') || lower.includes('ghk')) return 'cobalt';
