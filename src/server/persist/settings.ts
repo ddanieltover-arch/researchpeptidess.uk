@@ -3,6 +3,7 @@ import { StoreSettings } from '../../types';
 import { getDb } from '../../db/index';
 import { storeSettingsRecords } from '../../db/schema';
 import { DEFAULT_STORE_SETTINGS } from '../../lib/cms-data';
+import { withCanonicalStoreContactEmails } from '../../lib/store-contact';
 
 const SETTINGS_ID = 'default';
 
@@ -13,7 +14,7 @@ export async function loadStoreSettings(): Promise<StoreSettings> {
   if (!row?.payloadJson) return DEFAULT_STORE_SETTINGS;
   try {
     const parsed = JSON.parse(row.payloadJson) as Partial<StoreSettings>;
-    return { ...DEFAULT_STORE_SETTINGS, ...parsed };
+    return withCanonicalStoreContactEmails({ ...DEFAULT_STORE_SETTINGS, ...parsed });
   } catch {
     return DEFAULT_STORE_SETTINGS;
   }

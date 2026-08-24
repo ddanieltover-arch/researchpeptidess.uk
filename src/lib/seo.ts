@@ -12,6 +12,7 @@
 
 import { Product, ProductCategory, CMSPage } from '../types';
 import { categoryPath } from './routing';
+import { STORE_CONTACT_EMAIL } from './store-contact';
 
 export const PRIMARY_DOMAIN = 'https://researchpeptidess.uk';
 
@@ -291,7 +292,7 @@ export function getSeoMetadataForPath(
         contactPoint: {
           '@type': 'ContactPoint',
           contactType: 'customer support',
-          email: 'lab@researchpeptidess.uk',
+          email: STORE_CONTACT_EMAIL,
           availableLanguage: 'English',
         },
       },

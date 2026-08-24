@@ -19,6 +19,7 @@
  */
 
 import { CMSPage, StoreSettings } from '../types';
+import { STORE_CONTACT_EMAIL } from './store-contact';
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: 'Research Peptides UK',
@@ -28,9 +29,9 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   companyNumber: '[COMPANY_NUMBER]', // e.g. 14982134
   vatNumber: '[VAT_NUMBER]', // e.g. GB 429 8219 02
   governingLaw: 'England and Wales',
-  primaryEmail: 'lab@researchpeptidess.uk',
-  supportEmail: 'support@researchpeptidess.uk',
-  privacyEmail: 'privacy@researchpeptidess.uk',
+  primaryEmail: STORE_CONTACT_EMAIL,
+  supportEmail: STORE_CONTACT_EMAIL,
+  privacyEmail: STORE_CONTACT_EMAIL,
   phone: '+44 (0) 20 8123 4567',
   primaryDomain: 'https://researchpeptidess.uk',
   currency: 'GBP',

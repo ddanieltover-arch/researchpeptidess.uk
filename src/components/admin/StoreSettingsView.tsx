@@ -256,7 +256,7 @@ export const StoreSettingsView: React.FC = () => {
                 type="email"
                 value={form.primaryEmail}
                 onChange={(e) => handleInputChange('primaryEmail', e.target.value)}
-                placeholder="lab@researchpeptidess.uk"
+                placeholder="info@researchpeptidess.uk"
                 className="w-full text-xs p-2.5 rounded-lg border border-stone-300 focus:border-amber-500 focus:outline-none"
               />
             </div>
@@ -269,7 +269,7 @@ export const StoreSettingsView: React.FC = () => {
                 type="email"
                 value={form.supportEmail}
                 onChange={(e) => handleInputChange('supportEmail', e.target.value)}
-                placeholder="support@researchpeptidess.uk"
+                placeholder="info@researchpeptidess.uk"
                 className="w-full text-xs p-2.5 rounded-lg border border-stone-300 focus:border-amber-500 focus:outline-none"
               />
             </div>
@@ -282,7 +282,7 @@ export const StoreSettingsView: React.FC = () => {
                 type="email"
                 value={form.privacyEmail}
                 onChange={(e) => handleInputChange('privacyEmail', e.target.value)}
-                placeholder="privacy@researchpeptidess.uk"
+                placeholder="info@researchpeptidess.uk"
                 className="w-full text-xs p-2.5 rounded-lg border border-stone-300 focus:border-amber-500 focus:outline-none"
               />
             </div>
