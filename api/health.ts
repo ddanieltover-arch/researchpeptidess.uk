@@ -1,14 +1,32 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { writeHealthResponse } from '../src/server/health-handlers';
-import { readCorrelationId } from '../src/server/http';
+export const config = { runtime: 'nodejs' };
 
-export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+function send(res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void }, status: number, body: unknown): void {
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(body));
+}
+
+function envPresent(name: string): boolean {
+  const value = typeof process !== 'undefined' ? process.env[name] : undefined;
+  if (!value || !value.trim()) return false;
+  return !/sample|your-|xxxxxxxx/i.test(value);
+}
+
+export default async function handler(
+  req: { method?: string },
+  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void }
+): Promise<void> {
   if (req.method && req.method !== 'GET' && req.method !== 'HEAD') {
-    res.statusCode = 405;
-    res.setHeader('Allow', 'GET, HEAD');
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ error: 'Method not allowed.' }));
+    send(res, 405, { error: 'Method not allowed.' });
     return;
   }
-  await writeHealthResponse(res, readCorrelationId(req));
+
+  const database = envPresent('DATABASE_URL') ? 'configured' : 'unconfigured';
+  const storage = envPresent('STORAGE_ENDPOINT') ? 'configured' : 'unconfigured';
+  send(res, 200, {
+    status: database === 'configured' ? 'healthy' : 'degraded',
+    database,
+    storage,
+  });
 }

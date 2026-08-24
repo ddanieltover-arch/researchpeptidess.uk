@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
+export const config = { runtime: 'nodejs' };
+
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     const { handleApiRequest } = await import('../src/server/api-router');
