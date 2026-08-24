@@ -1,13 +1,10 @@
 /**
  * Single API dispatcher for Vite middleware and the Vercel catch-all function.
+ * Persist/auth modules are loaded lazily so the router can boot without Drizzle.
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { handleAdminApiRequest } from './admin-http';
-import { handleCustomerApiRequest } from './customer-http';
-import { readAdminSessionFromCookieHeader } from './admin-auth';
 import { buildEnvDiagnostic, isEmailProviderConnected } from './env-status';
-import { writeHealthResponse, writeReadyResponse } from './health-handlers';
 import {
   getClientAddress,
   hashIp,
@@ -19,16 +16,11 @@ import {
   sendPublicError,
   type NodeRequest,
 } from './http';
-import { listMerchandising, upsertMerchandising } from './persist/merchandising';
-import { loadStoreSettings, saveStoreSettings } from './persist/settings';
-import { listShippingMethods, updateShippingMethodRecord } from './persist/shipping';
-import { createContactMessage } from './persist/contact';
-import { upsertNewsletterSubscription } from './persist/newsletter';
-import { loadCommerceState, persistInventoryEvent, persistOrderBundle, persistPaymentUpdate } from './persist/commerce';
 import { InventoryTransaction, Order, Payment, ShippingMethod, StoreSettings } from '../types';
 import { getPublicSettlementSnapshot } from '../lib/settlement-instructions';
 
-function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: string): boolean {
+async function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: string): Promise<boolean> {
+  const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
   const user = readAdminSessionFromCookieHeader(req.headers.cookie);
   if (!user) {
     sendPublicError(res, 401, correlationId, 'Administrator authentication is required.');
@@ -37,9 +29,15 @@ function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: 
   return true;
 }
 
-
 async function handleBootstrap(res: ServerResponse, correlationId: string): Promise<void> {
   try {
+    const [{ listMerchandising }, { loadStoreSettings }, { listShippingMethods }, { loadCommerceState }] =
+      await Promise.all([
+        import('./persist/merchandising'),
+        import('./persist/settings'),
+        import('./persist/shipping'),
+        import('./persist/commerce'),
+      ]);
     const [merchandising, storeSettings, shipping, commerce] = await Promise.all([
       listMerchandising(),
       loadStoreSettings(),
@@ -103,10 +101,12 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
 
   try {
     if (path === '/api/health' && req.method === 'GET') {
+      const { writeHealthResponse } = await import('./health-handlers');
       await writeHealthResponse(res, correlationId);
       return true;
     }
     if (path === '/api/ready' && req.method === 'GET') {
+      const { writeReadyResponse } = await import('./health-handlers');
       await writeReadyResponse(res, correlationId);
       return true;
     }
@@ -116,10 +116,12 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
 
     if (path.startsWith('/api/admin/login') || path.startsWith('/api/admin/logout') || path.startsWith('/api/admin/session')) {
+      const { handleAdminApiRequest } = await import('./admin-http');
       return handleAdminApiRequest(req, res);
     }
 
     if (path.startsWith('/api/account/')) {
+      const { handleCustomerApiRequest } = await import('./customer-http');
       return handleCustomerApiRequest(req, res);
     }
 
@@ -140,6 +142,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { createContactMessage } = await import('./persist/contact');
         const result = await createContactMessage({
           name,
           email,
@@ -175,6 +178,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { upsertNewsletterSubscription } = await import('./persist/newsletter');
         const result = await upsertNewsletterSubscription({
           email,
           topics: topics.length > 0 ? (topics as string[]) : ['NEW_CATALOGUE'],
@@ -203,6 +207,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { persistOrderBundle } = await import('./persist/commerce');
         const result = await persistOrderBundle({ order, payment, inventory, idempotencyKey });
         sendJson(res, result.duplicate ? 200 : 201, result);
       } catch (error) {
@@ -221,6 +226,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { persistPaymentUpdate } = await import('./persist/commerce');
         await persistPaymentUpdate(payment, order);
         sendJson(res, 200, { ok: true });
       } catch (error) {
@@ -231,7 +237,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
 
     if (path === '/api/inventory' && req.method === 'POST') {
-      if (!requireAdmin(req, res, correlationId)) return true;
+      if (!(await requireAdmin(req, res, correlationId))) return true;
       const body = await readJsonBody(req as NodeRequest);
       const event = body.event as InventoryTransaction | undefined;
       if (!event?.id || !event.variantId) {
@@ -239,6 +245,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { persistInventoryEvent } = await import('./persist/commerce');
         await persistInventoryEvent(event);
         sendJson(res, 200, { ok: true });
       } catch (error) {
@@ -249,14 +256,16 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
 
     if (path === '/api/admin/merchandising' && req.method === 'GET') {
-      if (!requireAdmin(req, res, correlationId)) return true;
+      if (!(await requireAdmin(req, res, correlationId))) return true;
+      const { listMerchandising } = await import('./persist/merchandising');
       const rows = await listMerchandising();
       sendJson(res, 200, { merchandising: rows });
       return true;
     }
 
     if (path === '/api/admin/merchandising' && req.method === 'PUT') {
-      if (!requireAdmin(req, res, correlationId)) return true;
+      if (!(await requireAdmin(req, res, correlationId))) return true;
+      const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
       const session = readAdminSessionFromCookieHeader(req.headers.cookie);
       const body = await readJsonBody(req as NodeRequest);
       const productId = typeof body.productId === 'string' ? body.productId : '';
@@ -265,6 +274,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { upsertMerchandising } = await import('./persist/merchandising');
         const record = await upsertMerchandising({
           productId,
           patch: {
@@ -288,7 +298,8 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
 
     if (path === '/api/admin/store-settings' && req.method === 'PUT') {
-      if (!requireAdmin(req, res, correlationId)) return true;
+      if (!(await requireAdmin(req, res, correlationId))) return true;
+      const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
       const session = readAdminSessionFromCookieHeader(req.headers.cookie);
       const body = await readJsonBody(req as NodeRequest);
       const settings = body.settings as StoreSettings | undefined;
@@ -297,6 +308,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { saveStoreSettings } = await import('./persist/settings');
         const saved = await saveStoreSettings(settings, session?.email);
         sendJson(res, 200, { storeSettings: saved });
       } catch (error) {
@@ -307,7 +319,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
 
     if (path === '/api/admin/shipping' && req.method === 'PUT') {
-      if (!requireAdmin(req, res, correlationId)) return true;
+      if (!(await requireAdmin(req, res, correlationId))) return true;
       const body = await readJsonBody(req as NodeRequest);
       const id = typeof body.id === 'string' ? body.id : '';
       const updates = (body.updates || {}) as Partial<ShippingMethod>;
@@ -316,6 +328,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
         return true;
       }
       try {
+        const { updateShippingMethodRecord } = await import('./persist/shipping');
         const saved = await updateShippingMethodRecord(id, updates);
         if (!saved) {
           sendPublicError(res, 404, correlationId, 'Shipping method not found.');
@@ -330,7 +343,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
 
     if (path === '/api/admin/env-status' && req.method === 'GET') {
-      if (!requireAdmin(req, res, correlationId)) return true;
+      if (!(await requireAdmin(req, res, correlationId))) return true;
       sendJson(res, 200, { variables: buildEnvDiagnostic() });
       return true;
     }

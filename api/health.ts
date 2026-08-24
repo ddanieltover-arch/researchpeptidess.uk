@@ -22,7 +22,7 @@ export default async function handler(
     return;
   }
 
-  const database = envPresent('DATABASE_URL') ? 'configured' : 'unconfigured';
+  const database = envPresent('DATABASE_URL') || envPresent('POSTGRES_URL') || envPresent('POSTGRES_PRISMA_URL') ? 'configured' : 'unconfigured';
   const storage = envPresent('STORAGE_ENDPOINT') ? 'configured' : 'unconfigured';
   send(res, 200, {
     status: database === 'configured' ? 'healthy' : 'degraded',

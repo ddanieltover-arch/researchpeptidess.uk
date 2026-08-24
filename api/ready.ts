@@ -25,8 +25,9 @@ export default async function handler(
   }
 
   const variables: Record<string, 'PRESENT' | 'MISSING' | 'OPTIONAL'> = {
-    DATABASE_URL: present('DATABASE_URL') ? 'PRESENT' : 'MISSING',
-    DATABASE_URL_UNPOOLED: present('DATABASE_URL_UNPOOLED') ? 'PRESENT' : 'MISSING',
+    DATABASE_URL: present('DATABASE_URL') || present('POSTGRES_URL') || present('POSTGRES_PRISMA_URL') ? 'PRESENT' : 'MISSING',
+    DATABASE_URL_UNPOOLED:
+      present('DATABASE_URL_UNPOOLED') || present('POSTGRES_URL_NON_POOLING') ? 'PRESENT' : 'MISSING',
     AUTH_SECRET: present('AUTH_SECRET') ? 'PRESENT' : 'MISSING',
     STORE_STATUS: present('STORE_STATUS') ? 'PRESENT' : 'OPTIONAL',
     NEXT_PUBLIC_SITE_URL: present('NEXT_PUBLIC_SITE_URL') ? 'PRESENT' : 'OPTIONAL',

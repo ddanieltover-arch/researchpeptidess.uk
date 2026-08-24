@@ -18,10 +18,17 @@ type AppDb = ReturnType<typeof drizzle<typeof schema>>;
 let cachedDb: AppDb | null = null;
 
 export function getDatabaseConfig(): DatabaseConfig {
-  const connectionString = typeof process !== 'undefined' ? process.env?.DATABASE_URL : undefined;
+  const env = typeof process !== 'undefined' ? process.env : undefined;
+  const connectionString =
+    env?.DATABASE_URL ||
+    env?.POSTGRES_URL ||
+    env?.POSTGRES_PRISMA_URL ||
+    env?.POSTGRES_URL_NON_POOLING;
   return {
     connectionString,
-    isConfigured: Boolean(connectionString && !connectionString.includes('sample-project')),
+    isConfigured: Boolean(
+      connectionString && !connectionString.includes('sample-project') && !connectionString.includes('user:password@')
+    ),
   };
 }
 
