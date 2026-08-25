@@ -41,7 +41,7 @@ export async function assertLiveParity(products: Product[]): Promise<string[]> {
 
   expectEqual('BAC water present', Boolean(bac), true, failures);
   expectEqual('BAC water GBP', bac?.variants[0]?.price, 15, failures);
-  expectEqual('BAC water category', bac?.categoryId, 'cat-reagents', failures);
+  expectEqual('BAC water category', bac?.categoryId, 'cat-buy-peptides', failures);
   expectEqual(
     'BAC water copy avoids Injection rewrite',
     bac?.longDescription.includes('laboratory administration in experimental models USP'),

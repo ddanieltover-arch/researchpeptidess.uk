@@ -44,6 +44,19 @@ function parseJson<T>(raw: string | null | undefined, fallback: T): T {
   }
 }
 
+function coerceOrder(value: unknown): Order | null {
+  if (!value || typeof value !== 'object') return null;
+  const order = value as Order;
+  if (!order.id) return null;
+  return {
+    ...order,
+    customerEmail: typeof order.customerEmail === 'string' ? order.customerEmail : '',
+    customerName: typeof order.customerName === 'string' ? order.customerName : '',
+    items: Array.isArray(order.items) ? order.items : [],
+    total: Number.isFinite(Number(order.total)) ? Number(order.total) : 0,
+  };
+}
+
 export async function loadCommerceState(): Promise<{
   orders: Order[];
   payments: Payment[];
@@ -59,7 +72,7 @@ export async function loadCommerceState(): Promise<{
   const inventoryRows = await db.select().from(inventoryEvents);
 
   return {
-    orders: orderRows.map((row) => parseJson<Order | null>(row.payloadJson, null)).filter((row): row is Order => Boolean(row)),
+    orders: orderRows.map((row) => coerceOrder(parseJson<Order | null>(row.payloadJson, null))).filter((row): row is Order => Boolean(row)),
     payments: paymentRows
       .map((row) => parseJson<Payment | null>(row.payloadJson, null))
       .filter((row): row is Payment => Boolean(row)),

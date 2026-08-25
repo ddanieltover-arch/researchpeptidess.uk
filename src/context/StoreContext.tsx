@@ -34,7 +34,7 @@ import {
   INITIAL_COUPONS,
   INITIAL_AUDIT_LOGS,
 } from '../lib/mock-data';
-import { applyMerchandisingOverlay } from '../lib/merchandising';
+import { applyMerchandisingOverlay, isPublicCatalogueProduct } from '../lib/merchandising';
 import {
   fetchBootstrap,
   persistInventoryRequest,
@@ -342,7 +342,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Compliance & Feedback
-  const [hasAcknowledgedResearchOnly, setHasAcknowledgedResearchOnly] = useState<boolean>(false);
+  const [hasAcknowledgedResearchOnly, setHasAcknowledgedResearchOnly] = useState<boolean>(true);
   const [complianceModalOpen, setComplianceModalOpen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -381,7 +381,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Published filter for public visitors
   const publishedProducts = products.filter((p) => {
     if (adminDraftPreviewMode && currentUser.role === 'ADMIN') return true;
-    return p.status === 'PUBLISHED' && p.visibility === 'PUBLIC';
+    return isPublicCatalogueProduct(p);
   });
 
   const activeCategories = categories
@@ -462,9 +462,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (snapshot.shippingMethods?.length) {
         setShippingMethods(snapshot.shippingMethods);
       }
-      setOrders(snapshot.orders || []);
-      setPayments(snapshot.payments || []);
-      setInventoryTransactions(snapshot.inventoryTransactions || []);
+      setOrders(Array.isArray(snapshot.orders) ? snapshot.orders.filter((order) => order && typeof order === 'object') : []);
+      setPayments(Array.isArray(snapshot.payments) ? snapshot.payments.filter((payment) => payment && typeof payment === 'object') : []);
+      setInventoryTransactions(
+        Array.isArray(snapshot.inventoryTransactions)
+          ? snapshot.inventoryTransactions.filter((transaction) => transaction && typeof transaction === 'object')
+          : []
+      );
       if (snapshot.settlement) {
         setSettlement(snapshot.settlement);
       }
@@ -541,7 +545,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Product CRUD
   const createProduct = (productData: Partial<Product>): Product => {
     const productId = `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const category = categories.find((c) => c.id === productData.categoryId) || categories[0];
+    const category =
+      categories.find((c) => c.id === productData.categoryId) ||
+      categories.find((c) => c.id === 'cat-peptides') ||
+      categories.find((c) => c.isActive) ||
+      categories[0];
+    if (!category) {
+      throw new Error('Cannot create a product without a shop category.');
+    }
 
     const newProd: Product = {
       id: productId,
@@ -939,11 +950,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Cart operations
   const addToCart = (product: Product, variantId: string, quantity = 1): boolean => {
-    if (!hasAcknowledgedResearchOnly) {
-      setComplianceModalOpen(true);
-      return false;
-    }
-
     const variant = product.variants.find((v) => v.id === variantId) || product.variants[0];
     if (!variant) return false;
 

@@ -155,12 +155,15 @@ export const AdminPage: React.FC = () => {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   const [isValidatingImport, setIsValidatingImport] = useState(false);
 
+  const defaultProductCategoryId =
+    categories.find((category) => category.id === 'cat-peptides')?.id || categories[0]?.id || '';
+
   // Form states
   const [newProductForm, setNewProductForm] = useState({
     name: '',
     slug: '',
     sku: '',
-    categoryId: categories[0]?.id || '',
+    categoryId: defaultProductCategoryId,
     shortDescription: '',
     longDescription: '',
     productType: 'PEPTIDE',
@@ -241,8 +244,8 @@ export const AdminPage: React.FC = () => {
     if (categoryFilter !== 'ALL' && p.categoryId !== categoryFilter) return false;
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase();
-      const matchName = p.name.toLowerCase().includes(q);
-      const matchSku = p.sku.toLowerCase().includes(q);
+      const matchName = (p.name || '').toLowerCase().includes(q);
+      const matchSku = (p.sku || '').toLowerCase().includes(q);
       const matchCas = p.casNumber?.toLowerCase().includes(q);
       if (!matchName && !matchSku && !matchCas) return false;
     }
@@ -375,7 +378,7 @@ export const AdminPage: React.FC = () => {
       name: '',
       slug: '',
       sku: '',
-      categoryId: categories[0]?.id || '',
+      categoryId: defaultProductCategoryId,
       shortDescription: '',
       longDescription: '',
       productType: 'PEPTIDE',
@@ -668,7 +671,8 @@ export const AdminPage: React.FC = () => {
                   ) : (
                     filteredProducts.map((p) => {
                       const isSelected = selectedProductIds.includes(p.id);
-                      const totalStock = p.variants.reduce((sum, v) => sum + v.stock, 0);
+                      const variants = p.variants || [];
+                      const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
 
                       return (
                         <tr key={p.id} className={`hover:bg-stone-50/80 transition-colors ${isSelected ? 'bg-amber-50/30' : ''}`}>
@@ -719,7 +723,7 @@ export const AdminPage: React.FC = () => {
                           <td className="p-3">
                             <div className="text-slate-900 font-bold">{totalStock} units</div>
                             <div className="text-[10px] text-slate-500">
-                              {p.variants.length} variant{p.variants.length > 1 ? 's' : ''} ({p.variants.map((v) => v.size).join(', ')})
+                              {variants.length} variant{variants.length > 1 ? 's' : ''} ({variants.map((v) => v.size).join(', ')})
                             </div>
                           </td>
                           <td className="p-3 text-right">

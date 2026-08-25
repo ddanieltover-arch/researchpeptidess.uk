@@ -9,14 +9,12 @@ import React from 'react';
 interface BrandLogoProps {
   variant?: 'light' | 'dark';
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  showTagline?: boolean;
   className?: string;
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant = 'light',
   size = 'md',
-  showTagline = true,
   className = '',
 }) => {
   const isDark = variant === 'dark';
@@ -33,13 +31,6 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     md: 'text-base sm:text-lg',
     lg: 'text-xl sm:text-2xl',
     xl: 'text-2xl sm:text-3xl',
-  };
-
-  const subSizes = {
-    sm: 'text-[9px]',
-    md: 'text-[10px]',
-    lg: 'text-xs',
-    xl: 'text-sm',
   };
 
   return (
@@ -80,7 +71,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           {/* Outer Text Ring */}
           <g
             fill={isDark ? '#93C5FD' : '#4353FF'}
-            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            fontFamily="Sora, ui-sans-serif, system-ui, sans-serif"
             fontSize="35"
             fontWeight="800"
             letterSpacing="1.2"
@@ -117,7 +108,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             x="256"
             y="264"
             fill="url(#brand-rp-grad)"
-            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            fontFamily="Sora, ui-sans-serif, system-ui, sans-serif"
             fontSize="144"
             fontWeight="900"
             letterSpacing="-2"
@@ -133,25 +124,13 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
           <span
-            className={`font-black tracking-tight uppercase leading-none font-mono ${titleSizes[size]} ${
+            className={`font-display font-black tracking-tight uppercase leading-none ${titleSizes[size]} ${
               isDark ? 'text-white' : 'text-slate-900'
             }`}
           >
             RESEARCH PEPTIDES <span className="text-[#4353FF] font-black">UK</span>
           </span>
         </div>
-
-        {showTagline && (
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`font-bold uppercase tracking-wider text-[#0EA5E9] ${subSizes[size]}`}>
-              In-vitro research supply
-            </span>
-            <span className="text-slate-300 text-[10px]">•</span>
-            <span className={`font-mono text-slate-400 uppercase tracking-widest ${subSizes[size]}`}>
-              UK catalogue
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

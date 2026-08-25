@@ -1,14 +1,12 @@
 import React from 'react';
 import { Product } from '../../types';
 import { useStore } from '../../context/StoreContext';
-import { Heart, ArrowUpRight, FileCheck } from 'lucide-react';
+import { Heart, ArrowUpRight } from 'lucide-react';
 import { AppLink } from './AppLink';
 import { productPath } from '../../lib/routing';
 import {
   formatProductDisplayName,
-  formatProductPriceFrom,
   formatProductPriceRange,
-  getDocumentationPresentation,
   getProductCardCta,
   getPurchasableVariants,
   getStockPresentation,
@@ -25,13 +23,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
   const [isAdding, setIsAdding] = React.useState(false);
 
   const purchasable = getPurchasableVariants(product);
-  const selectedVariant = purchasable[0] || product.variants[0];
+  const selectedVariant = purchasable[0] || product.variants?.[0];
   const isWishlisted = wishlist.includes(product.id);
-  const primaryImage = product.images[0]?.url;
+  const primaryImage = product.images?.[0]?.url;
   const cta = getProductCardCta(product);
   const stock = getStockPresentation(product);
-  const docs = getDocumentationPresentation(product);
-  const displayName = formatProductDisplayName(product.name);
+  const displayName = formatProductDisplayName(product.name || '');
   const isList = layout === 'list';
 
   const handleQuickAdd = (event: React.MouseEvent) => {
@@ -64,15 +61,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
 
       <AppLink
         href={productPath(product.slug)}
-        className={`relative flex items-center justify-center overflow-hidden border-b border-slate-100 bg-slate-50 p-6 ${
-          isList ? 'sm:w-56 sm:border-b-0 sm:border-r' : 'aspect-4/3 w-full'
+        className={`relative block overflow-hidden border-b border-slate-100 bg-slate-50 ${
+          isList ? 'h-48 sm:h-auto sm:w-56 sm:self-stretch sm:border-b-0 sm:border-r' : 'aspect-4/3 w-full'
         }`}
       >
         {primaryImage ? (
           <img
             src={primaryImage}
             alt={displayName}
-            className="h-full w-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
@@ -84,30 +81,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
 
       <div className="flex flex-1 flex-col p-4">
         <AppLink href={productPath(product.slug)} className="flex-1">
-          <p className="mb-1 font-mono text-[10px] uppercase tracking-wider text-slate-400">
+          <p className="mb-1 font-display text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
             {product.categoryName || 'Catalogue'}
           </p>
-          <h3 className="mb-1 flex items-start justify-between gap-2 font-mono text-sm font-bold leading-snug text-slate-900 group-hover:text-[#4353FF]">
+          <h3 className="mb-1 flex items-start justify-between gap-2 font-display text-[15px] font-semibold leading-snug tracking-[-0.02em] text-slate-900 group-hover:text-[#4353FF]">
             <span>{displayName}</span>
             <ArrowUpRight className="h-4 w-4 shrink-0 text-[#4353FF] opacity-0 transition-opacity group-hover:opacity-100" />
           </h3>
           <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className={`font-mono text-[10px] font-semibold ${stock.inStock ? 'text-emerald-700' : 'text-rose-600'}`}>
-              {stock.label}
-            </span>
-            {docs.tone !== 'unavailable' && (
-              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-slate-500">
-                <FileCheck className="h-3 w-3" />
-                {docs.shortLabel}
-              </span>
-            )}
+            <span className="font-mono text-[10px] font-semibold text-emerald-700">{stock.label}</span>
           </div>
         </AppLink>
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3 font-mono">
           <div>
-            <span className="text-base font-extrabold text-slate-900">
-              {isList ? formatProductPriceRange(product, currency) : formatProductPriceFrom(product, currency)}
+            <span className="text-base font-display font-bold tabular-nums tracking-tight text-slate-900">
+              {formatProductPriceRange(product, currency)}
             </span>
           </div>
 

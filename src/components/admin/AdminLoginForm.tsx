@@ -18,7 +18,7 @@ export const AdminLoginForm: React.FC = () => {
     setSubmitting(true);
     try {
       const result = await signInAdmin(email, password);
-      if ('error' in result) {
+      if (!('user' in result)) {
         setError(result.error);
         return;
       }

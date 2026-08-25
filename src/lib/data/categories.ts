@@ -1,70 +1,51 @@
 import { ProductCategory } from '../../types';
 
+const CREATED_AT = '2026-01-01T00:00:00.000Z';
+
 export const INITIAL_CATEGORIES: ProductCategory[] = [
   {
-    id: 'cat-peptides',
-    name: 'Peptides & Analytical Standards',
-    slug: 'peptides-and-analytical-standards',
-    description:
-      'Synthetic peptide reference materials for in-vitro laboratory research, with batch documentation shown only where records exist.',
+    id: 'cat-nootropics',
+    name: 'Buy NOOTROPICS Online - Shop the Best NOOTROPICS Supplements',
+    slug: 'buy-nootropics-online-shop-the-best-nootropics-supplements',
+    description: 'Nootropic research compounds listed from the live shop collection.',
     sortOrder: 1,
     isActive: true,
-    productCount: 40,
-    createdAt: '2026-01-01T00:00:00.000Z',
+    createdAt: CREATED_AT,
   },
   {
-    id: 'cat-sequences',
-    name: 'Biochemical Sequences & Blends',
-    slug: 'biochemical-sequences-and-blends',
-    description:
-      'Synergistic multi-peptide sequences and co-lyophilized formulation standards for dual and triple receptor binding assays.',
+    id: 'cat-buy-peptides',
+    name: 'Buy Peptides Online',
+    slug: 'buy-peptides-online',
+    description: 'Featured peptide listings from the live shop collection.',
     sortOrder: 2,
     isActive: true,
-    productCount: 12,
-    createdAt: '2026-01-01T00:00:00.000Z',
+    createdAt: CREATED_AT,
   },
   {
-    id: 'cat-nasal',
-    name: 'Analytical Nasal & Solution Sprays',
-    slug: 'analytical-nasal-and-solution-sprays',
-    description:
-      'Pre-dissolved volumetric metered sprays formulated in sterile isotonic saline for precise in-vitro diffusion and aerosol testing.',
+    id: 'cat-sarms',
+    name: 'Buy SARMs Online USA - High-Quality Liquid SARMs For Sale',
+    slug: 'buy-sarms-online-usa-high-quality-liquid-sarms-for-sale',
+    description: 'SARM and related research listings from the live shop collection.',
     sortOrder: 3,
     isActive: true,
-    productCount: 10,
-    createdAt: '2026-01-01T00:00:00.000Z',
+    createdAt: CREATED_AT,
   },
   {
-    id: 'cat-reagents',
-    name: 'Analytical Solvents & Media',
-    slug: 'analytical-solvents-and-media',
-    description:
-      'USP-grade bacteriostatic reconstitution water, sterile saline, and analytical solvents for reconstitution and LC-MS chromatography.',
+    id: 'cat-peptides',
+    name: 'Peptides For Sale Online',
+    slug: 'peptides-for-sale-online',
+    description: 'Research peptides from the main live shop collection.',
     sortOrder: 4,
     isActive: true,
-    productCount: 6,
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'cat-equipment',
-    name: 'Laboratory Consumables & Filtration',
-    slug: 'laboratory-consumables',
-    description:
-      'Syringe filters, sterile crimped laboratory vials, manual crimpers, and precision lab pipettes listed for in-vitro workflow support.',
-    sortOrder: 5,
-    isActive: true,
-    productCount: 6,
-    createdAt: '2026-01-01T00:00:00.000Z',
+    createdAt: CREATED_AT,
   },
   {
     id: 'cat-research-chemicals',
-    name: 'Research Chemicals',
-    slug: 'research-chemicals',
-    description:
-      'Non-peptide research chemicals are listed here only after catalogue, documentation, and eligibility review. No compounds are invented to fill this collection.',
-    sortOrder: 6,
+    name: 'Research Chemicals To Buy',
+    slug: 'research-chemicals-to-buy',
+    description: 'Non-peptide research chemicals from the live shop collection.',
+    sortOrder: 5,
     isActive: true,
-    productCount: 0,
-    createdAt: '2026-01-01T00:00:00.000Z',
+    createdAt: CREATED_AT,
   },
 ];

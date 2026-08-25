@@ -4,6 +4,7 @@ import { ProductCard } from '../components/ui/ProductCard';
 import { AppLink } from '../components/ui/AppLink';
 import { NewsletterSignup } from '../components/content/NewsletterSignup';
 import { RecentlyViewedRail } from '../components/catalogue/RecentlyViewedRail';
+import { isListedShopCategory } from '../lib/catalogue-collections';
 import { categoryPath, ROUTES } from '../lib/routing';
 import {
   getBestsellerEntries,
@@ -23,7 +24,7 @@ export const HomePage: React.FC = () => {
   const featured = getFeaturedProducts(publishedProducts, 4);
   const newArrivals = getNewArrivalProducts(publishedProducts, Date.now(), 4);
   const restocked = getBackInStockProducts(publishedProducts, inventoryTransactions, Date.now(), 4);
-  const discoveryCategories = categories.filter((category) => category.isActive);
+  const discoveryCategories = categories.filter(isListedShopCategory);
   const heroProduct =
     publishedProducts.find((product) => product.slug === 'tesamorelin') ||
     featured[0] ||

@@ -287,12 +287,16 @@ export const ProductDetailPage: React.FC = () => {
               <span>Volume Requisition Tier Schedule</span>
               <span className="text-[#4353FF]">Authoritative Tier Pricing</span>
             </div>
-            <div className="grid grid-cols-4 gap-2 text-center font-mono text-[11px] pt-1">
+            <div
+              className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4"
+              role="radiogroup"
+              aria-label="Volume requisition tier"
+            >
               {[
-                { label: '1–2 units', qty: 1 },
-                { label: '3–5 units', qty: 3 },
-                { label: '6–9 units', qty: 6 },
-                { label: '10+ units', qty: 10 },
+                { label: '1–2 units', qty: 1, min: 1, max: 2 },
+                { label: '3–5 units', qty: 3, min: 3, max: 5 },
+                { label: '6–9 units', qty: 6, min: 6, max: 9 },
+                { label: '10+ units', qty: 10, min: 10, max: Number.POSITIVE_INFINITY },
               ].map((tier) => {
                 const discount = calculateTierDiscountForLine(
                   tier.qty,
@@ -300,11 +304,28 @@ export const ProductDetailPage: React.FC = () => {
                   selectedVariant.pricingTiers || product.pricingTiers
                 );
                 const unit = selectedVariant.price - discount / tier.qty;
+                const isSelected = quantity >= tier.min && quantity <= tier.max;
+                const nextQuantity =
+                  selectedVariant.stock > 0 ? Math.min(tier.qty, selectedVariant.stock) : tier.qty;
                 return (
-                  <div key={tier.label} className="bg-white p-2 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 block text-[10px]">{tier.label}</span>
+                  <button
+                    key={tier.label}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => {
+                      if (isSelected) return;
+                      setQuantity(Math.max(1, nextQuantity));
+                    }}
+                    className={`min-h-12 appearance-none rounded-lg border p-2 text-center font-mono text-[11px] transition-all cursor-pointer outline-none ${
+                      isSelected
+                        ? 'border-[#4353FF] bg-blue-50 shadow-xs ring-1 ring-[#4353FF]/30'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="block text-[10px] text-slate-500">{tier.label}</span>
                     <span className="font-bold text-slate-900">{formatPrice(unit, currency)}</span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -349,7 +370,7 @@ export const ProductDetailPage: React.FC = () => {
                 className="sm:col-span-9 font-mono text-sm tracking-wide shadow-md shadow-blue-500/20"
               >
                 <span>
-                  {selectedVariant.stock > 0 ? 'Add to Requisition Basket' : 'Compound Out of Stock'}
+                  {selectedVariant.stock > 0 ? 'Add to Cart' : 'Compound Out of Stock'}
                 </span>
               </Button>
 

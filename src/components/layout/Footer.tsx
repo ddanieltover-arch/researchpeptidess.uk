@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
               <ShieldCheck className="h-5 w-5" />
             </div>
             <div className="space-y-1 text-xs">
-              <h4 className="font-mono text-xs font-bold tracking-wider text-sky-400 uppercase">
+              <h4 className="font-display text-xs font-semibold tracking-[0.14em] text-sky-400 uppercase">
                 Strictly for laboratory research and in-vitro analytical use
               </h4>
               <p className="text-xs leading-relaxed text-slate-400">
@@ -35,19 +35,19 @@ export const Footer: React.FC = () => {
             <AppLink href={ROUTES.home} className="inline-block">
               <BrandLogo variant="dark" size="sm" />
             </AppLink>
-            <p className="font-mono text-xs leading-relaxed text-slate-400">
+            <p className="text-xs leading-relaxed text-slate-400">
               UK laboratory catalogue for research peptides, reagents, and documented batches where records exist.
             </p>
             <a
               href={`mailto:${storeSettings.supportEmail}`}
-              className="font-mono text-xs text-slate-500 hover:text-white transition-colors"
+              className="text-xs text-slate-500 hover:text-white transition-colors"
             >
               {storeSettings.supportEmail}
             </a>
           </div>
 
-          <div className="flex flex-col gap-2 font-mono">
-            <span className="mb-1 text-xs font-bold tracking-wider text-sky-400 uppercase">Catalogue</span>
+          <div className="flex flex-col gap-2">
+            <span className="mb-1 font-display text-xs font-semibold tracking-[0.14em] text-sky-400 uppercase">Catalogue</span>
             <AppLink href={ROUTES.peptides} className={footerLinkClass}>
               Peptides
             </AppLink>
@@ -68,8 +68,8 @@ export const Footer: React.FC = () => {
             </AppLink>
           </div>
 
-          <div className="flex flex-col gap-2 font-mono">
-            <span className="mb-1 text-xs font-bold tracking-wider text-sky-400 uppercase">Company &amp; policies</span>
+          <div className="flex flex-col gap-2">
+            <span className="mb-1 font-display text-xs font-semibold tracking-[0.14em] text-sky-400 uppercase">Company &amp; policies</span>
             <AppLink href="/about" className={footerLinkClass}>
               About
             </AppLink>
@@ -108,9 +108,9 @@ export const Footer: React.FC = () => {
           <NewsletterSignup variant="dark" />
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-800/80 pt-6 font-mono text-xs md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-800/80 pt-6 text-xs md:flex-row">
           <p className="text-slate-500">© {new Date().getFullYear()} Research Peptides UK. All rights reserved.</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-display">
             <div className="rounded-md border border-slate-800 bg-slate-900 px-2.5 py-1 text-[10px] font-bold text-slate-300">
               FASTER PAYMENTS
             </div>

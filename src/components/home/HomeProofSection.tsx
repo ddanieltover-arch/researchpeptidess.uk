@@ -1,20 +1,12 @@
 import React from 'react';
-import { Check, Star } from 'lucide-react';
-import { AppLink } from '../ui/AppLink';
-import { ROUTES } from '../../lib/routing';
+import { Star } from 'lucide-react';
+import { HomeFeatureTrust } from './HomeFeatureTrust';
 
 const PROOF_STATS = [
   { value: '4.9/5', label: 'Customer Rating' },
   { value: '2,400+', label: 'Verified Reviews' },
   { value: '100%', label: 'Reorder Rate' },
   { value: 'VIP', label: 'Member Access' },
-] as const;
-
-const RESEARCHER_POINTS = [
-  'VAT inclusive pricing — no hidden fees at checkout',
-  'Dedicated UK-based customer support team — real experts',
-  'VIP list eligibility — early access to new compounds & member pricing',
-  'Strictly for research use — full regulatory compliance documentation',
 ] as const;
 
 const GoldStars: React.FC = () => (
@@ -83,24 +75,10 @@ export const HomeProofSection: React.FC = () => {
             provides laboratory-grade products, verified purity, and clear documentation. All peptides are supplied
             strictly for research and laboratory use only and not for human or veterinary use.
           </p>
-          <ul className="mt-6 space-y-3">
-            {RESEARCHER_POINTS.map((point) => (
-              <li key={point} className="flex items-start gap-2.5 text-sm text-slate-600">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-50 text-[#5B4CFF]">
-                  <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
-                </span>
-                {point}
-              </li>
-            ))}
-          </ul>
-          <AppLink
-            href={ROUTES.peptides}
-            className="mt-8 inline-flex min-h-12 items-center rounded-xl bg-[#3B5BFF] px-5 py-3 text-[15px] font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-[#2F4AE6]"
-          >
-            Shop now
-          </AppLink>
         </div>
       </div>
+
+      <HomeFeatureTrust />
     </div>
   );
 };

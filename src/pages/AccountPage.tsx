@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { ProductCard } from '../components/ui/ProductCard';
 import { formatPrice, formatDate } from '../lib/utils';
+import { filterOrdersForCustomer } from '../lib/account-orders';
 import { Order } from '../types';
 import {
   User,
@@ -36,12 +37,10 @@ export const AccountPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'wishlist' | 'compliance'>('orders');
   const [inspectedOrder, setInspectedOrder] = useState<Order | null>(null);
 
-  // Filter orders for this customer
-  const customerOrders = orders.filter(
-    (o) => o.customerEmail.toLowerCase() === currentUser.email.toLowerCase() || o.customerId === currentUser.id
-  );
-
+  const customerOrders = filterOrdersForCustomer(orders, currentUser);
   const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
+  const displayName = currentUser.name?.trim() || currentUser.email || 'Account';
+  const avatarInitial = displayName.charAt(0).toUpperCase() || '?';
 
   const getStatusBadge = (status: Order['status']) => {
     switch (status) {
@@ -77,11 +76,11 @@ export const AccountPage: React.FC = () => {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="h-14 w-14 rounded-full bg-[#4353FF] text-white flex items-center justify-center font-mono text-xl font-bold border border-blue-400 shrink-0 shadow-md shadow-blue-500/20">
-            {currentUser.name.charAt(0)}
+            {avatarInitial}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold font-mono text-slate-950">{currentUser.name}</h1>
+              <h1 className="text-xl font-bold font-mono text-slate-950">{displayName}</h1>
               <Badge variant="brand" size="sm">
                 {currentUser.role}
               </Badge>
@@ -179,7 +178,7 @@ export const AccountPage: React.FC = () => {
                   <div className="col-span-3">
                     <span className="font-bold text-slate-900 block">{ord.orderNumber}</span>
                     <span className="text-[10px] text-slate-500">
-                      {ord.items.length} Compound{ord.items.length > 1 ? 's' : ''}
+                      {(ord.items || []).length} Compound{(ord.items || []).length === 1 ? '' : 's'}
                     </span>
                   </div>
 
@@ -265,7 +264,7 @@ export const AccountPage: React.FC = () => {
           isOpen={true}
           onClose={() => setInspectedOrder(null)}
           title={`Requisition Details — #${inspectedOrder.orderNumber}`}
-          size="lg"
+          maxWidth="lg"
         >
           <div className="space-y-6 font-mono text-xs">
             <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
@@ -282,7 +281,7 @@ export const AccountPage: React.FC = () => {
             <div className="space-y-2">
               <span className="font-bold uppercase text-slate-900 block">Compounds Ordered:</span>
               <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl p-3 bg-white">
-                {inspectedOrder.items.map((it) => (
+                {(inspectedOrder.items || []).map((it) => (
                   <div key={it.id} className="py-2 first:pt-0 last:pb-0 flex justify-between items-center">
                     <div>
                       <span className="font-bold block">{it.productName}</span>

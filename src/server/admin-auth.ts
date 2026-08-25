@@ -295,8 +295,4 @@ export function getSessionCookieMaxAge(config = getAdminAuthConfig()): number {
   return config.expiryDays * 24 * 60 * 60;
 }
 
-export function isSecureCookieRequest(protocolHeader?: string, hostHeader?: string): boolean {
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') return true;
-  if ((protocolHeader || '').includes('https')) return true;
-  return Boolean(hostHeader && !hostHeader.includes('localhost') && !hostHeader.startsWith('127.'));
-}
+export { isSecureCookieRequest } from '../lib/cookie-security';

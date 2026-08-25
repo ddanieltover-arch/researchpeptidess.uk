@@ -8,14 +8,13 @@ import { StoreProvider, useStore } from './context/StoreContext';
 import { AnnouncementBar } from './components/layout/AnnouncementBar';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CartDrawer } from './components/layout/CartDrawer';
-import { ResearchDisclaimerModal } from './components/layout/ResearchDisclaimerModal';
 import { CookieConsentBanner } from './components/layout/CookieConsentBanner';
 import { MetaTags } from './components/seo/MetaTags';
 import { ToastContainer } from './components/ui/Toast';
 import { CMSPageView } from './components/content/CMSPageView';
 import { MaintenanceView } from './components/layout/MaintenanceView';
-import { PrivateBetaBanner } from './components/layout/PrivateBetaBanner';
 
 import { HomePage } from './pages/HomePage';
 import { ShopPage } from './pages/ShopPage';
@@ -177,7 +176,13 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-stone-50 text-slate-900 selection:bg-amber-200 selection:text-amber-950 font-sans">
+    <div
+      className={`min-h-screen flex flex-col bg-stone-50 text-slate-900 selection:bg-amber-200 selection:text-amber-950 font-sans ${
+        activeRoute.kind === 'admin' || activeRoute.kind === 'admin-login'
+          ? ''
+          : 'pb-[var(--mobile-bottom-nav-height)] lg:pb-0'
+      }`}
+    >
       {/* Dynamic SEO & Schema.org JSON-LD Injection */}
       <MetaTags seo={currentSeo} />
 
@@ -192,23 +197,21 @@ const AppContent: React.FC = () => {
       {/* Announcement Bar */}
       <AnnouncementBar />
 
-      {/* Private Beta Real-World Validation Notice */}
-      <PrivateBetaBanner />
-
       {/* Main Header */}
       <Header />
 
       {/* Main Page Body */}
       <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
-        <RouteErrorBoundary>{renderCurrentPage()}</RouteErrorBoundary>
+        <RouteErrorBoundary resetKey={currentPath}>{renderCurrentPage()}</RouteErrorBoundary>
       </main>
 
       {/* Global Footer */}
       <Footer />
 
+      <MobileBottomNav />
+
       {/* Global Modals & Drawers */}
       <CartDrawer />
-      <ResearchDisclaimerModal />
       <CookieConsentBanner />
     </div>
   );
@@ -217,7 +220,9 @@ const AppContent: React.FC = () => {
 export default function App() {
   return (
     <StoreProvider>
-      <AppContent />
+      <RouteErrorBoundary title="The storefront could not be displayed">
+        <AppContent />
+      </RouteErrorBoundary>
       <ToastContainer />
     </StoreProvider>
   );

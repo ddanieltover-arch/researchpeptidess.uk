@@ -69,7 +69,7 @@ export const CookieConsentBanner: React.FC = () => {
       {!hasDecided && !showPreferencesModal && (
         <aside
           aria-label="Cookie consent banner"
-          className="fixed bottom-0 inset-x-0 z-50 p-4 bg-slate-900/95 text-stone-100 border-t border-amber-500/30 shadow-2xl backdrop-blur-md"
+          className="fixed inset-x-0 bottom-[var(--mobile-bottom-nav-height)] z-50 p-4 bg-slate-900/95 text-stone-100 border-t border-amber-500/30 shadow-2xl backdrop-blur-md lg:bottom-0"
         >
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-start gap-3">

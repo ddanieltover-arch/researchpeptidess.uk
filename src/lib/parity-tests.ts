@@ -1,7 +1,6 @@
 import { TestResult } from './commerce-tests';
-import { parseAppPath, categoryPath, ROUTES } from './routing';
+import { parseAppPath, categoryPath, canonicalizeLocation, ROUTES } from './routing';
 import {
-  formatProductPriceFrom,
   formatProductPriceRange,
   getProductCardCta,
   hasSelectableOptions,
@@ -11,7 +10,7 @@ import { productMatchesQuery, searchCatalogueProducts } from './catalogue-search
 import { getStorefrontTrustMetrics } from './trust-metrics';
 import { subscribeToResearchUpdates } from './newsletter';
 import { getRelatedProducts } from './related-products';
-import { INITIAL_ORDERS, INITIAL_SHIPPING_METHODS } from './mock-data';
+import { INITIAL_ORDERS, INITIAL_SHIPPING_METHODS, INITIAL_PRODUCTS } from './mock-data';
 import { INITIAL_CATEGORIES } from './data/categories';
 import { Product, ProductCategory, Order } from '../types';
 
@@ -103,8 +102,8 @@ export function runParityTests(): TestResult[] {
     run('First-class /peptides route resolves to peptides category', () => {
       const parsed = parseAppPath('/peptides');
       return {
-        passed: parsed.kind === 'category' && parsed.slug === 'peptides-and-analytical-standards',
-        expected: 'kind=category slug=peptides-and-analytical-standards',
+        passed: parsed.kind === 'category' && parsed.slug === 'peptides-for-sale-online',
+        expected: 'kind=category slug=peptides-for-sale-online',
         actual: `kind=${parsed.kind} slug=${parsed.slug}`,
       };
     })
@@ -114,8 +113,8 @@ export function runParityTests(): TestResult[] {
     run('First-class /research-chemicals route is a category collection', () => {
       const parsed = parseAppPath('/research-chemicals');
       return {
-        passed: parsed.kind === 'category' && parsed.slug === 'research-chemicals',
-        expected: 'kind=category slug=research-chemicals',
+        passed: parsed.kind === 'category' && parsed.slug === 'research-chemicals-to-buy',
+        expected: 'kind=category slug=research-chemicals-to-buy',
         actual: `kind=${parsed.kind} slug=${parsed.slug}`,
       };
     })
@@ -123,11 +122,38 @@ export function runParityTests(): TestResult[] {
 
   results.push(
     run('Peptides public path is not /category/...', () => {
-      const path = categoryPath('peptides-and-analytical-standards');
+      const path = categoryPath('peptides-for-sale-online');
       return {
         passed: path === ROUTES.peptides,
         expected: ROUTES.peptides,
         actual: path,
+      };
+    })
+  );
+
+  results.push(
+    run('Uncategorized URLs canonicalize onto peptides', () => {
+      const result = canonicalizeLocation('/category/uncategorized');
+      return {
+        passed: result.href === ROUTES.peptides && result.didCanonicalize,
+        expected: ROUTES.peptides,
+        actual: result.href,
+      };
+    })
+  );
+
+  results.push(
+    run('Catalogue has no Uncategorized category or products', () => {
+      const hasCategory = INITIAL_CATEGORIES.some(
+        (category) => category.slug === 'uncategorized' || category.id === 'cat-uncategorized'
+      );
+      const uncategorizedProducts = INITIAL_PRODUCTS.filter(
+        (product) => product.categoryId === 'cat-uncategorized' || product.categoryName === 'Uncategorized'
+      );
+      return {
+        passed: !hasCategory && uncategorizedProducts.length === 0,
+        expected: 'No Uncategorized category or products',
+        actual: `category=${hasCategory} products=${uncategorizedProducts.length}`,
       };
     })
   );
@@ -139,10 +165,9 @@ export function runParityTests(): TestResult[] {
         passed:
           hasSelectableOptions(product) &&
           getProductCardCta(product) === 'SELECT_OPTIONS' &&
-          formatProductPriceFrom(product, 'GBP') === 'From £15.99' &&
           formatProductPriceRange(product, 'GBP') === '£15.99 – £29.00',
-        expected: 'SELECT_OPTIONS + From £15.99 + £15.99 – £29.00',
-        actual: `${getProductCardCta(product)} | ${formatProductPriceFrom(product, 'GBP')} | ${formatProductPriceRange(product, 'GBP')}`,
+        expected: 'SELECT_OPTIONS + £15.99 – £29.00',
+        actual: `${getProductCardCta(product)} | ${formatProductPriceRange(product, 'GBP')}`,
       };
     })
   );

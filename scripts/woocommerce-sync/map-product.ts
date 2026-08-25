@@ -4,11 +4,11 @@ import { extractSpecs, sanitizeProductCopy } from './sanitize-copy';
 import type { ExistingRecord, MappedImage, SyncReportRow, WcProduct } from './wc-types';
 
 const CATEGORY_NAMES: Record<string, string> = {
-  'cat-peptides': 'Peptides & Analytical Standards',
-  'cat-sequences': 'Biochemical Sequences & Blends',
-  'cat-nasal': 'Analytical Nasal & Solution Sprays',
-  'cat-reagents': 'Analytical Solvents & Media',
-  'cat-equipment': 'Laboratory Consumables & Filtration',
+  'cat-nootropics': 'Buy NOOTROPICS Online - Shop the Best NOOTROPICS Supplements',
+  'cat-buy-peptides': 'Buy Peptides Online',
+  'cat-sarms': 'Buy SARMs Online USA - High-Quality Liquid SARMs For Sale',
+  'cat-peptides': 'Peptides For Sale Online',
+  'cat-research-chemicals': 'Research Chemicals To Buy',
 };
 
 export interface MappedProduct {
@@ -73,26 +73,31 @@ function skuFrom(slug: string, size?: string): string {
 }
 
 function classifyCategory(name: string, slug: string, wcCategories: string[]): string {
+  const cats = wcCategories.map((item) => item.toLowerCase());
+  if (cats.some((item) => item.includes('nootropic'))) return 'cat-nootropics';
+  if (cats.some((item) => item.includes('sarm'))) return 'cat-sarms';
+  if (cats.some((item) => item.includes('research chemical'))) return 'cat-research-chemicals';
+  if (cats.some((item) => item === 'buy peptides online')) return 'cat-buy-peptides';
+  if (cats.some((item) => item.includes('peptides for sale'))) return 'cat-peptides';
+  if (cats.some((item) => item === 'uncategorized')) return 'cat-peptides';
+
   const hay = `${name} ${slug} ${wcCategories.join(' ')}`.toLowerCase();
-  if (hay.includes('nasal') || hay.includes('spray')) return 'cat-nasal';
+  if (hay.includes('nasal') || hay.includes('spray')) return 'cat-peptides';
+  if (hay.includes('syringe') || hay.includes('filter') || hay.includes('vial pack')) return 'cat-peptides';
   if (
     hay.includes('bacteriostatic') ||
     hay.includes('water') ||
     hay.includes('saline') ||
     hay.includes('solvent')
   ) {
-    return 'cat-reagents';
+    return 'cat-buy-peptides';
   }
-  if (hay.includes('syringe') || hay.includes('filter') || hay.includes('vial pack')) return 'cat-equipment';
-  if (hay.includes('blend') || hay.includes('|') || hay.includes(' + ')) return 'cat-sequences';
   return 'cat-peptides';
 }
 
-function productTypeFor(categoryId: string, name: string): string {
-  if (categoryId === 'cat-reagents') return 'SOLVENT';
-  if (categoryId === 'cat-sequences' || /blend|\+| \| /i.test(name)) return 'BLEND';
-  if (categoryId === 'cat-nasal') return 'PEPTIDE';
-  if (categoryId === 'cat-equipment') return 'EQUIPMENT';
+function productTypeFor(_categoryId: string, name: string): string {
+  if (/water|saline|solvent/i.test(name)) return 'SOLVENT';
+  if (/blend|\+| \| /i.test(name)) return 'BLEND';
   return 'PEPTIDE';
 }
 
@@ -200,7 +205,7 @@ export function mapWcProduct(
     shortDescription: copy.shortDescription || `${detail.name} research-grade laboratory compound.`,
     longDescription: copy.longDescription || copy.shortDescription,
     productType: productTypeFor(categoryId, detail.name),
-    researchClassification: categoryId === 'cat-reagents' ? 'BIOCHEMICAL_REAGENT' : 'IN_VITRO_ONLY',
+    researchClassification: /water|saline|solvent/i.test(detail.name) ? 'BIOCHEMICAL_REAGENT' : 'IN_VITRO_ONLY',
     status,
     visibility: 'PUBLIC',
     isFeatured: Boolean(match) && ['prod-bpc157', 'prod-tb500', 'prod-ghk-cu', 'prod-glow-blend', 'prod-klow-blend', 'prod-tesamorelin'].includes(productId),
@@ -214,17 +219,17 @@ export function mapWcProduct(
     origin: 'United Kingdom',
     appearance:
       specs.appearance ||
-      (categoryId === 'cat-reagents'
+      (/water|saline|solvent/i.test(detail.name)
         ? 'Clear, Colourless Liquid in Crimp-Sealed Glass Vial'
         : 'Lyophilized White Powder'),
     storageRequirements:
       specs.storageRequirements ||
-      (categoryId === 'cat-reagents'
+      (/water|saline|solvent/i.test(detail.name)
         ? 'Store sealed at ambient laboratory temperature, protected from light'
         : 'Store sealed at -20°C in desiccated laboratory freezer'),
     solubility:
       specs.solubility ||
-      (categoryId === 'cat-reagents'
+      (/water|saline|solvent/i.test(detail.name)
         ? 'Ready-to-use sterile laboratory solvent'
         : 'Sterile Water / Bacteriostatic Laboratory Solvent'),
     documentationStatus: specs.purityValue ? 'AVAILABLE' : 'PENDING',
@@ -253,7 +258,7 @@ export function mapWcProduct(
 
 export function extrasToKeep(matchedIds: Set<string>): ExistingRecord[] {
   return EXISTING_CATALOG.filter((row) => {
-    if (row.extraKind === 'nasal' || row.extraKind === 'equipment') return true;
+    if (row.extraKind === 'nasal' || row.extraKind === 'equipment') return false;
     if (row.extraKind === 'reagent') return !matchedIds.has(row.id);
     return false;
   });

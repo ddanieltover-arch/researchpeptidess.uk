@@ -26,8 +26,8 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const sizes = {
-    sm: 'px-2 py-0.5 text-[9px] leading-tight rounded-md font-mono',
-    md: 'px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md font-mono',
+    sm: 'px-2 py-0.5 text-[9px] leading-tight rounded-md font-display',
+    md: 'px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md font-display',
   };
 
   return (

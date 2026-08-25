@@ -36,11 +36,7 @@ export const REFERENCE_SHOP_PRODUCTS: ReferenceCatalogueItem[] = [
   { name: 'Tesamorelin 2mg', notes: 'Homepage featured variant on the reference site' },
 ];
 
-export const REFERENCE_CATEGORIES_NOT_REPLICATED = [
-  'Buy NOOTROPICS Online',
-  'Buy SARMs Online USA',
-  'Uncategorized',
-];
+export const REFERENCE_CATEGORIES_NOT_REPLICATED: string[] = [];
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();

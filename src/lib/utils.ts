@@ -8,7 +8,8 @@ export function cn(...inputs: ClassValue[]) {
 export function formatPrice(amount: number, currency: 'GBP' | 'EUR' = 'GBP'): string {
   const symbol = currency === 'GBP' ? '£' : '€';
   const rate = currency === 'EUR' ? 1.18 : 1.0;
-  const converted = amount * rate;
+  const numeric = Number(amount);
+  const converted = (Number.isFinite(numeric) ? numeric : 0) * rate;
   return `${symbol}${converted.toFixed(2)}`;
 }
 

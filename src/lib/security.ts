@@ -118,7 +118,7 @@ export function authorizeOrderAccess(order: Order, user?: User | null): { allowe
   // Customer must match order's customerId or email
   const isOwner =
     (order.customerId && order.customerId === user.id) ||
-    order.customerEmail.toLowerCase() === user.email.toLowerCase();
+    (order.customerEmail || '').toLowerCase() === (user.email || '').toLowerCase();
 
   if (isOwner) {
     return { allowed: true };

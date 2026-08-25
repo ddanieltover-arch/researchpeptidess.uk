@@ -25,6 +25,13 @@ export interface BestsellerEntry {
   pinned: boolean;
 }
 
+export function isPublicCatalogueProduct(product: Product): boolean {
+  return (
+    product.visibility === 'PUBLIC' &&
+    (product.status === 'PUBLISHED' || product.status === 'OUT_OF_STOCK')
+  );
+}
+
 export function isStorefrontVisible(product: Product): boolean {
   return product.status === 'PUBLISHED' && product.visibility === 'PUBLIC' && !product.merchandising?.hideFromHomepage;
 }
@@ -32,10 +39,10 @@ export function isStorefrontVisible(product: Product): boolean {
 export function calculateBestsellerScores(orders: Order[]): Map<string, { unitsSold: number; orderCount: number; score: number }> {
   const scores = new Map<string, { unitsSold: number; orderCount: number; score: number }>();
 
-  for (const order of orders) {
+  for (const order of orders || []) {
     if (!COMPLETED_ORDER_STATUSES.has(order.status)) continue;
     const counted = new Set<string>();
-    for (const item of order.items) {
+    for (const item of order.items || []) {
       const current = scores.get(item.productId) || { unitsSold: 0, orderCount: 0, score: 0 };
       current.unitsSold += item.quantity;
       if (!counted.has(item.productId)) {
@@ -138,7 +145,7 @@ export function getBackInStockProducts(
   return products
     .filter((product) => {
       if (!isStorefrontVisible(product)) return false;
-      return product.variants.some(
+      return (product.variants || []).some(
         (variant) => recentRestocks.has(variant.id) && variant.stock > 0
       );
     })

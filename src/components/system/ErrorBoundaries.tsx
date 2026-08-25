@@ -41,12 +41,18 @@ export class WidgetErrorBoundary extends React.Component<WidgetProps, WidgetStat
   }
 }
 
+interface RouteProps {
+  children: React.ReactNode;
+  resetKey?: string | number;
+  title?: string;
+}
+
 interface RouteState {
   hasError: boolean;
 }
 
-export class RouteErrorBoundary extends React.Component<{ children: React.ReactNode }, RouteState> {
-  constructor(props: { children: React.ReactNode }) {
+export class RouteErrorBoundary extends React.Component<RouteProps, RouteState> {
+  constructor(props: RouteProps) {
     super(props);
     this.state = { hasError: false };
   }
@@ -55,11 +61,23 @@ export class RouteErrorBoundary extends React.Component<{ children: React.ReactN
     return { hasError: true };
   }
 
+  componentDidCatch(error: Error) {
+    console.error('Route render failed', error);
+  }
+
+  componentDidUpdate(prevProps: RouteProps) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return (
         <div className="mx-auto max-w-xl px-4 py-16 text-center">
-          <h1 className="font-mono text-xl font-bold text-slate-900">This page could not be displayed</h1>
+          <h1 className="font-mono text-xl font-bold text-slate-900">
+            {this.props.title || 'This page could not be displayed'}
+          </h1>
           <p className="mt-2 text-sm text-slate-600">
             Other routes remain available. Refresh the page or return to the catalogue.
           </p>

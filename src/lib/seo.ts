@@ -13,6 +13,8 @@
 import { Product, ProductCategory, CMSPage } from '../types';
 import { categoryPath } from './routing';
 import { STORE_CONTACT_EMAIL } from './store-contact';
+import { isListedShopCategory } from './catalogue-collections';
+import { isPublicCatalogueProduct } from './merchandising';
 
 export const PRIMARY_DOMAIN = 'https://researchpeptidess.uk';
 
@@ -69,7 +71,7 @@ export function getSeoMetadataForPath(
     const primaryImg = p.images?.find((img) => img.isPrimary)?.url || p.images?.[0]?.url || `${PRIMARY_DOMAIN}/og-image.png`;
 
     // Only index published products
-    const robots = p.status === 'PUBLISHED' && p.visibility === 'PUBLIC'
+    const robots = isPublicCatalogueProduct(p)
       ? 'index, follow, max-image-preview:large'
       : 'noindex, nofollow';
 
@@ -278,11 +280,11 @@ export function getSeoMetadataForPath(
 
   // 6. Homepage (Default)
   return {
-    title: 'Research Peptides UK | High-Purity In-Vitro Biochemicals & Analytical Standards',
+    title: 'Buy Research Peptides UK - 99% Pure British Peptides',
     description:
       'UK laboratory catalogue of research peptides and biochemical reagents for in-vitro use. Documentation is shown only where records exist.',
     canonicalUrl: PRIMARY_DOMAIN,
-    ogTitle: 'Research Peptides UK | Analytical & In-Vitro Research Compounds',
+    ogTitle: 'Buy Research Peptides UK - 99% Pure British Peptides',
     ogDescription:
       'Research peptides and laboratory reagents for in-vitro use, with documentation shown only where records exist.',
     ogType: 'website',
@@ -345,7 +347,7 @@ export function generateXmlSitemap(
   });
 
   // Published Categories
-  for (const cat of categories.filter((c) => c.isActive)) {
+  for (const cat of categories.filter(isListedShopCategory)) {
     urls.push({
       loc: `${PRIMARY_DOMAIN}${categoryPath(cat.slug)}`,
       lastmod: today,
@@ -355,7 +357,7 @@ export function generateXmlSitemap(
   }
 
   // Published Products (strictly excluding drafts and unlisted)
-  for (const p of products.filter((p) => p.status === 'PUBLISHED' && p.visibility === 'PUBLIC')) {
+  for (const p of products.filter(isPublicCatalogueProduct)) {
     urls.push({
       loc: `${PRIMARY_DOMAIN}/product/${p.slug}`,
       lastmod: p.updatedAt ? p.updatedAt.split('T')[0] : today,

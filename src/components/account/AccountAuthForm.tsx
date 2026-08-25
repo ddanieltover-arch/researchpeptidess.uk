@@ -26,7 +26,7 @@ export const AccountAuthForm: React.FC = () => {
         mode === 'register'
           ? await registerCustomer({ name, email, password, institution })
           : await signInCustomer(email, password);
-      if ('error' in result) {
+      if (!('user' in result)) {
         setError(result.error);
         return;
       }

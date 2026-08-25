@@ -67,7 +67,7 @@ export const OrderOperationsManager: React.FC = () => {
       const q = searchQuery.toLowerCase();
       const matchNum = order.orderNumber.toLowerCase().includes(q);
       const matchCust = order.customerName.toLowerCase().includes(q);
-      const matchEmail = order.customerEmail.toLowerCase().includes(q);
+      const matchEmail = (order.customerEmail || '').toLowerCase().includes(q);
       const matchTrack = order.trackingNumber?.toLowerCase().includes(q);
       if (!matchNum && !matchCust && !matchEmail && !matchTrack) return false;
     }

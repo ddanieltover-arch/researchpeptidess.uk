@@ -6,11 +6,13 @@
  */
 
 import { SLUG_REDIRECTS } from './data/generated/slug-redirects';
+import { REMOVED_PRODUCT_SLUGS } from './removed-product-slugs';
 import {
   CATEGORY_SLUG_TO_PUBLIC_PATH,
   FIRST_CLASS_CATALOGUE_PATHS,
   isFirstClassCataloguePath,
   publicPathForCategorySlug,
+  resolveCategorySlug,
   resolveFirstClassCategorySlug,
 } from './catalogue-collections';
 
@@ -169,9 +171,10 @@ export function parseAppPath(input: string): ParsedAppRoute {
   }
 
   if (segments[0] === 'category' && segments.length === 2) {
+    const slug = resolveCategorySlug(FIRST_CLASS_CATALOGUE_PATHS[segments[1]] || segments[1]);
     return base('category', {
       pathname: `/category/${segments[1]}`,
-      slug: FIRST_CLASS_CATALOGUE_PATHS[segments[1]] || segments[1],
+      slug,
       href: search ? `/category/${segments[1]}?${search}` : `/category/${segments[1]}`,
     });
   }
@@ -219,6 +222,9 @@ export function canonicalizeLocation(input: string): { href: string; didCanonica
     if (preferred !== parsed.href) {
       return { href: preferred, didCanonicalize: true };
     }
+  }
+  if (parsed.kind === 'product' && parsed.slug && REMOVED_PRODUCT_SLUGS.has(parsed.slug)) {
+    return { href: ROUTES.shop, didCanonicalize: true };
   }
   if (parsed.kind === 'product' && parsed.slug && SLUG_REDIRECTS[parsed.slug]) {
     return { href: `/product/${SLUG_REDIRECTS[parsed.slug]}`, didCanonicalize: true };

@@ -96,7 +96,7 @@ export const CartDrawer: React.FC = () => {
             {/* Buttons */}
             <div className="grid grid-cols-2 gap-2 pt-1">
               <Button variant="outline" size="md" onClick={handleViewCartClick}>
-                View Requisition
+                View Cart
               </Button>
               <Button variant="gold" size="md" onClick={handleCheckoutClick}>
                 <span>Checkout</span>

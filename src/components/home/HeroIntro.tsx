@@ -38,14 +38,14 @@ export const HeroIntro: React.FC = () => {
         </div>
       </div>
 
-      <h1 className="font-sans tracking-tight">
-        <span className="block text-[1.65rem] font-semibold text-slate-500 sm:text-3xl lg:text-[2.15rem]">
+      <h1 className="font-display tracking-tight">
+        <span className="block text-[1.65rem] font-medium text-slate-500 sm:text-3xl lg:text-[2.15rem]">
           The UK Standard for
         </span>
-        <span className="mt-1 block text-[2.75rem] leading-[0.95] font-extrabold text-[#3B5BFF] drop-shadow-[0_8px_24px_rgba(59,91,255,0.28)] sm:text-6xl lg:text-[4.25rem]">
+        <span className="mt-1 block text-[2.75rem] leading-[0.95] font-extrabold tracking-[-0.045em] text-[#3B5BFF] drop-shadow-[0_8px_24px_rgba(59,91,255,0.28)] sm:text-6xl lg:text-[4.25rem]">
           Research-Grade
         </span>
-        <span className="block text-[2.75rem] leading-[0.95] font-extrabold text-[#0B132B] drop-shadow-[0_8px_18px_rgba(15,23,42,0.12)] sm:text-6xl lg:text-[4.25rem]">
+        <span className="block text-[2.75rem] leading-[0.95] font-extrabold tracking-[-0.045em] text-[#0B132B] drop-shadow-[0_8px_18px_rgba(15,23,42,0.12)] sm:text-6xl lg:text-[4.25rem]">
           Peptides
         </span>
       </h1>

@@ -74,7 +74,7 @@ export const Logo: React.FC<LogoProps> = ({
           <circle cx="256" cy="256" r="250" fill={lightMode ? '#0B132B' : '#FFFFFF'} stroke={lightMode ? '#1E293B' : '#E2E8F0'} strokeWidth="4" />
 
           {/* Outer Curved Text Ring */}
-          <g fill={lightMode ? '#93C5FD' : '#4353FF'} fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" fontSize="35" fontWeight="800" letterSpacing="1">
+          <g fill={lightMode ? '#93C5FD' : '#4353FF'} fontFamily="Sora, ui-sans-serif, system-ui, sans-serif" fontSize="35" fontWeight="800" letterSpacing="1">
             <text>
               <textPath href="#top-arc-comp" startOffset="50%" textAnchor="middle">
                 Research Peptides UK
@@ -99,7 +99,7 @@ export const Logo: React.FC<LogoProps> = ({
             x="256" 
             y="264" 
             fill="url(#rp-grad-comp)" 
-            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+            fontFamily="Sora, ui-sans-serif, system-ui, sans-serif" 
             fontSize="144" 
             fontWeight="900" 
             letterSpacing="-2"
@@ -116,7 +116,7 @@ export const Logo: React.FC<LogoProps> = ({
         <div className="flex flex-col justify-center">
           <div className="flex items-center gap-1.5">
             <span
-              className={`font-mono font-extrabold tracking-tight leading-none uppercase ${
+              className={`font-display font-extrabold tracking-tight leading-none uppercase ${
                 lightMode ? 'text-white' : 'text-slate-900'
               } ${
                 size === 'sm'

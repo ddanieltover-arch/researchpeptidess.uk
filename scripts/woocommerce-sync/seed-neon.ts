@@ -5,53 +5,11 @@ import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { sql } from 'drizzle-orm';
 import type { Product } from '../../src/types';
+import { INITIAL_CATEGORIES } from '../../src/lib/data/categories';
 import { categories, productImages, products, productVariants } from '../../src/db/schema';
 import { ROOT } from './paths';
 
 config({ path: path.join(ROOT, '.env') });
-
-const INITIAL_CATEGORIES = [
-  {
-    id: 'cat-peptides',
-    name: 'Peptides & Analytical Standards',
-    slug: 'peptides-and-analytical-standards',
-    description:
-      'High-purity synthetic peptide reference standards synthesized under ISO 9001 quality management (HPLC verified ≥99.0%).',
-    sortOrder: 1,
-  },
-  {
-    id: 'cat-sequences',
-    name: 'Biochemical Sequences & Blends',
-    slug: 'biochemical-sequences-and-blends',
-    description:
-      'Synergistic multi-peptide sequences and co-lyophilized formulation standards for dual and triple receptor binding assays.',
-    sortOrder: 2,
-  },
-  {
-    id: 'cat-nasal',
-    name: 'Analytical Nasal & Solution Sprays',
-    slug: 'analytical-nasal-and-solution-sprays',
-    description:
-      'Pre-dissolved volumetric metered sprays formulated in sterile isotonic saline for precise in-vitro diffusion and aerosol testing.',
-    sortOrder: 3,
-  },
-  {
-    id: 'cat-reagents',
-    name: 'Analytical Solvents & Media',
-    slug: 'analytical-solvents-and-media',
-    description:
-      'USP-grade bacteriostatic reconstitution water, sterile saline, and analytical solvents for reconstitution and LC-MS chromatography.',
-    sortOrder: 4,
-  },
-  {
-    id: 'cat-equipment',
-    name: 'Laboratory Consumables & Filtration',
-    slug: 'laboratory-consumables',
-    description:
-      'Medical-grade 0.22µm PES syringe filters, sterile crimped reconstitution vials, manual crimpers, and precision lab pipettes.',
-    sortOrder: 5,
-  },
-];
 
 function poundsToPence(value: number): number {
   return Math.round(value * 100);

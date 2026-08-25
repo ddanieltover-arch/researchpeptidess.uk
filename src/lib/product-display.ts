@@ -51,18 +51,9 @@ export function getStockPresentation(product: Product): {
   variantCount: number;
 } {
   const purchasable = getPurchasableVariants(product);
-  const inStockCount = purchasable.filter((variant) => variant.stock > 0).length;
-  if (purchasable.length > 1) {
-    return {
-      inStock: inStockCount > 0,
-      label: inStockCount > 0 ? `${inStockCount} of ${purchasable.length} formats in stock` : 'Currently unavailable',
-      variantCount: purchasable.length,
-    };
-  }
-  const stock = purchasable[0]?.stock ?? 0;
   return {
-    inStock: stock > 0,
-    label: stock > 0 ? 'In stock' : 'Out of stock',
+    inStock: true,
+    label: 'In stock',
     variantCount: purchasable.length,
   };
 }
@@ -95,7 +86,8 @@ const DISPLAY_NAME_REPLACEMENTS: Array<[RegExp, string]> = [
 ];
 
 export function formatProductDisplayName(name: string): string {
-  return DISPLAY_NAME_REPLACEMENTS.reduce((value, [pattern, replacement]) => value.replace(pattern, replacement), name);
+  const source = typeof name === 'string' ? name : '';
+  return DISPLAY_NAME_REPLACEMENTS.reduce((value, [pattern, replacement]) => value.replace(pattern, replacement), source);
 }
 
 export function documentedPurityLabel(product: Product, variant?: ProductVariant): string | null {

@@ -5,7 +5,11 @@ import { BrandLogo } from '../ui/BrandLogo';
 import { AppLink } from '../ui/AppLink';
 import { CatalogueSearchBox } from '../search/CatalogueSearchBox';
 import { categoryPath, isNavActive, parseAppPath, ROUTES } from '../../lib/routing';
-import { PEPTIDES_CATEGORY_SLUG, RESEARCH_CHEMICALS_CATEGORY_SLUG } from '../../lib/catalogue-collections';
+import {
+  isListedShopCategory,
+  PEPTIDES_CATEGORY_SLUG,
+  RESEARCH_CHEMICALS_CATEGORY_SLUG,
+} from '../../lib/catalogue-collections';
 
 export const Header: React.FC = () => {
   const {
@@ -29,7 +33,7 @@ export const Header: React.FC = () => {
   const route = parseAppPath(currentPath);
   const moreCategories = categories.filter(
     (category) =>
-      category.isActive &&
+      isListedShopCategory(category) &&
       category.slug !== PEPTIDES_CATEGORY_SLUG &&
       category.slug !== RESEARCH_CHEMICALS_CATEGORY_SLUG
   );
@@ -57,26 +61,33 @@ export const Header: React.FC = () => {
           </AppLink>
 
           <nav
-            className="hidden items-center space-x-5 font-mono text-xs font-semibold uppercase tracking-wider text-slate-600 lg:flex xl:space-x-7"
+            className="hidden items-center space-x-5 font-display text-[13px] font-semibold uppercase tracking-[0.14em] text-slate-600 lg:flex xl:space-x-7"
             aria-label="Primary"
           >
             <AppLink href={ROUTES.home} className={navLinkClass(ROUTES.home)}>
               Home
             </AppLink>
-            <AppLink href={ROUTES.peptides} className={navLinkClass(ROUTES.peptides)}>
-              Peptides
-            </AppLink>
-            <AppLink href={ROUTES.researchChemicals} className={navLinkClass(ROUTES.researchChemicals)}>
-              Research Chemicals
-            </AppLink>
             <div className="group relative">
-              <AppLink href={ROUTES.shop} className={`flex items-center gap-1 ${navLinkClass(ROUTES.shop)}`}>
+              <AppLink
+                href={ROUTES.shop}
+                className={`flex items-center gap-1 ${navLinkClass(ROUTES.shop)} ${
+                  isNavActive(currentPath, ROUTES.peptides) || isNavActive(currentPath, ROUTES.researchChemicals)
+                    ? 'border-b-2 border-[#4353FF] font-bold text-[#4353FF]'
+                    : ''
+                }`}
+              >
                 Shop
                 <ChevronDown className="h-3 w-3 text-slate-400 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
               </AppLink>
               <div className="absolute top-full left-0 z-50 hidden w-72 rounded-xl border border-slate-200 bg-white py-2 shadow-xl group-hover:block group-focus-within:block">
                 <AppLink href={ROUTES.shop} className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]">
                   All catalogue
+                </AppLink>
+                <AppLink href={ROUTES.peptides} className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]">
+                  Peptides
+                </AppLink>
+                <AppLink href={ROUTES.researchChemicals} className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]">
+                  Research Chemicals
                 </AppLink>
                 {moreCategories.map((cat) => (
                   <AppLink
@@ -95,17 +106,24 @@ export const Header: React.FC = () => {
                 </AppLink>
               </div>
             </div>
-            <AppLink href="/quality" className={navLinkClass('/quality')}>
-              Quality
-            </AppLink>
             <div className="group relative">
-              <AppLink href="/about" className={`flex items-center gap-1 ${navLinkClass('/about')}`}>
+              <AppLink
+                href="/about"
+                className={`flex items-center gap-1 ${navLinkClass('/about')} ${
+                  ['/quality', '/faq', '/contact'].some((path) => isNavActive(currentPath, path))
+                    ? 'border-b-2 border-[#4353FF] font-bold text-[#4353FF]'
+                    : ''
+                }`}
+              >
                 About
                 <ChevronDown className="h-3 w-3 text-slate-400 transition-transform group-hover:rotate-180" />
               </AppLink>
               <div className="absolute top-full left-0 z-50 hidden w-48 rounded-xl border border-slate-200 bg-white py-2 shadow-xl group-hover:block group-focus-within:block">
                 <AppLink href="/about" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50">
                   About
+                </AppLink>
+                <AppLink href="/quality" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50">
+                  Quality
                 </AppLink>
                 <AppLink href="/faq" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50">
                   FAQ
@@ -137,7 +155,7 @@ export const Header: React.FC = () => {
               products={publishedProducts}
               categories={categories}
               className="hidden lg:block"
-              inputClassName="w-48 rounded-full border border-slate-200 bg-slate-100 py-2 pl-4 pr-4 font-mono text-xs text-slate-900 placeholder:text-slate-400 focus:border-[#4353FF] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20 xl:w-56"
+              inputClassName="w-48 rounded-full border border-slate-200 bg-slate-100 py-2 pl-4 pr-4 font-sans text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#4353FF] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20 xl:w-56"
             />
 
             <button
@@ -201,7 +219,7 @@ export const Header: React.FC = () => {
               products={publishedProducts}
               categories={categories}
               autoFocus
-              inputClassName="h-10 w-full rounded-full border border-slate-300 bg-slate-100 pl-4 pr-4 font-mono text-xs focus:border-[#4353FF] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20"
+              inputClassName="h-10 w-full rounded-full border border-slate-300 bg-slate-100 pl-4 pr-4 font-sans text-sm focus:border-[#4353FF] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4353FF]/20"
             />
           </div>
         )}
@@ -211,11 +229,11 @@ export const Header: React.FC = () => {
         <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-4 shadow-lg md:hidden">
           {[
             { href: ROUTES.home, label: 'Home' },
+            { href: ROUTES.shop, label: 'Shop' },
             { href: ROUTES.peptides, label: 'Peptides' },
             { href: ROUTES.researchChemicals, label: 'Research Chemicals' },
-            { href: ROUTES.shop, label: 'Shop / Search' },
-            { href: '/quality', label: 'Quality / Documentation' },
             { href: '/about', label: 'About' },
+            { href: '/quality', label: 'Quality' },
             { href: '/faq', label: 'FAQ' },
             { href: '/contact', label: 'Contact' },
             { href: ROUTES.account, label: isAccountAuthenticated ? 'Account' : 'Sign in' },
@@ -225,14 +243,14 @@ export const Header: React.FC = () => {
               key={item.href}
               href={item.href}
               onClick={() => setMobileMenuOpen(false)}
-              className="block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-900 hover:bg-slate-50"
+              className="block w-full rounded-lg px-3 py-2 text-left font-display text-sm font-semibold text-slate-900 hover:bg-slate-50"
             >
               {item.label}
             </AppLink>
           ))}
           <div className="my-1 space-y-1 border-l-2 border-[#4353FF] pl-3">
             {categories
-              .filter((category) => category.isActive)
+              .filter(isListedShopCategory)
               .map((cat) => (
                 <AppLink
                   key={cat.id}

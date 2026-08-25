@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ProductCard } from '../components/ui/ProductCard';
 import { Input } from '../components/ui/Input';
@@ -6,15 +6,12 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { Badge } from '../components/ui/Badge';
 import { AppLink } from '../components/ui/AppLink';
-import { Pagination } from '../components/ui/Pagination';
 import { categoryPath, ROUTES, searchPath } from '../lib/routing';
 import { productMatchesQuery } from '../lib/catalogue-search';
 import { getProductPriceBounds } from '../lib/product-display';
 import { calculateBestsellerScores } from '../lib/merchandising';
-import { RESEARCH_CHEMICALS_CATEGORY_SLUG } from '../lib/catalogue-collections';
+import { isListedShopCategory, RESEARCH_CHEMICALS_CATEGORY_SLUG } from '../lib/catalogue-collections';
 import { Search, LayoutGrid, List } from 'lucide-react';
-
-const PAGE_SIZE = 12;
 
 export const ShopPage: React.FC = () => {
   const {
@@ -28,11 +25,9 @@ export const ShopPage: React.FC = () => {
   } = useStore();
 
   const [sortBy, setSortBy] = useState<string>('featured');
-  const [docsFilter, setDocsFilter] = useState<string>('all');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [page, setPage] = useState(1);
 
   const bestsellerScores = useMemo(() => calculateBestsellerScores(orders), [orders]);
   const activeCategory = categories.find((category) => category.slug === selectedCategorySlug);
@@ -49,12 +44,6 @@ export const ShopPage: React.FC = () => {
 
         if (searchQuery.trim() && !productMatchesQuery(product, searchQuery, activeCategory?.name)) {
           return false;
-        }
-
-        if (docsFilter === 'documented') {
-          const documented =
-            product.documentationStatus === 'AVAILABLE' || product.documentationStatus === 'VERIFIED';
-          if (!documented) return false;
         }
 
         const bounds = getProductPriceBounds(product);
@@ -88,7 +77,6 @@ export const ShopPage: React.FC = () => {
     publishedProducts,
     selectedCategorySlug,
     searchQuery,
-    docsFilter,
     minPrice,
     maxPrice,
     sortBy,
@@ -96,12 +84,6 @@ export const ShopPage: React.FC = () => {
     bestsellerScores,
   ]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [selectedCategorySlug, searchQuery, docsFilter, minPrice, maxPrice, sortBy]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
-  const pagedProducts = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const isResearchChemicalsEmpty =
     selectedCategorySlug === RESEARCH_CHEMICALS_CATEGORY_SLUG && filteredProducts.length === 0 && !searchQuery.trim();
 
@@ -137,7 +119,7 @@ export const ShopPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        <aside className="space-y-6 lg:col-span-3">
+        <aside className="space-y-6 lg:sticky lg:top-20 lg:z-10 lg:col-span-3 lg:self-start lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">
           <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
             <span className="block font-mono text-xs font-bold tracking-wider text-slate-900 uppercase">Search</span>
             <form
@@ -171,11 +153,11 @@ export const ShopPage: React.FC = () => {
                   !selectedCategorySlug ? 'bg-[#4353FF] font-bold text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <span>All categories</span>
+                <span>All</span>
                 <span className="text-[10px] opacity-80">{publishedProducts.length}</span>
               </AppLink>
               {categories
-                .filter((category) => category.isActive)
+                .filter(isListedShopCategory)
                 .map((cat) => (
                   <AppLink
                     key={cat.id}
@@ -186,37 +168,11 @@ export const ShopPage: React.FC = () => {
                         : 'text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    <span>{cat.name}</span>
+                    <span className="pr-2 text-left leading-snug">{cat.name}</span>
                     <span className="text-[10px] opacity-80">{cat.productCount ?? 0}</span>
                   </AppLink>
                 ))}
             </div>
-          </div>
-
-          <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-            <span className="block font-mono text-xs font-bold tracking-wider text-slate-900 uppercase">
-              Documentation
-            </span>
-            <button
-              type="button"
-              onClick={() => setDocsFilter('all')}
-              className={`w-full rounded-lg px-3 py-2 text-left font-mono text-xs ${
-                docsFilter === 'all' ? 'border border-blue-200 bg-blue-50 font-bold text-[#4353FF]' : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              All published items
-            </button>
-            <button
-              type="button"
-              onClick={() => setDocsFilter('documented')}
-              className={`w-full rounded-lg px-3 py-2 text-left font-mono text-xs ${
-                docsFilter === 'documented'
-                  ? 'border border-blue-200 bg-blue-50 font-bold text-[#4353FF]'
-                  : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              Documentation recorded
-            </button>
           </div>
 
           <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
@@ -296,25 +252,21 @@ export const ShopPage: React.FC = () => {
                 if (isResearchChemicalsEmpty) navigate(ROUTES.peptides);
                 else {
                   navigate(ROUTES.shop);
-                  setDocsFilter('all');
                   setMinPrice('');
                   setMaxPrice('');
                 }
               }}
             />
           ) : (
-            <>
-              <div
-                className={`grid gap-6 ${
-                  viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'
-                }`}
-              >
-                {pagedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} layout={viewMode} />
-                ))}
-              </div>
-              <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-            </>
+            <div
+              className={`grid gap-6 ${
+                viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'
+              }`}
+            >
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} layout={viewMode} />
+              ))}
+            </div>
           )}
         </div>
       </div>

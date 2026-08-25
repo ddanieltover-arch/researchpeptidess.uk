@@ -11,9 +11,11 @@ import { calculateEligibleShippingMethods } from './shipping-engine';
 import { hasPermission } from './auth';
 import { validateCatalogueImport, executeCatalogueImport } from './catalogue-import';
 import { authorizeDocumentAccess, authorizeOrderAccess } from './security';
-import { CartItem, ProductVariant, Coupon, ShippingMethod, Product, ProductCategory } from '../types';
+import { CartItem, ProductVariant, Coupon, ShippingMethod, Product, ProductCategory, Order } from '../types';
 import { runParityTests } from './parity-tests';
 import { runPersistenceTests } from './persistence-tests';
+import { filterOrdersForCustomer } from './account-orders';
+import { isSecureCookieRequest } from './cookie-security';
 import { normalizePaymentProofReference } from './settlement-instructions';
 
 export interface TestResult {
@@ -660,6 +662,46 @@ export function runAllCommerceTests(): TestSuiteReport {
       expected: 'Guest on Public: true, Guest on Customer: false, Customer on Customer: true, Customer on Admin: false, Admin on Admin: true',
       actual: `GuestPub: ${guestOnPub}, GuestCust: ${guestOnCust}, CustCust: ${custOnCust}, CustAdmin: ${custOnAdmin}, AdminAdmin: ${adminOnAdmin}`,
     };
+  });
+
+  runTest('SECURITY', 'Account order filter does not throw on incomplete payloads', () => {
+    const incomplete = [{ id: 'ord-1', customerId: 'usr-1', items: undefined }] as unknown as Order[];
+    const matched = filterOrdersForCustomer(incomplete, { id: 'usr-1', email: 'lab@oxford.ac.uk' });
+    const unmatched = filterOrdersForCustomer(incomplete, { id: 'usr-2', email: 'other@lab.ac.uk' });
+    const empty = filterOrdersForCustomer(undefined, { id: 'usr-1', email: 'lab@oxford.ac.uk' });
+    const passed = matched.length === 1 && unmatched.length === 0 && empty.length === 0;
+    return {
+      passed,
+      expected: 'Incomplete order matched by customerId without throwing; unknown user sees none',
+      actual: `matched=${matched.length}, unmatched=${unmatched.length}, empty=${empty.length}`,
+    };
+  });
+
+  runTest('SECURITY', 'Session cookies are not marked Secure on local HTTP preview', () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousVercel = process.env.VERCEL;
+    process.env.NODE_ENV = 'production';
+    delete process.env.VERCEL;
+    try {
+      const localPreview = isSecureCookieRequest(undefined, '127.0.0.1:4173');
+      const localhostDev = isSecureCookieRequest(undefined, 'localhost:3000');
+      const explicitHttp = isSecureCookieRequest('http', 'example.test');
+      const httpsProd = isSecureCookieRequest('https', 'researchpeptidess.uk');
+      const vercelFallback = (() => {
+        process.env.VERCEL = '1';
+        return isSecureCookieRequest(undefined, 'researchpeptidess.uk');
+      })();
+      const passed = !localPreview && !localhostDev && !explicitHttp && httpsProd && vercelFallback;
+      return {
+        passed,
+        expected: 'Local HTTP preview: false; HTTPS/Vercel: true',
+        actual: `preview=${localPreview}, localhost=${localhostDev}, http=${explicitHttp}, https=${httpsProd}, vercel=${vercelFallback}`,
+      };
+    } finally {
+      process.env.NODE_ENV = previousNodeEnv;
+      if (previousVercel === undefined) delete process.env.VERCEL;
+      else process.env.VERCEL = previousVercel;
+    }
   });
 
   results.push(...runPersistenceTests());

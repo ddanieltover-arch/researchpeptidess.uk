@@ -1,8 +1,9 @@
 import { Product } from '../types';
+import { isPublicCatalogueProduct } from './merchandising';
 
 export function getRelatedProducts(product: Product, catalogue: Product[], limit = 3): Product[] {
   const published = catalogue.filter(
-    (item) => item.id !== product.id && item.status === 'PUBLISHED' && item.visibility === 'PUBLIC'
+    (item) => item.id !== product.id && isPublicCatalogueProduct(item)
   );
 
   const sameCategory = published.filter((item) => item.categoryId === product.categoryId);
