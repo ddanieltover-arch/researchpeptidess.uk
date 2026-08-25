@@ -15,6 +15,7 @@ import { FileCheck2, FlaskConical, ShieldCheck } from 'lucide-react';
 import { HeroFeaturedProduct } from '../components/home/HeroFeaturedProduct';
 import { HeroIntro } from '../components/home/HeroIntro';
 import { HeroTrustBar } from '../components/home/HeroTrustBar';
+import { HomeProofSection } from '../components/home/HomeProofSection';
 
 export const HomePage: React.FC = () => {
   const { publishedProducts, categories, orders, inventoryTransactions, storeSettings } = useStore();
@@ -49,6 +50,7 @@ export const HomePage: React.FC = () => {
             )}
           </div>
           <HeroTrustBar />
+          <HomeProofSection />
         </div>
       </section>
 
