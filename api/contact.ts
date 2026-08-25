@@ -1,16 +1,17 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { getClientAddress, hashIp, logServerError, readCorrelationId, readJsonBody, sendJson, sendPublicError } from '../src/server/http';
+import { createContactMessage } from '../src/server/persist/contact';
 
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const correlationId = readCorrelationId(req);
+  res.setHeader('x-correlation-id', correlationId);
+  if (req.method !== 'POST') {
+    sendPublicError(res, 405, correlationId, 'Method not allowed.');
+    return;
+  }
   try {
-    const { readCorrelationId, readJsonBody, sendJson, sendPublicError, getClientAddress, hashIp, logServerError } = await import('../src/server/http');
-    const correlationId = readCorrelationId(req);
-    res.setHeader('x-correlation-id', correlationId);
-    if (req.method !== 'POST') {
-      sendPublicError(res, 405, correlationId, 'Method not allowed.');
-      return;
-    }
     const body = await readJsonBody(req);
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
@@ -26,7 +27,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       sendPublicError(res, 400, correlationId, 'Name, email, and message are required.');
       return;
     }
-    const { createContactMessage } = await import('../src/server/persist/contact');
     const result = await createContactMessage({
       name,
       email,
@@ -38,15 +38,11 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     });
     sendJson(res, result.duplicate ? 200 : 201, { enquiry: result.record, duplicate: result.duplicate });
   } catch (error) {
-    if (res.headersSent) return;
     if (error instanceof Error && error.message === 'RATE_LIMITED') {
-      res.statusCode = 429;
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.end(JSON.stringify({ error: 'Too many enquiries from this network. Try again later.' }));
+      sendPublicError(res, 429, correlationId, 'Too many enquiries from this network. Try again later.');
       return;
     }
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ error: 'The enquiry could not be stored.', stage: 'contact_create' }));
+    logServerError({ correlationId, route: '/api/contact', operation: 'contact_create', error });
+    sendPublicError(res, 500, correlationId, 'The enquiry could not be stored. Reference: ' + correlationId);
   }
 }

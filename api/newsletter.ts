@@ -1,16 +1,17 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { logServerError, readCorrelationId, readJsonBody, sendJson, sendPublicError } from '../src/server/http';
+import { upsertNewsletterSubscription } from '../src/server/persist/newsletter';
 
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const correlationId = readCorrelationId(req);
+  res.setHeader('x-correlation-id', correlationId);
+  if (req.method !== 'POST') {
+    sendPublicError(res, 405, correlationId, 'Method not allowed.');
+    return;
+  }
   try {
-    const { readCorrelationId, readJsonBody, sendJson, sendPublicError } = await import('../src/server/http');
-    const correlationId = readCorrelationId(req);
-    res.setHeader('x-correlation-id', correlationId);
-    if (req.method !== 'POST') {
-      sendPublicError(res, 405, correlationId, 'Method not allowed.');
-      return;
-    }
     const body = await readJsonBody(req);
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const consent = body.consent === true;
@@ -23,7 +24,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       sendPublicError(res, 400, correlationId, 'Enter a valid email address.');
       return;
     }
-    const { upsertNewsletterSubscription } = await import('../src/server/persist/newsletter');
     const result = await upsertNewsletterSubscription({
       email,
       topics: topics.length > 0 ? (topics as string[]) : ['NEW_CATALOGUE'],
@@ -34,10 +34,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       created: result.created,
       providerStatus: result.record.providerStatus,
     });
-  } catch {
-    if (res.headersSent) return;
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ error: 'The subscription could not be stored.', stage: 'newsletter_upsert' }));
+  } catch (error) {
+    logServerError({ correlationId, route: '/api/newsletter', operation: 'newsletter_upsert', error });
+    sendPublicError(res, 500, correlationId, 'The subscription could not be stored. Reference: ' + correlationId);
   }
 }
