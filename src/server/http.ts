@@ -113,14 +113,19 @@ export function readRawBody(req: IncomingMessage): Promise<string> {
   });
 }
 
-export async function readJsonBody(req: NodeRequest): Promise<Record<string, unknown>> {
+export async function readJsonBody(req: NodeRequest, timeoutMs = 8000): Promise<Record<string, unknown>> {
   if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
     return req.body as Record<string, unknown>;
   }
   if (typeof req.body === 'string' && req.body.trim()) {
     return JSON.parse(req.body) as Record<string, unknown>;
   }
-  const raw = await readRawBody(req);
+  const raw = await Promise.race([
+    readRawBody(req),
+    new Promise<string>((_, reject) => {
+      setTimeout(() => reject(new Error('BODY_TIMEOUT')), timeoutMs);
+    }),
+  ]);
   if (!raw.trim()) return {};
   return JSON.parse(raw) as Record<string, unknown>;
 }

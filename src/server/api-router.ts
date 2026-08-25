@@ -4,7 +4,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { buildEnvDiagnostic, isEmailProviderConnected } from './env-status';
+import { buildEnvDiagnostic } from './env-status';
 import {
   getClientAddress,
   hashIp,
@@ -16,8 +16,7 @@ import {
   sendPublicError,
   type NodeRequest,
 } from './http';
-import { InventoryTransaction, Order, Payment, ShippingMethod, StoreSettings } from '../types';
-import { getPublicSettlementSnapshot } from '../lib/settlement-instructions';
+import { ShippingMethod, StoreSettings } from '../types';
 
 async function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: string): Promise<boolean> {
   const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
@@ -31,39 +30,9 @@ async function requireAdmin(req: IncomingMessage, res: ServerResponse, correlati
 
 async function handleBootstrap(res: ServerResponse, correlationId: string): Promise<void> {
   try {
-    const [{ listMerchandising }, { loadStoreSettings }, { listShippingMethods }, { loadCommerceState }] =
-      await Promise.all([
-        import('./persist/merchandising'),
-        import('./persist/settings'),
-        import('./persist/shipping'),
-        import('./persist/commerce'),
-      ]);
-    const [merchandising, storeSettings, shipping, commerce] = await Promise.all([
-      listMerchandising(),
-      loadStoreSettings(),
-      listShippingMethods(),
-      loadCommerceState(),
-    ]);
-    sendJson(
-      res,
-      200,
-      {
-        merchandising,
-        storeSettings,
-        shippingMethods: shipping,
-        orders: commerce.orders,
-        payments: commerce.payments,
-        inventoryTransactions: commerce.inventoryTransactions,
-        newsletter: {
-          providerConnected: isEmailProviderConnected(),
-          providerStatus: isEmailProviderConnected()
-            ? 'PROVIDER_CONFIGURED_NOT_SENDING'
-            : 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
-        },
-        settlement: getPublicSettlementSnapshot(),
-      },
-      { 'x-correlation-id': correlationId }
-    );
+    const { loadPublicBootstrap } = await import('./persist/public-store');
+    const payload = await loadPublicBootstrap(correlationId);
+    sendJson(res, 200, payload, { 'x-correlation-id': correlationId });
   } catch (error) {
     logServerError({ correlationId, route: '/api/bootstrap', operation: 'bootstrap', error });
     sendJson(
@@ -73,9 +42,6 @@ async function handleBootstrap(res: ServerResponse, correlationId: string): Prom
         merchandising: [],
         storeSettings: null,
         shippingMethods: [],
-        orders: [],
-        payments: [],
-        inventoryTransactions: [],
         newsletter: {
           providerConnected: false,
           providerStatus: 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
@@ -85,6 +51,12 @@ async function handleBootstrap(res: ServerResponse, correlationId: string): Prom
           crypto: { configured: false, network: 'BTC', walletAddress: '' },
         },
         degraded: true,
+        sections: {
+          merchandising: 'unavailable',
+          settings: 'unavailable',
+          shipping: 'unavailable',
+          settlement: 'unavailable',
+        },
         reference: correlationId,
       },
       { 'x-correlation-id': correlationId }
@@ -112,6 +84,26 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
     if (path === '/api/bootstrap' && req.method === 'GET') {
       await handleBootstrap(res, correlationId);
+      return true;
+    }
+    if (path === '/api/orders' && req.method === 'POST') {
+      const { handleCreateOrder } = await import('./order-http');
+      await handleCreateOrder(req, res);
+      return true;
+    }
+    if (path === '/api/orders/payment' && req.method === 'POST') {
+      const { handlePaymentUpdate } = await import('./order-http');
+      await handlePaymentUpdate(req, res);
+      return true;
+    }
+    if (path === '/api/admin/orders' && req.method === 'GET') {
+      const { handleAdminCommerceRead } = await import('./commerce-http');
+      await handleAdminCommerceRead(req, res);
+      return true;
+    }
+    if (path === '/api/account/orders' && req.method === 'GET') {
+      const { handleAccountOrdersRead } = await import('./commerce-http');
+      await handleAccountOrdersRead(req, res);
       return true;
     }
 
@@ -196,62 +188,9 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
       return true;
     }
 
-    if (path === '/api/orders' && req.method === 'POST') {
-      const body = await readJsonBody(req as NodeRequest);
-      const order = body.order as Order | undefined;
-      const payment = body.payment as Payment | undefined;
-      const inventory = Array.isArray(body.inventory) ? (body.inventory as InventoryTransaction[]) : [];
-      const idempotencyKey = typeof body.idempotencyKey === 'string' ? body.idempotencyKey : undefined;
-      if (!order?.id || !payment?.id) {
-        sendPublicError(res, 400, correlationId, 'Order and payment payloads are required.');
-        return true;
-      }
-      try {
-        const { persistOrderBundle } = await import('./persist/commerce');
-        const result = await persistOrderBundle({ order, payment, inventory, idempotencyKey });
-        sendJson(res, result.duplicate ? 200 : 201, result);
-      } catch (error) {
-        logServerError({ correlationId, route: path, operation: 'order_create', error });
-        sendPublicError(res, 500, correlationId, 'The order could not be stored. Reference: ' + correlationId);
-      }
-      return true;
-    }
-
-    if (path === '/api/orders/payment' && req.method === 'POST') {
-      const body = await readJsonBody(req as NodeRequest);
-      const order = body.order as Order | undefined;
-      const payment = body.payment as Payment | undefined;
-      if (!order?.id || !payment?.id) {
-        sendPublicError(res, 400, correlationId, 'Order and payment payloads are required.');
-        return true;
-      }
-      try {
-        const { persistPaymentUpdate } = await import('./persist/commerce');
-        await persistPaymentUpdate(payment, order);
-        sendJson(res, 200, { ok: true });
-      } catch (error) {
-        logServerError({ correlationId, route: path, operation: 'payment_update', error });
-        sendPublicError(res, 500, correlationId, 'Payment state could not be stored. Reference: ' + correlationId);
-      }
-      return true;
-    }
-
     if (path === '/api/inventory' && req.method === 'POST') {
-      if (!(await requireAdmin(req, res, correlationId))) return true;
-      const body = await readJsonBody(req as NodeRequest);
-      const event = body.event as InventoryTransaction | undefined;
-      if (!event?.id || !event.variantId) {
-        sendPublicError(res, 400, correlationId, 'Inventory event is required.');
-        return true;
-      }
-      try {
-        const { persistInventoryEvent } = await import('./persist/commerce');
-        await persistInventoryEvent(event);
-        sendJson(res, 200, { ok: true });
-      } catch (error) {
-        logServerError({ correlationId, route: path, operation: 'inventory_event', error });
-        sendPublicError(res, 500, correlationId, 'Inventory could not be stored. Reference: ' + correlationId);
-      }
+      const { handleInventoryEvent } = await import('./order-http');
+      await handleInventoryEvent(req, res);
       return true;
     }
 

@@ -36,6 +36,8 @@ import {
 } from '../lib/mock-data';
 import { applyMerchandisingOverlay, isPublicCatalogueProduct } from '../lib/merchandising';
 import {
+  fetchAdminCommerce,
+  fetchAccountOrders,
   fetchBootstrap,
   persistInventoryRequest,
   persistMerchandising,
@@ -462,13 +464,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (snapshot.shippingMethods?.length) {
         setShippingMethods(snapshot.shippingMethods);
       }
-      setOrders(Array.isArray(snapshot.orders) ? snapshot.orders.filter((order) => order && typeof order === 'object') : []);
-      setPayments(Array.isArray(snapshot.payments) ? snapshot.payments.filter((payment) => payment && typeof payment === 'object') : []);
-      setInventoryTransactions(
-        Array.isArray(snapshot.inventoryTransactions)
-          ? snapshot.inventoryTransactions.filter((transaction) => transaction && typeof transaction === 'object')
-          : []
-      );
       if (snapshot.settlement) {
         setSettlement(snapshot.settlement);
       }
@@ -1067,6 +1062,34 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const isAdminAuthenticated = adminSession?.role === 'ADMIN';
   const isCustomerAuthenticated = Boolean(customerSession);
   const isAccountAuthenticated = isAdminAuthenticated || isCustomerAuthenticated;
+
+  useEffect(() => {
+    if (!authReady) return;
+    let cancelled = false;
+    (async () => {
+      if (isAdminAuthenticated) {
+        const snapshot = await fetchAdminCommerce();
+        if (cancelled || !snapshot) return;
+        setOrders(Array.isArray(snapshot.orders) ? snapshot.orders.filter((order) => order && typeof order === 'object') : []);
+        setPayments(Array.isArray(snapshot.payments) ? snapshot.payments.filter((payment) => payment && typeof payment === 'object') : []);
+        setInventoryTransactions(
+          Array.isArray(snapshot.inventoryTransactions)
+            ? snapshot.inventoryTransactions.filter((transaction) => transaction && typeof transaction === 'object')
+            : []
+        );
+        return;
+      }
+      if (isCustomerAuthenticated) {
+        const snapshot = await fetchAccountOrders();
+        if (cancelled || !snapshot) return;
+        setOrders(Array.isArray(snapshot.orders) ? snapshot.orders.filter((order) => order && typeof order === 'object') : []);
+        setPayments(Array.isArray(snapshot.payments) ? snapshot.payments.filter((payment) => payment && typeof payment === 'object') : []);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, isAdminAuthenticated, isCustomerAuthenticated]);
 
   const applyAdminUser = (sessionUser: AdminSessionUser) => {
     setAdminSession(sessionUser);

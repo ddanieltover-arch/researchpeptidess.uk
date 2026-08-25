@@ -11,6 +11,9 @@ import {
 import { resolvePublicBusinessValue, UNPUBLISHED_BUSINESS_DETAIL } from './public-placeholders';
 import { getSeoMetadataForPath, generateRobotsTxt } from './seo';
 import { Product } from '../types';
+import { isPublicBootstrapSafe } from './public-bootstrap';
+import { normalizeNeonConnectionString } from './neon-connection-string';
+import { classifyPersistError, recommendedPersistFix } from './persist-error';
 
 function run(
   name: string,
@@ -188,6 +191,47 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'https://researchpeptidess.uk/peptides with index',
         actual: `${seo.canonicalUrl} ${seo.robots}`,
+      };
+    }),
+    run('Public bootstrap payload omits orders, payments, and inventory', () => {
+      const passed = isPublicBootstrapSafe({
+        merchandising: [],
+        storeSettings: null,
+        shippingMethods: [],
+        settlement: { bank: { configured: false }, crypto: { configured: false } },
+      });
+      const leaked = isPublicBootstrapSafe({
+        merchandising: [],
+        orders: [{ id: 'ord-1' }],
+      });
+      return {
+        passed: passed && !leaked,
+        expected: 'Public payload without private commerce keys',
+        actual: `safe=${passed} leaked=${!leaked}`,
+      };
+    }),
+    run('Neon HTTP URLs drop channel_binding', () => {
+      const normalized = normalizeNeonConnectionString(
+        'postgresql://user:pass@host/db?sslmode=require&channel_binding=require'
+      );
+      const passed = !normalized.includes('channel_binding') && normalized.includes('sslmode=require');
+      return {
+        passed,
+        expected: 'channel_binding removed; sslmode retained',
+        actual: normalized.replace(/:pass@/, ':[redacted]@'),
+      };
+    }),
+    run('Persist errors expose a stage classification without SQL secrets', () => {
+      const missing = classifyPersistError(new Error('relation "orders" does not exist'));
+      const conn = classifyPersistError(new Error('fetch failed'));
+      const passed =
+        missing.classification === 'SCHEMA_MISSING' &&
+        conn.classification === 'CONNECTION' &&
+        recommendedPersistFix(missing.classification).includes('migrations');
+      return {
+        passed,
+        expected: 'SCHEMA_MISSING and CONNECTION classifications',
+        actual: `${missing.classification}/${conn.classification}`,
       };
     }),
     run('Robots.txt lists sitemap and disallows cart, checkout, account, and admin', () => {

@@ -1,18 +1,18 @@
 import { eq } from 'drizzle-orm';
 import { StoreSettings } from '../../types';
-import { getDb } from '../../db/index';
+import { getReadyDb } from '../../db/index';
 import { storeSettingsRecords } from '../../db/schema';
-import { DEFAULT_STORE_SETTINGS } from '../../lib/cms-data';
+import { DEFAULT_STORE_SETTINGS } from '../../lib/default-store-settings';
 import { withCanonicalStoreContactEmails } from '../../lib/store-contact';
 
 const SETTINGS_ID = 'default';
 
 export async function loadStoreSettings(): Promise<StoreSettings> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) return DEFAULT_STORE_SETTINGS;
-  const [row] = await db.select().from(storeSettingsRecords).where(eq(storeSettingsRecords.id, SETTINGS_ID)).limit(1);
-  if (!row?.payloadJson) return DEFAULT_STORE_SETTINGS;
   try {
+    const [row] = await db.select().from(storeSettingsRecords).where(eq(storeSettingsRecords.id, SETTINGS_ID)).limit(1);
+    if (!row?.payloadJson) return DEFAULT_STORE_SETTINGS;
     const parsed = JSON.parse(row.payloadJson) as Partial<StoreSettings>;
     return withCanonicalStoreContactEmails({ ...DEFAULT_STORE_SETTINGS, ...parsed });
   } catch {
@@ -21,7 +21,7 @@ export async function loadStoreSettings(): Promise<StoreSettings> {
 }
 
 export async function saveStoreSettings(settings: StoreSettings, actor?: string): Promise<StoreSettings> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) {
     throw new Error('DATABASE_UNAVAILABLE');
   }

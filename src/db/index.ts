@@ -6,10 +6,13 @@
 import { neon } from '@neondatabase/serverless';
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/neon-http';
+import { resolveDatabaseUrl } from '../lib/neon-connection-string';
 import * as schema from './schema';
+import { ensureCommerceSchema } from '../server/persist/ensure-schema';
 
 export interface DatabaseConfig {
   connectionString?: string;
+  sourceName?: string;
   isConfigured: boolean;
 }
 
@@ -18,17 +21,11 @@ type AppDb = ReturnType<typeof drizzle<typeof schema>>;
 let cachedDb: AppDb | null = null;
 
 export function getDatabaseConfig(): DatabaseConfig {
-  const env = typeof process !== 'undefined' ? process.env : undefined;
-  const connectionString =
-    env?.DATABASE_URL ||
-    env?.POSTGRES_URL ||
-    env?.POSTGRES_PRISMA_URL ||
-    env?.POSTGRES_URL_NON_POOLING;
+  const resolved = resolveDatabaseUrl();
   return {
-    connectionString,
-    isConfigured: Boolean(
-      connectionString && !connectionString.includes('sample-project') && !connectionString.includes('user:password@')
-    ),
+    connectionString: resolved?.url,
+    sourceName: resolved?.name,
+    isConfigured: Boolean(resolved),
   };
 }
 
@@ -37,7 +34,7 @@ export function createDb(): AppDb {
   if (!isConfigured || !connectionString) {
     throw new Error('DATABASE_URL is not configured');
   }
-  return drizzle(neon(connectionString), { schema });
+  return drizzle(neon(connectionString, { fetchOptions: { cache: 'no-store' } }), { schema });
 }
 
 export function getDb(): AppDb | null {
@@ -47,6 +44,13 @@ export function getDb(): AppDb | null {
     cachedDb = createDb();
   }
   return cachedDb;
+}
+
+export async function getReadyDb(): Promise<AppDb | null> {
+  const db = getDb();
+  if (!db) return null;
+  await ensureCommerceSchema();
+  return db;
 }
 
 export async function pingDatabase(): Promise<'healthy' | 'unconfigured' | 'unavailable'> {

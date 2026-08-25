@@ -1,5 +1,5 @@
 import { and, eq, gte, sql } from 'drizzle-orm';
-import { getDb } from '../../db/index';
+import { getReadyDb } from '../../db/index';
 import { contactMessages } from '../../db/schema';
 
 export type ContactStatus = 'NEW' | 'IN_REVIEW' | 'RESPONDED' | 'CLOSED' | 'SPAM';
@@ -24,7 +24,7 @@ export async function createContactMessage(params: {
   idempotencyKey?: string;
   ipHash?: string;
 }): Promise<{ record: ContactRecord; duplicate: boolean }> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) throw new Error('DATABASE_UNAVAILABLE');
 
   if (params.idempotencyKey) {

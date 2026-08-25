@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { handleApiRequest } from '../src/server/api-router';
 
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
-    const { handleApiRequest } = await import('../src/server/api-router');
     const handled = await handleApiRequest(req, res);
     if (!handled && !res.headersSent) {
       res.statusCode = 404;

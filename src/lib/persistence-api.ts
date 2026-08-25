@@ -1,6 +1,6 @@
 import { MerchandisingRecord } from './merchandising-persistence';
 import { InventoryTransaction, Order, Payment, ShippingMethod, StoreSettings } from '../types';
-import { PublicSettlementSnapshot } from './settlement-instructions';
+import { PublicBootstrapPayload } from './public-bootstrap';
 
 async function readJson(response: Response): Promise<Record<string, unknown>> {
   const text = await response.text();
@@ -12,22 +12,45 @@ async function readJson(response: Response): Promise<Record<string, unknown>> {
   }
 }
 
-export async function fetchBootstrap(): Promise<{
-  merchandising: MerchandisingRecord[];
-  storeSettings: StoreSettings | null;
-  shippingMethods: ShippingMethod[];
-  orders: Order[];
-  payments: Payment[];
-  inventoryTransactions: InventoryTransaction[];
-  newsletter: { providerConnected: boolean; providerStatus: string };
-  settlement?: PublicSettlementSnapshot;
-  degraded?: boolean;
-  reference?: string;
-} | null> {
+export async function fetchBootstrap(): Promise<PublicBootstrapPayload | null> {
   try {
     const response = await fetch('/api/bootstrap', { headers: { Accept: 'application/json' } });
     if (!response.ok) return null;
-    return (await readJson(response)) as Awaited<ReturnType<typeof fetchBootstrap>>;
+    return (await readJson(response)) as unknown as PublicBootstrapPayload;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAdminCommerce(): Promise<{
+  orders: Order[];
+  payments: Payment[];
+  inventoryTransactions: InventoryTransaction[];
+} | null> {
+  try {
+    const response = await fetch('/api/admin/orders', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) return null;
+    return (await readJson(response)) as {
+      orders: Order[];
+      payments: Payment[];
+      inventoryTransactions: InventoryTransaction[];
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAccountOrders(): Promise<{ orders: Order[]; payments: Payment[] } | null> {
+  try {
+    const response = await fetch('/api/account/orders', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) return null;
+    return (await readJson(response)) as { orders: Order[]; payments: Payment[] };
   } catch {
     return null;
   }
@@ -104,6 +127,7 @@ export async function persistOrderRequest(params: {
   try {
     const response = await fetch('/api/orders', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(params),
     });
@@ -122,6 +146,7 @@ export async function persistPaymentRequest(order: Order, payment: Payment): Pro
   try {
     const response = await fetch('/api/orders/payment', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ order, payment }),
     });

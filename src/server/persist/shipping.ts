@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { ShippingMethod } from '../../types';
-import { getDb } from '../../db/index';
+import { getReadyDb } from '../../db/index';
 import { shippingMethods } from '../../db/schema';
 import { INITIAL_SHIPPING_METHODS } from '../../lib/shipping-methods';
 
@@ -15,15 +15,19 @@ function toPence(value: number | undefined): number | null {
 }
 
 export async function listShippingMethods(): Promise<ShippingMethod[]> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) return INITIAL_SHIPPING_METHODS;
-  const rows = await db.select().from(shippingMethods);
-  if (rows.length === 0) {
-    await seedShippingMethods();
-    const seeded = await db.select().from(shippingMethods);
-    return seeded.map(mapRow);
+  try {
+    const rows = await db.select().from(shippingMethods);
+    if (rows.length === 0) {
+      await seedShippingMethods();
+      const seeded = await db.select().from(shippingMethods);
+      return seeded.map(mapRow);
+    }
+    return rows.map(mapRow);
+  } catch {
+    return INITIAL_SHIPPING_METHODS;
   }
-  return rows.map(mapRow);
 }
 
 function mapRow(row: typeof shippingMethods.$inferSelect): ShippingMethod {
@@ -42,7 +46,7 @@ function mapRow(row: typeof shippingMethods.$inferSelect): ShippingMethod {
 }
 
 export async function seedShippingMethods(): Promise<void> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) return;
   const now = new Date();
   for (const method of INITIAL_SHIPPING_METHODS) {
@@ -70,7 +74,7 @@ export async function updateShippingMethodRecord(
   id: string,
   updates: Partial<ShippingMethod>
 ): Promise<ShippingMethod | null> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) throw new Error('DATABASE_UNAVAILABLE');
   const [existing] = await db.select().from(shippingMethods).where(eq(shippingMethods.id, id)).limit(1);
   if (!existing) return null;

@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { getDb } from '../../db/index';
+import { getReadyDb } from '../../db/index';
 import { merchandisingAudit, productMerchandising, products } from '../../db/schema';
 import { MerchandisingRecord } from '../../lib/merchandising-persistence';
 
@@ -8,20 +8,24 @@ function newId(prefix: string): string {
 }
 
 export async function listMerchandising(): Promise<MerchandisingRecord[]> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) return [];
-  const rows = await db.select().from(productMerchandising);
-  return rows.map((row) => ({
-    productId: row.productId,
-    featured: row.featured,
-    bestsellerOverride: row.bestsellerOverride,
-    bestsellerExcluded: row.bestsellerExcluded,
-    newArrivalOverride: row.newArrivalOverride,
-    hideFromHomepage: row.hideFromHomepage,
-    merchandisingPriority: row.merchandisingPriority,
-    merchandisingUpdatedAt: row.merchandisingUpdatedAt.toISOString(),
-    merchandisingUpdatedBy: row.merchandisingUpdatedBy,
-  }));
+  try {
+    const rows = await db.select().from(productMerchandising);
+    return rows.map((row) => ({
+      productId: row.productId,
+      featured: row.featured,
+      bestsellerOverride: row.bestsellerOverride,
+      bestsellerExcluded: row.bestsellerExcluded,
+      newArrivalOverride: row.newArrivalOverride,
+      hideFromHomepage: row.hideFromHomepage,
+      merchandisingPriority: row.merchandisingPriority,
+      merchandisingUpdatedAt: row.merchandisingUpdatedAt.toISOString(),
+      merchandisingUpdatedBy: row.merchandisingUpdatedBy,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function upsertMerchandising(params: {
@@ -30,7 +34,7 @@ export async function upsertMerchandising(params: {
   actor: string;
   actorId?: string;
 }): Promise<MerchandisingRecord> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) {
     throw new Error('DATABASE_UNAVAILABLE');
   }

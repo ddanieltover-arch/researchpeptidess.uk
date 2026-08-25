@@ -1,78 +1,58 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { loadPublicBootstrap } from '../src/server/persist/public-store';
+import { logServerError, readCorrelationId } from '../src/server/http';
+
 export const config = { runtime: 'nodejs' };
 
 function send(
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void },
-  body: unknown
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+  correlationId?: string
 ): void {
-  res.statusCode = 200;
+  res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
+  if (correlationId) res.setHeader('x-correlation-id', correlationId);
   res.end(JSON.stringify(body));
 }
 
-const empty = {
-  merchandising: [],
-  storeSettings: null,
-  shippingMethods: [],
-  orders: [],
-  payments: [],
-  inventoryTransactions: [],
-  newsletter: {
-    providerConnected: false,
-    providerStatus: 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
-  },
-  settlement: {
-    bank: { configured: false, accountName: '', bankName: '', sortCode: '', accountNumber: '' },
-    crypto: { configured: false, network: 'BTC', walletAddress: '' },
-  },
-  degraded: true,
-};
-
-export default async function handler(
-  req: { method?: string },
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void }
-): Promise<void> {
+export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const correlationId = readCorrelationId(req);
   if (req.method && req.method !== 'GET' && req.method !== 'HEAD') {
-    res.statusCode = 405;
-    res.setHeader('Allow', 'GET, HEAD');
-    send(res, { error: 'Method not allowed.' });
+    send(res, 405, { error: 'Method not allowed.' }, correlationId);
     return;
   }
-
   try {
-    const [{ listMerchandising }, { loadStoreSettings }, { listShippingMethods }, { loadCommerceState }, { isEmailProviderConnected }, { getPublicSettlementSnapshot }] =
-      await Promise.all([
-        import('../src/server/persist/merchandising'),
-        import('../src/server/persist/settings'),
-        import('../src/server/persist/shipping'),
-        import('../src/server/persist/commerce'),
-        import('../src/server/env-status'),
-        import('../src/lib/settlement-instructions'),
-      ]);
-
-    const [merchandising, storeSettings, shipping, commerce] = await Promise.all([
-      listMerchandising(),
-      loadStoreSettings(),
-      listShippingMethods(),
-      loadCommerceState(),
-    ]);
-
-    send(res, {
-      merchandising,
-      storeSettings,
-      shippingMethods: shipping,
-      orders: commerce.orders,
-      payments: commerce.payments,
-      inventoryTransactions: commerce.inventoryTransactions,
-      newsletter: {
-        providerConnected: isEmailProviderConnected(),
-        providerStatus: isEmailProviderConnected()
-          ? 'PROVIDER_CONFIGURED_NOT_SENDING'
-          : 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
+    const payload = await loadPublicBootstrap(correlationId);
+    send(res, 200, payload, correlationId);
+  } catch (error) {
+    logServerError({ correlationId, route: '/api/bootstrap', operation: 'bootstrap', error });
+    send(
+      res,
+      200,
+      {
+        merchandising: [],
+        storeSettings: null,
+        shippingMethods: [],
+        newsletter: {
+          providerConnected: false,
+          providerStatus: 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
+        },
+        settlement: {
+          bank: { configured: false, accountName: '', bankName: '', sortCode: '', accountNumber: '' },
+          crypto: { configured: false, network: 'BTC', walletAddress: '' },
+        },
+        degraded: true,
+        sections: {
+          merchandising: 'unavailable',
+          settings: 'unavailable',
+          shipping: 'unavailable',
+          settlement: 'unavailable',
+        },
+        reference: correlationId,
       },
-      settlement: getPublicSettlementSnapshot(),
-    });
-  } catch {
-    send(res, empty);
+      correlationId
+    );
   }
 }

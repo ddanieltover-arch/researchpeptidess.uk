@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { getDb } from '../../db/index';
+import { getReadyDb } from '../../db/index';
 import { newsletterSubscriptions } from '../../db/schema';
 import { isEmailProviderConnected } from '../env-status';
 
@@ -19,7 +19,7 @@ export async function upsertNewsletterSubscription(params: {
   topics: string[];
   consentSource: string;
 }): Promise<{ record: NewsletterRecord; created: boolean }> {
-  const db = getDb();
+  const db = await getReadyDb();
   if (!db) throw new Error('DATABASE_UNAVAILABLE');
 
   const email = params.email.trim().toLowerCase();

@@ -18,28 +18,8 @@
  * Strictly avoids unsupported health or regulatory approval claims.
  */
 
-import { CMSPage, StoreSettings } from '../types';
-import { STORE_CONTACT_EMAIL } from './store-contact';
-
-export const DEFAULT_STORE_SETTINGS: StoreSettings = {
-  storeName: 'Research Peptides UK',
-  tagline: 'High-Purity Analytical & In-Vitro Research Biochemicals',
-  legalEntityName: '[LEGAL_ENTITY_NAME]', // e.g. Research Peptides UK Ltd
-  registeredOfficeAddress: '[REGISTERED_OFFICE_ADDRESS]', // e.g. 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ
-  companyNumber: '[COMPANY_NUMBER]', // e.g. 14982134
-  vatNumber: '[VAT_NUMBER]', // e.g. GB 429 8219 02
-  governingLaw: 'England and Wales',
-  primaryEmail: STORE_CONTACT_EMAIL,
-  supportEmail: STORE_CONTACT_EMAIL,
-  privacyEmail: STORE_CONTACT_EMAIL,
-  phone: '',
-  primaryDomain: 'https://researchpeptidess.uk',
-  currency: 'GBP',
-  environment: 'PRODUCTION',
-  storeStatus: 'PRIVATE_BETA',
-  enableAnalyticsWithoutConsent: false,
-  maintenanceMode: false,
-};
+import { CMSPage } from '../types';
+export { DEFAULT_STORE_SETTINGS } from './default-store-settings';
 
 export const INITIAL_CMS_PAGES: CMSPage[] = [
   // 1. ABOUT
