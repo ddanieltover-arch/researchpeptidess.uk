@@ -3,6 +3,19 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/health.ts": { "includeFiles": "src/**" },
+    "api/ready.ts": { "includeFiles": "src/**" },
+    "api/bootstrap.ts": { "includeFiles": "src/**" },
+    "api/orders.ts": { "includeFiles": "src/**" },
+    "api/orders/payment.ts": { "includeFiles": "src/**" },
+    "api/contact.ts": { "includeFiles": "src/**" },
+    "api/newsletter.ts": { "includeFiles": "src/**" },
+    "api/inventory.ts": { "includeFiles": "src/**" },
+    "api/admin/session.ts": { "includeFiles": "src/**" },
+    "api/admin/[...path].ts": { "includeFiles": "src/**" },
+    "api/account/[...path].ts": { "includeFiles": "src/**" }
+  },
   "headers": [
     {
       "source": "/api/(.*)",

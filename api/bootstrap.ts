@@ -27,7 +27,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const { loadPublicBootstrap } = await import('../src/server/persist/public-store');
     const payload = await loadPublicBootstrap(correlationId);
     send(res, 200, payload, correlationId);
-  } catch {
+  } catch (error) {
     send(res, 200, {
       merchandising: [],
       storeSettings: null,
@@ -47,6 +47,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         shipping: 'unavailable',
         settlement: 'unavailable',
       },
+      errorType: error instanceof Error ? error.name : 'Error',
+      detail: (error instanceof Error ? error.message : String(error)).replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]').slice(0, 180),
     });
   }
 }
