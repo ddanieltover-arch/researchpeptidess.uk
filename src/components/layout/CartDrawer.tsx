@@ -3,7 +3,9 @@ import { useStore } from '../../context/StoreContext';
 import { Drawer } from '../ui/Drawer';
 import { Button } from '../ui/Button';
 import { formatPrice } from '../../lib/utils';
-import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, Zap, Package } from 'lucide-react';
+import { DEFAULT_FREE_SHIPPING_THRESHOLD, isBankTransferAvailable, merchandiseTotalForPayment } from '../../lib/pricing';
+import { Trash2, Plus, Minus, ArrowRight, Zap, Package } from 'lucide-react';
+import { CartDrawerCrossSell } from './CartDrawerCrossSell';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -17,6 +19,7 @@ export const CartDrawer: React.FC = () => {
     currency,
     navigate,
   } = useStore();
+  const bankTransferAvailable = isBankTransferAvailable(merchandiseTotalForPayment(cartTotals));
 
   const handleCheckoutClick = () => {
     setCartDrawerOpen(false);
@@ -28,17 +31,18 @@ export const CartDrawer: React.FC = () => {
     navigate('/cart');
   };
 
+  const itemCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+
   return (
     <Drawer
       isOpen={cartDrawerOpen}
       onClose={() => setCartDrawerOpen(false)}
-      title="Requisition Basket"
-      subtitle={`${cart.reduce((sum, i) => sum + i.quantity, 0)} Items Selected`}
+      title="Basket"
+      subtitle={`${itemCount} ${itemCount === 1 ? 'item' : 'items'} selected`}
       width="md"
       footer={
         cart.length > 0 ? (
           <div className="space-y-4">
-            {/* Free Shipping Progress */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-medium text-slate-700">
                 <span className="flex items-center gap-1">
@@ -48,14 +52,14 @@ export const CartDrawer: React.FC = () => {
                     : `Add ${formatPrice(cartTotals.amountNeededForFreeShipping, currency)} for Free UK Shipping`}
                 </span>
                 <span className="font-mono text-[11px] font-bold text-slate-900">
-                  £75.00 Threshold
+                  {formatPrice(DEFAULT_FREE_SHIPPING_THRESHOLD, currency)} Threshold
                 </span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-stone-200 overflow-hidden">
                 <div
                   className="h-full bg-amber-600 transition-all duration-300 rounded-full"
                   style={{
-                    width: `${Math.min(100, (cartTotals.subtotal / 75) * 100)}%`,
+                    width: `${Math.min(100, (cartTotals.subtotal / DEFAULT_FREE_SHIPPING_THRESHOLD) * 100)}%`,
                   }}
                 />
               </div>
@@ -73,8 +77,14 @@ export const CartDrawer: React.FC = () => {
                   <span className="font-mono">-{formatPrice(cartTotals.itemDiscounts, currency)}</span>
                 </div>
               )}
+              {cartTotals.cryptoDiscount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-medium">
+                  <span>Crypto Discount (5%)</span>
+                  <span className="font-mono">-{formatPrice(cartTotals.cryptoDiscount, currency)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-600">
-                <span>UK Standard Shipping</span>
+                <span>Estimated shipping</span>
                 <span className="font-mono">
                   {cartTotals.shippingFee === 0 ? 'FREE' : formatPrice(cartTotals.shippingFee, currency)}
                 </span>
@@ -90,7 +100,11 @@ export const CartDrawer: React.FC = () => {
             {/* Crypto savings callout */}
             <div className="flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-900 font-mono">
               <Zap className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-              <span>Choose Crypto at checkout for an extra 5% discount.</span>
+              <span>
+                {!bankTransferAvailable
+                  ? 'Cryptocurrency is the settlement option below £100, with 5% already applied. Bank transfer is available from £100.'
+                  : 'Choose crypto at checkout for an extra 5% discount. Bank transfer is available from £100.'}
+              </span>
             </div>
 
             {/* Buttons */}
@@ -104,7 +118,7 @@ export const CartDrawer: React.FC = () => {
               </Button>
             </div>
           </div>
-        ) : null
+        ) : undefined
       }
     >
       {cart.length === 0 ? (
@@ -143,11 +157,17 @@ export const CartDrawer: React.FC = () => {
           <div className="divide-y divide-stone-100 space-y-3">
             {cart.map((item) => (
               <div key={item.variantId} className="pt-3 first:pt-0 flex gap-3">
-                <img
-                  src={item.image}
-                  alt={item.productName}
-                  className="h-16 w-16 rounded-md object-cover border border-stone-200 shrink-0 bg-stone-50"
-                />
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.productName}
+                    className="h-16 w-16 rounded-md object-cover border border-stone-200 shrink-0 bg-stone-50"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-stone-200 bg-stone-50 font-mono text-[10px] text-slate-400">
+                    No image
+                  </div>
+                )}
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-start justify-between gap-1">
                     <h5 className="text-xs font-bold text-slate-900 leading-snug truncate">
@@ -200,6 +220,8 @@ export const CartDrawer: React.FC = () => {
               </div>
             ))}
           </div>
+
+          <CartDrawerCrossSell />
         </div>
       )}
     </Drawer>

@@ -3,12 +3,13 @@ import { Product } from '../../types';
 import { useStore } from '../../context/StoreContext';
 import { Heart, ArrowUpRight } from 'lucide-react';
 import { AppLink } from './AppLink';
+import { Button } from './Button';
 import { productPath } from '../../lib/routing';
 import {
   formatProductDisplayName,
   formatProductPriceRange,
   getProductCardCta,
-  getPurchasableVariants,
+  getQuickAddVariant,
   getStockPresentation,
 } from '../../lib/product-display';
 
@@ -19,11 +20,10 @@ export interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'grid' }) => {
-  const { addToCart, wishlist, toggleWishlist, currency } = useStore();
+  const { addToCart, wishlist, toggleWishlist, currency, navigate } = useStore();
   const [isAdding, setIsAdding] = React.useState(false);
 
-  const purchasable = getPurchasableVariants(product);
-  const selectedVariant = purchasable[0] || product.variants?.[0];
+  const selectedVariant = getQuickAddVariant(product);
   const isWishlisted = wishlist.includes(product.id);
   const primaryImage = product.images?.[0]?.url;
   const cta = getProductCardCta(product);
@@ -34,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
   const handleQuickAdd = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!selectedVariant || selectedVariant.stock <= 0) return;
+    if (!selectedVariant) return;
     setIsAdding(true);
     addToCart(product, selectedVariant.id, 1);
     setTimeout(() => setIsAdding(false), 600);
@@ -79,7 +79,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
         )}
       </AppLink>
 
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-4">
         <AppLink href={productPath(product.slug)} className="flex-1">
           <p className="mb-1 font-display text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
             {product.categoryName || 'Catalogue'}
@@ -93,29 +93,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
           </div>
         </AppLink>
 
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3 font-mono">
-          <div>
-            <span className="text-base font-display font-bold tabular-nums tracking-tight text-slate-900">
-              {formatProductPriceRange(product, currency)}
-            </span>
-          </div>
+        <div
+          className={`mt-auto min-w-0 border-t border-slate-100 pt-3 font-mono ${
+            isList
+              ? 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'
+              : 'flex min-w-0 flex-col gap-2.5'
+          }`}
+        >
+          <span className="min-w-0 text-sm font-display font-bold tabular-nums tracking-tight text-slate-900 sm:text-base">
+            {formatProductPriceRange(product, currency)}
+          </span>
 
           {cta === 'ADD_TO_CART' ? (
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={handleQuickAdd}
-              disabled={isAdding}
-              className="text-xs font-bold uppercase tracking-wider text-[#4353FF] hover:text-[#3846E0]"
+              isLoading={isAdding}
+              className={`max-w-full px-3 tracking-[0.08em] ${isList ? 'w-full sm:w-auto' : 'w-full'}`}
+              aria-label={`Add ${displayName} to cart`}
             >
-              {isAdding ? 'Adding...' : 'Add to cart'}
-            </button>
+              Add to cart
+            </Button>
           ) : (
-            <AppLink
-              href={productPath(product.slug)}
-              className="text-xs font-bold uppercase tracking-wider text-[#4353FF] hover:text-[#3846E0]"
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(productPath(product.slug))}
+              className={`max-w-full px-3 tracking-[0.08em] ${isList ? 'w-full sm:w-auto' : 'w-full'}`}
+              aria-label={
+                cta === 'SELECT_OPTIONS' ? `Select options for ${displayName}` : `View ${displayName}`
+              }
             >
               {cta === 'SELECT_OPTIONS' ? 'Select options' : 'View details'}
-            </AppLink>
+            </Button>
           )}
         </div>
       </div>

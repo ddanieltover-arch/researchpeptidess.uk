@@ -38,10 +38,17 @@ export function formatProductPriceRange(product: Product, currency: 'GBP' | 'EUR
   return `${formatPrice(bounds.min, currency)} – ${formatPrice(bounds.max, currency)}`;
 }
 
-export function getProductCardCta(product: Product): 'ADD_TO_CART' | 'SELECT_OPTIONS' | 'VIEW_DETAILS' {
+export function getQuickAddVariant(product: Product): ProductVariant | undefined {
   const purchasable = getPurchasableVariants(product);
-  if (purchasable.length > 1) return 'SELECT_OPTIONS';
-  if (purchasable.length === 1 && purchasable[0].stock > 0) return 'ADD_TO_CART';
+  const inStock = purchasable.filter((variant) => variant.stock > 0);
+  const pool = inStock.length > 0 ? inStock : purchasable.length > 0 ? purchasable : product.variants || [];
+  if (pool.length === 0) return undefined;
+  return [...pool].sort((a, b) => a.price - b.price)[0];
+}
+
+export function getProductCardCta(product: Product): 'ADD_TO_CART' | 'SELECT_OPTIONS' | 'VIEW_DETAILS' {
+  if (hasSelectableOptions(product)) return 'SELECT_OPTIONS';
+  if (getQuickAddVariant(product)) return 'ADD_TO_CART';
   return 'VIEW_DETAILS';
 }
 

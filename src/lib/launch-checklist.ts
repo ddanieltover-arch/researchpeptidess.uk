@@ -66,7 +66,7 @@ export const INITIAL_LAUNCH_CHECKLIST: LaunchChecklistItem[] = [
     id: 'com_shipping',
     category: 'COMMERCE',
     title: 'UK & European Shipping Rules',
-    description: 'Free shipping thresholds for UK (£75) and Europe, with delivery zone restrictions.',
+    description: 'Free shipping thresholds for UK (£200) and Europe, with delivery zone restrictions.',
     status: 'PASSED',
     requirement: 'Carrier selection (Royal Mail, DPD, DHL) and tracking assignment.',
     verifiedAt: '2026-08-18',

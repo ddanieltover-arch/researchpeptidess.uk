@@ -70,7 +70,7 @@ export const AccountPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Breadcrumbs */}
-      <Breadcrumbs items={[{ label: 'Customer Account & Requisitions' }]} />
+      <Breadcrumbs items={[{ label: 'Customer Account & Orders' }]} />
 
       {/* Account Header */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -131,7 +131,7 @@ export const AccountPage: React.FC = () => {
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
-          Requisition History ({customerOrders.length})
+          Order History ({customerOrders.length})
         </button>
         <button
           onClick={() => setActiveTab('wishlist')}
@@ -170,7 +170,7 @@ export const AccountPage: React.FC = () => {
             <div className="divide-y divide-slate-100 font-mono text-xs">
               {customerOrders.length === 0 ? (
                 <div className="p-8 text-center text-slate-500 font-sans">
-                  No requisitions yet for this account.
+                  No orders yet for this account.
                 </div>
               ) : (
                 customerOrders.map((ord) => (
@@ -263,7 +263,7 @@ export const AccountPage: React.FC = () => {
         <Modal
           isOpen={true}
           onClose={() => setInspectedOrder(null)}
-          title={`Requisition Details — #${inspectedOrder.orderNumber}`}
+          title={`Order Details — #${inspectedOrder.orderNumber}`}
           maxWidth="lg"
         >
           <div className="space-y-6 font-mono text-xs">
@@ -296,7 +296,7 @@ export const AccountPage: React.FC = () => {
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t border-slate-200">
-              <span className="font-bold text-slate-900 text-sm">Total Requisition:</span>
+              <span className="font-bold text-slate-900 text-sm">Order Total:</span>
               <span className="font-black text-base text-[#4353FF]">{formatPrice(inspectedOrder.total, currency)}</span>
             </div>
           </div>

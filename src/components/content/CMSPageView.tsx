@@ -284,7 +284,19 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           {renderMarkdownElements(resolvedMarkdown)}
         </article>
 
-        {page.slug === 'contact' && <ContactEnquiryForm />}
+        {page.slug === 'contact' && (
+          <>
+            <div className="flex items-start gap-3 rounded-xl bg-stone-100 p-4 sm:p-5">
+              <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-[#4353FF]" aria-hidden="true" />
+              <div className="space-y-0.5 text-sm text-slate-600">
+                <h3 className="text-base font-bold text-slate-900">Shipping Days</h3>
+                <p>Mon - Fri / Except Holidays</p>
+                <p>Orders placed and paid after 12:00 GMT are shipped the following business day</p>
+              </div>
+            </div>
+            <ContactEnquiryForm />
+          </>
+        )}
 
         {/* Footer Support Prompt */}
         <footer className="bg-stone-900 text-stone-200 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">

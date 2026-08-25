@@ -405,7 +405,7 @@ export interface ShippingMethod {
   zone: ShippingZone;
   carrier: string; // e.g. "Royal Mail Tracked 24", "DPD Air", "DHL Express"
   price: number;
-  freeShippingThreshold?: number; // e.g. 75.0 for £75.00
+  freeShippingThreshold?: number; // e.g. 200.0 for £200.00
   estimatedDays: string;
   trackingAvailable: boolean;
   isActive: boolean;

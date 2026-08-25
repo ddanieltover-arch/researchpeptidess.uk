@@ -29,6 +29,15 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       topics: topics.length > 0 ? (topics as string[]) : ['NEW_CATALOGUE'],
       consentSource: 'storefront_newsletter_form',
     });
+    try {
+      const { dispatchNewsletterEmails } = await import('../src/server/email/dispatch');
+      await dispatchNewsletterEmails(
+        { email: result.record.email, topics: result.record.topics, created: result.created },
+        correlationId
+      );
+    } catch (error) {
+      logServerError({ correlationId, route: '/api/newsletter', operation: 'newsletter_email_dispatch', error });
+    }
     sendJson(res, 200, {
       subscription: result.record,
       created: result.created,

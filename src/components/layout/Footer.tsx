@@ -1,48 +1,40 @@
 import React from 'react';
-import { ShieldCheck } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 import { AppLink } from '../ui/AppLink';
 import { NewsletterSignup } from '../content/NewsletterSignup';
-import { ROUTES } from '../../lib/routing';
+import { ResearchPurchaseDisclaimer } from './ResearchPurchaseDisclaimer';
+import { parseAppPath, ROUTES } from '../../lib/routing';
 import { useStore } from '../../context/StoreContext';
 
 export const Footer: React.FC = () => {
-  const { storeSettings } = useStore();
+  const { currentPath, storeSettings } = useStore();
   const footerLinkClass = 'text-left text-xs text-slate-400 hover:text-white transition-colors';
+  const showPurchaseDisclaimer = parseAppPath(currentPath).kind !== 'checkout';
 
   return (
-    <footer className="border-t border-slate-800 bg-[#0B132B] pt-12 pb-8 text-white">
-      <div className="mx-auto max-w-7xl space-y-10 px-4 sm:px-8 lg:px-10">
-        <div className="rounded-xl border border-slate-800 bg-[#0F172A] p-5 text-slate-300 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-sky-500/40 bg-slate-950 text-sky-400 shadow-xs">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div className="space-y-1 text-xs">
-              <h4 className="font-display text-xs font-semibold tracking-[0.14em] text-sky-400 uppercase">
-                Strictly for laboratory research and in-vitro analytical use
-              </h4>
-              <p className="text-xs leading-relaxed text-slate-400">
-                Compounds supplied by <strong className="text-white">Research Peptides UK</strong> are offered for
-                qualified laboratory research and analytical work. They are not for human or veterinary administration.
-              </p>
-            </div>
-          </div>
-        </div>
-
+    <footer className="border-t border-slate-800 bg-[#0B132B] text-white">
+      {showPurchaseDisclaimer ? <ResearchPurchaseDisclaimer /> : null}
+      <div className="mx-auto max-w-7xl space-y-10 px-4 pt-12 pb-8 sm:px-8 lg:px-10">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-4">
             <AppLink href={ROUTES.home} className="inline-block">
               <BrandLogo variant="dark" size="sm" />
             </AppLink>
+            <p className="text-left text-sm leading-snug text-white">
+              We take pride in treating every
+              <br />
+              client, large or small, with the
+              <br />
+              utmost regard.
+            </p>
             <p className="text-xs leading-relaxed text-slate-400">
               UK laboratory catalogue for research peptides, reagents, and documented batches where records exist.
             </p>
             <a
-              href={`mailto:${storeSettings.supportEmail}`}
+              href={`mailto:${storeSettings?.supportEmail || ''}`}
               className="text-xs text-slate-500 hover:text-white transition-colors"
             >
-              {storeSettings.supportEmail}
+              {storeSettings?.supportEmail}
             </a>
           </div>
 
@@ -105,7 +97,7 @@ export const Footer: React.FC = () => {
             </AppLink>
           </div>
 
-          <NewsletterSignup variant="dark" />
+          <NewsletterSignup variant="dark" description="" />
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-800/80 pt-6 text-xs md:flex-row">

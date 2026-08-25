@@ -7,6 +7,7 @@ import {
   handleAdminStoreSettings,
 } from '../../src/server/admin-persist-http';
 import { handleAdminCommerceRead } from '../../src/server/commerce-http';
+import { handleAdminOrderUpdate } from '../../src/server/order-http';
 
 export const config = { runtime: 'nodejs' };
 
@@ -24,7 +25,11 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   req.url = path + query;
 
   if (path === '/api/admin/orders') {
-    await handleAdminCommerceRead(req, res);
+    if (req.method === 'GET') {
+      await handleAdminCommerceRead(req, res);
+      return;
+    }
+    await handleAdminOrderUpdate(req, res);
     return;
   }
   if (path === '/api/admin/merchandising') {

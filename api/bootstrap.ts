@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { loadPublicBootstrap } from '../src/server/persist/public-store';
 import { logServerError, readCorrelationId } from '../src/server/http';
 
 export const config = { runtime: 'nodejs' };
@@ -20,6 +19,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     return;
   }
   try {
+    const { loadPublicBootstrap } = await import('../src/server/persist/public-store');
     const payload = await loadPublicBootstrap(correlationId);
     send(res, 200, payload, correlationId);
   } catch (error) {

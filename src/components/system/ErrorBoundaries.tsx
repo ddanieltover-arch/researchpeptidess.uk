@@ -49,16 +49,17 @@ interface RouteProps {
 
 interface RouteState {
   hasError: boolean;
+  message: string;
 }
 
 export class RouteErrorBoundary extends React.Component<RouteProps, RouteState> {
   constructor(props: RouteProps) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, message: '' };
   }
 
-  static getDerivedStateFromError(): RouteState {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): RouteState {
+    return { hasError: true, message: error?.message ? String(error.message) : '' };
   }
 
   componentDidCatch(error: Error) {
@@ -67,7 +68,7 @@ export class RouteErrorBoundary extends React.Component<RouteProps, RouteState> 
 
   componentDidUpdate(prevProps: RouteProps) {
     if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
-      this.setState({ hasError: false });
+      this.setState({ hasError: false, message: '' });
     }
   }
 
@@ -81,6 +82,9 @@ export class RouteErrorBoundary extends React.Component<RouteProps, RouteState> 
           <p className="mt-2 text-sm text-slate-600">
             Other routes remain available. Refresh the page or return to the catalogue.
           </p>
+          {this.state.message ? (
+            <p className="mt-3 break-words font-mono text-xs text-rose-700">{this.state.message}</p>
+          ) : null}
           <a href="/" className="mt-4 inline-block font-mono text-xs font-bold uppercase text-[#4353FF]">
             Return home
           </a>

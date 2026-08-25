@@ -23,8 +23,47 @@ export interface OrderCalculationResult {
   };
 }
 
-export const DEFAULT_FREE_SHIPPING_THRESHOLD = 75.0; // £75.00
+export const DEFAULT_FREE_SHIPPING_THRESHOLD = 200.0; // £200.00
 export const CRYPTO_DISCOUNT_PERCENT = 5; // 5% business rule discount
+export const BANK_TRANSFER_MIN_MERCHANDISE_TOTAL = 100.0;
+
+export function merchandiseTotalForPayment(totals: {
+  subtotal: number;
+  itemDiscounts: number;
+  couponDiscount: number;
+}): number {
+  return Math.max(0, Number((totals.subtotal - totals.itemDiscounts - totals.couponDiscount).toFixed(2)));
+}
+
+export function isBankTransferAvailable(merchandiseTotal: number): boolean {
+  return merchandiseTotal >= BANK_TRANSFER_MIN_MERCHANDISE_TOTAL;
+}
+
+/**
+ * Free shipping is earned on catalogue subtotal (before volume, coupon, or crypto).
+ * Checkout method labels and the payable shipping fee must use this same spend figure.
+ */
+export function resolveFreeShipping(
+  merchandiseSubtotal: number,
+  shippingMethod?: ShippingMethod | null
+): { qualified: boolean; fee: number; amountNeeded: number; threshold: number | null } {
+  const spend = Math.max(0, Number(merchandiseSubtotal) || 0);
+  const configured = shippingMethod?.freeShippingThreshold;
+  const threshold =
+    typeof configured === 'number' && configured > 0
+      ? configured
+      : shippingMethod
+        ? null
+        : DEFAULT_FREE_SHIPPING_THRESHOLD;
+  const qualified = threshold !== null && spend >= threshold;
+  const baseFee = shippingMethod ? shippingMethod.price : 4.99;
+  return {
+    qualified,
+    fee: qualified ? 0 : baseFee,
+    amountNeeded: threshold === null ? 0 : Math.max(0, Number((threshold - spend).toFixed(2))),
+    threshold,
+  };
+}
 
 /**
  * Calculates line-item quantity tier discount based on database rules or fallback stepped volume tiers.
@@ -162,19 +201,10 @@ export function calculateOrderTotals(
     paymentMethod === 'CRYPTOCURRENCY' ? afterCoupon * (CRYPTO_DISCOUNT_PERCENT / 100) : 0;
   const afterCrypto = Math.max(0, afterCoupon - cryptoDiscount);
 
-  // Shipping Calculation
-  const freeThreshold = shippingMethod?.freeShippingThreshold ?? DEFAULT_FREE_SHIPPING_THRESHOLD;
-  const isEligibleZoneForFree = shippingMethod ? shippingMethod.zone === 'UK_MAINLAND' : true;
-  const freeShippingQualified = discountedSubtotal >= freeThreshold && isEligibleZoneForFree;
-  const amountNeededForFreeShipping = Math.max(0, freeThreshold - discountedSubtotal);
-
-  let shippingFee = 0;
-  if (shippingMethod) {
-    shippingFee = freeShippingQualified ? 0 : shippingMethod.price;
-  } else {
-    // Default standard UK dispatch
-    shippingFee = freeShippingQualified ? 0 : 4.99;
-  }
+  const shipping = resolveFreeShipping(subtotal, shippingMethod);
+  const shippingFee = shipping.fee;
+  const freeShippingQualified = shipping.qualified;
+  const amountNeededForFreeShipping = shipping.amountNeeded;
 
   const total = Number((afterCrypto + shippingFee).toFixed(2));
 

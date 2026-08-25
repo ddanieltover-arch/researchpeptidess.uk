@@ -4,22 +4,23 @@
  * Payment Idempotency, Shipping Eligibility, and Role Security.
  */
 
-import { calculateOrderTotals, calculateTierDiscountForLine, validateCoupon } from './pricing';
+import { calculateOrderTotals, calculateTierDiscountForLine, isBankTransferAvailable, merchandiseTotalForPayment, validateCoupon } from './pricing';
 import { checkVariantStockAvailability } from './inventory';
 import { validateOrderTransition, validatePaymentTransition } from './order-state-machine';
-import { calculateEligibleShippingMethods } from './shipping-engine';
+import { calculateEligibleShippingMethods, getCheckoutDestinationGroups } from './shipping-engine';
 import { hasPermission } from './auth';
 import { validateCatalogueImport, executeCatalogueImport } from './catalogue-import';
 import { authorizeDocumentAccess, authorizeOrderAccess } from './security';
 import { CartItem, ProductVariant, Coupon, ShippingMethod, Product, ProductCategory, Order } from '../types';
 import { runParityTests } from './parity-tests';
 import { runPersistenceTests } from './persistence-tests';
+import { runEmailTests } from './email/email-tests';
 import { filterOrdersForCustomer } from './account-orders';
 import { isSecureCookieRequest } from './cookie-security';
 import { normalizePaymentProofReference } from './settlement-instructions';
 
 export interface TestResult {
-  category: 'PRICING' | 'INVENTORY' | 'STATE_MACHINE' | 'PAYMENTS' | 'SHIPPING' | 'SECURITY' | 'IMPORT' | 'PARITY' | 'PERSISTENCE';
+  category: 'PRICING' | 'INVENTORY' | 'STATE_MACHINE' | 'PAYMENTS' | 'SHIPPING' | 'SECURITY' | 'IMPORT' | 'PARITY' | 'PERSISTENCE' | 'EMAIL';
   name: string;
   passed: boolean;
   expected: string;
@@ -76,7 +77,7 @@ export function runAllCommerceTests(): TestSuiteReport {
   // 1. PRICING ENGINE TESTS
   // ==========================================
 
-  runTest('PRICING', 'Standard Requisition Calculation (No Discounts)', () => {
+  runTest('PRICING', 'Standard Order Calculation (No Discounts)', () => {
     const items: CartItem[] = [
       {
         id: 'c1',
@@ -248,6 +249,51 @@ export function runAllCommerceTests(): TestSuiteReport {
     };
   });
 
+  runTest('PRICING', 'Free shipping uses catalogue subtotal so checkout FREE labels match the payable fee', () => {
+    const items: CartItem[] = [
+      {
+        id: 'c1',
+        productId: 'p1',
+        productName: 'Peptide A',
+        productSlug: 'pep-a',
+        variantId: 'v1',
+        variantName: 'Vial',
+        size: '5mg',
+        sku: 'SKU-A',
+        unitPrice: 24.2,
+        quantity: 10, // £242.00 catalogue; 20% volume = £48.40; net merchandise £193.60
+        image: '',
+      },
+    ];
+    const shipping: ShippingMethod = {
+      id: 'ship-uk-standard',
+      name: 'Royal Mail Tracked 24 (Next Business Day)',
+      zone: 'UK_MAINLAND',
+      carrier: 'Royal Mail',
+      price: 4.99,
+      freeShippingThreshold: 200.0,
+      estimatedDays: '1 Working Day',
+      trackingAvailable: true,
+      isActive: true,
+    };
+    const totals = calculateOrderTotals(items, 'BANK_TRANSFER', shipping, null);
+    const methods = calculateEligibleShippingMethods('GB', totals.subtotal, [shipping], shipping.id);
+    const passed =
+      totals.subtotal === 242 &&
+      totals.itemDiscounts === 48.4 &&
+      totals.shippingFee === 0 &&
+      totals.freeShippingQualified === true &&
+      totals.total === 193.6 &&
+      methods.selectedPrice === 0 &&
+      methods.eligibleMethods[0]?.freeShippingQualified === true;
+
+    return {
+      passed,
+      expected: '£242 subtotal qualifies for £0 shipping even after £48.40 volume saving',
+      actual: `sub=${totals.subtotal} ship=${totals.shippingFee} total=${totals.total} dropdown=${methods.selectedPrice}`,
+    };
+  });
+
   // ==========================================
   // 2. INVENTORY CONSISTENCY TESTS
   // ==========================================
@@ -353,6 +399,25 @@ export function runAllCommerceTests(): TestSuiteReport {
     };
   });
 
+  runTest('PAYMENTS', 'Bank transfer is offered only from £100 merchandise total', () => {
+    const afterCoupon = merchandiseTotalForPayment({
+      subtotal: 140,
+      itemDiscounts: 0,
+      couponDiscount: 50,
+    });
+    const passed =
+      afterCoupon === 90 &&
+      !isBankTransferAvailable(afterCoupon) &&
+      !isBankTransferAvailable(99.99) &&
+      isBankTransferAvailable(100) &&
+      isBankTransferAvailable(240);
+    return {
+      passed,
+      expected: 'Crypto-only below £100 merchandise; bank available from £100',
+      actual: `couponMerch=${afterCoupon} 99.99=${isBankTransferAvailable(99.99)} 100=${isBankTransferAvailable(100)} 240=${isBankTransferAvailable(240)}`,
+    };
+  });
+
   // ==========================================
   // 5. SHIPPING ENGINE & COUNTRY ELIGIBILITY
   // ==========================================
@@ -385,6 +450,34 @@ export function runAllCommerceTests(): TestSuiteReport {
       passed,
       expected: 'Spend £60 -> Fee: £4.99; Spend £80 -> Fee: £0.00 (Free)',
       actual: `Spend £60: £${belowThreshold.selectedPrice}, Spend £80: £${aboveThreshold.selectedPrice}`,
+    };
+  });
+
+  runTest('SHIPPING', 'Checkout lists other European countries on existing EU zones', () => {
+    const { featured, otherEuropean } = getCheckoutDestinationGroups();
+    const zone2Method: ShippingMethod = {
+      id: 'ship-eu-2',
+      name: 'European Priority Airmail',
+      zone: 'EUROPE_ZONE_2',
+      carrier: 'DHL',
+      price: 19.99,
+      freeShippingThreshold: 250.0,
+      estimatedDays: '3-5 days',
+      trackingAvailable: true,
+      isActive: true,
+    };
+    const greece = calculateEligibleShippingMethods('GR', 80, [zone2Method]);
+    const passed =
+      featured.some((country) => country.code === 'GB') &&
+      otherEuropean.some((country) => country.code === 'BE') &&
+      otherEuropean.some((country) => country.code === 'GR') &&
+      !otherEuropean.some((country) => country.code === 'DE') &&
+      greece.isAvailable === true;
+
+    return {
+      passed,
+      expected: 'Other European Countries group excludes featured EU destinations and remains shippable',
+      actual: `featured=${featured.map((c) => c.code).join(',')} other=${otherEuropean.map((c) => c.code).slice(0, 5).join(',')}… greece=${greece.isAvailable}`,
     };
   });
 
@@ -706,6 +799,7 @@ export function runAllCommerceTests(): TestSuiteReport {
 
   results.push(...runPersistenceTests());
   results.push(...runParityTests());
+  results.push(...runEmailTests());
 
   const passedTests = results.filter((r) => r.passed).length;
   const failedTests = results.length - passedTests;

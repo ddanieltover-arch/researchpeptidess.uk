@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { formatPrice } from '../lib/utils';
+import { BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, isBankTransferAvailable, merchandiseTotalForPayment } from '../lib/pricing';
 import {
   Trash2,
   Plus,
@@ -29,11 +30,10 @@ export const CartPage: React.FC = () => {
     appliedCoupon,
     applyCoupon,
     removeCoupon,
-    selectedShippingZone,
-    setSelectedShippingZone,
   } = useStore();
 
   const [couponInput, setCouponInput] = useState('');
+  const bankTransferAvailable = isBankTransferAvailable(merchandiseTotalForPayment(cartTotals));
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,12 +49,12 @@ export const CartPage: React.FC = () => {
         <div className="h-16 w-16 rounded-full bg-blue-50 flex items-center justify-center text-[#4353FF] mx-auto border border-blue-200">
           <Package className="h-8 w-8" />
         </div>
-        <h2 className="text-xl font-bold font-mono text-slate-900">Your Requisition Basket is Empty</h2>
+        <h2 className="text-xl font-bold font-mono text-slate-900">Your basket is empty</h2>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
           Explore our published research peptides, blends, and laboratory catalogue.
         </p>
         <Button variant="primary" size="md" onClick={() => navigate('/shop')} className="font-mono text-xs shadow-md shadow-blue-500/20">
-          Browse Requisition Catalogue
+          Browse Catalogue
         </Button>
       </div>
     );
@@ -66,14 +66,14 @@ export const CartPage: React.FC = () => {
       <Breadcrumbs
         items={[
           { label: 'Shop Catalogue', onClick: () => navigate('/shop') },
-          { label: 'Requisition Basket' },
+          { label: 'Basket' },
         ]}
       />
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-slate-200 pb-4">
         <div>
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#4353FF]">
-            Requisition Review
+            Basket Review
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-950 tracking-tight mt-0.5">
             Order Basket ({cart.reduce((s, i) => s + i.quantity, 0)} items)
@@ -177,27 +177,11 @@ export const CartPage: React.FC = () => {
         <div className="lg:col-span-4 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-2xs space-y-5">
             <h3 className="text-base font-bold font-mono text-slate-950 pb-3 border-b border-slate-100">
-              Requisition Summary
+              Order Summary
             </h3>
 
-            {/* Shipping Destination Selector */}
-            <div className="space-y-1.5 text-xs font-mono">
-              <label className="text-slate-700 font-semibold uppercase text-[10px] tracking-wider block">
-                Dispatch Destination:
-              </label>
-              <select
-                value={selectedShippingZone}
-                onChange={(e) => setSelectedShippingZone(e.target.value as any)}
-                className="w-full h-9 rounded-md border border-slate-300 bg-slate-50 px-2.5 text-xs focus:outline-none focus:border-[#4353FF] focus:ring-1 focus:ring-[#4353FF]"
-              >
-                <option value="UK_STANDARD">UK Tracked 24 (£4.99 or Free over £75)</option>
-                <option value="UK_EXPRESS">UK Guaranteed Next-Day 1PM (£8.99)</option>
-                <option value="EUROPE">European Tracked Airmail (€14.99)</option>
-              </select>
-            </div>
-
             {/* Calculations Breakdown */}
-            <div className="space-y-2 text-xs border-t border-slate-100 pt-3">
+            <div className="space-y-2 text-xs">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal (Gross)</span>
                 <span className="font-mono">{formatPrice(cartTotals.subtotal, currency)}</span>
@@ -217,12 +201,20 @@ export const CartPage: React.FC = () => {
                 </div>
               )}
 
+              {cartTotals.cryptoDiscount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-medium">
+                  <span>Crypto Discount (5%)</span>
+                  <span className="font-mono">-{formatPrice(cartTotals.cryptoDiscount, currency)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-slate-600">
-                <span>Shipping Fee</span>
+                <span>Estimated shipping</span>
                 <span className="font-mono">
                   {cartTotals.shippingFee === 0 ? 'FREE' : formatPrice(cartTotals.shippingFee, currency)}
                 </span>
               </div>
+              <p className="text-[11px] text-slate-500">Destination and dispatch method are selected at checkout.</p>
 
               <div className="flex justify-between text-base font-extrabold text-slate-950 pt-3 border-t border-slate-200">
                 <span className="font-mono">Authoritative Total</span>
@@ -236,14 +228,33 @@ export const CartPage: React.FC = () => {
             <div className="rounded-xl bg-blue-50/70 border border-blue-200 p-3 text-[11px] text-blue-950 space-y-1 font-mono">
               <div className="flex items-center gap-1 font-bold text-[#4353FF]">
                 <Zap className="h-3.5 w-3.5 text-[#4353FF]" />
-                <span>5% Crypto Settlement Benefit:</span>
+                <span>
+                  {!bankTransferAvailable
+                    ? '5% crypto settlement applied'
+                    : '5% Crypto Settlement Benefit:'}
+                </span>
               </div>
               <p className="font-sans text-[11px] text-slate-700">
-                Switch to BTC, ETH or USDT at checkout to pay only{' '}
-                <strong className="font-mono font-bold text-[#4353FF]">
-                  {formatPrice(cartTotals.total * 0.95, currency)}
-                </strong>
-                .
+                {!bankTransferAvailable ? (
+                  <>
+                    Orders below {formatPrice(BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, currency)} settle by
+                    cryptocurrency only, so the 5% discount is already in the total. Bank transfer is available
+                    from {formatPrice(BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, currency)}.
+                  </>
+                ) : (
+                  <>
+                    Switch to BTC, ETH or USDT at checkout to pay only{' '}
+                    <strong className="font-mono font-bold text-[#4353FF]">
+                      {formatPrice(
+                        cartTotals.cryptoDiscount > 0
+                          ? cartTotals.total
+                          : cartTotals.total * 0.95,
+                        currency
+                      )}
+                    </strong>
+                    . Bank transfer remains available from {formatPrice(BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, currency)}.
+                  </>
+                )}
               </p>
             </div>
 
@@ -277,7 +288,7 @@ export const CartPage: React.FC = () => {
               onClick={() => navigate('/checkout')}
               className="w-full font-mono text-sm tracking-wide shadow-md shadow-blue-500/20 justify-center"
             >
-              <span>Proceed to Requisition Checkout</span>
+              <span>Proceed to Checkout</span>
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
 

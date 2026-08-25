@@ -41,6 +41,7 @@ import {
   fetchBootstrap,
   persistInventoryRequest,
   persistMerchandising,
+  persistAdminOrderRequest,
   persistOrderRequest,
   persistPaymentRequest,
   persistShippingRequest,
@@ -61,7 +62,13 @@ import { fetchAdminSession, loginAdmin, logoutAdmin } from '../lib/admin-api';
 import { AdminSessionUser } from '../lib/admin-session';
 import { fetchCustomerSession, loginCustomer, logoutCustomer, registerCustomer as registerCustomerRequest } from '../lib/customer-api';
 import { CustomerSessionUser } from '../lib/customer-session';
-import { calculateOrderTotals, OrderCalculationResult } from '../lib/pricing';
+import {
+  BANK_TRANSFER_MIN_MERCHANDISE_TOTAL,
+  calculateOrderTotals,
+  isBankTransferAvailable,
+  merchandiseTotalForPayment,
+  OrderCalculationResult,
+} from '../lib/pricing';
 import { checkVariantStockAvailability, recordInventoryTransaction } from '../lib/inventory';
 import { executeCatalogueImport, exportCatalogueToCsv } from '../lib/catalogue-import';
 import { validateOrderTransition, validatePaymentTransition } from '../lib/order-state-machine';
@@ -381,19 +388,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Published filter for public visitors
-  const publishedProducts = products.filter((p) => {
+  const publishedProducts = (products || []).filter((p) => {
     if (adminDraftPreviewMode && currentUser.role === 'ADMIN') return true;
     return isPublicCatalogueProduct(p);
   });
 
-  const activeCategories = categories
-    .filter((c) => c.isActive)
+  const activeCategories = (categories || [])
+    .filter((c) => c?.isActive)
     .map((category) => ({
       ...category,
       productCount: publishedProducts.filter((product) => product.categoryId === category.id).length,
     }));
 
-  const categoriesWithCounts = categories.map((category) => ({
+  const categoriesWithCounts = (categories || []).map((category) => ({
     ...category,
     productCount: publishedProducts.filter((product) => product.categoryId === category.id).length,
   }));
@@ -504,12 +511,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     shippingMethods.find((m) => m.id === selectedShippingMethodId) ||
     shippingMethods[0];
 
-  const cartTotals = calculateOrderTotals(
+  const totalsForPaymentGate = calculateOrderTotals(
     cart,
-    selectedPaymentMethod,
+    'BANK_TRANSFER',
     activeShippingMethod,
     appliedCoupon
   );
+  const resolvedPaymentMethod: PaymentMethod = isBankTransferAvailable(
+    merchandiseTotalForPayment(totalsForPaymentGate)
+  )
+    ? selectedPaymentMethod
+    : 'CRYPTOCURRENCY';
+  const cartTotals =
+    resolvedPaymentMethod === 'BANK_TRANSFER'
+      ? totalsForPaymentGate
+      : calculateOrderTotals(cart, 'CRYPTOCURRENCY', activeShippingMethod, appliedCoupon);
 
   const applyCoupon = (code: string): boolean => {
     const normalized = code.trim().toUpperCase();
@@ -534,7 +550,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const removeCoupon = () => {
     setAppliedCouponCode(null);
-    addToast('info', 'Coupon Removed', 'Promotional code removed from requisition.');
+    addToast('info', 'Coupon Removed', 'Promotional code removed from basket.');
   };
 
   // Product CRUD
@@ -981,7 +997,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ];
     });
 
-    addToast('success', 'Added to Requisition', `${quantity}x ${product.name} (${variant.size}) added to basket.`);
     setCartDrawerOpen(true);
     return true;
   };
@@ -1002,7 +1017,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const removeFromCart = (variantId: string) => {
     setCart((prev) => prev.filter((i) => i.variantId !== variantId));
-    addToast('info', 'Item Removed', 'Product removed from requisition.');
+    addToast('info', 'Item Removed', 'Product removed from basket.');
   };
 
   const clearCart = () => {
@@ -1014,7 +1029,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
     const prod = products.find((p) => p.id === productId);
-    addToast('info', 'Saved Requisition', `${prod?.name || 'Item'} updated in saved list.`);
+    addToast('info', 'Saved', `${prod?.name || 'Item'} updated in saved list.`);
   };
 
   useEffect(() => {
@@ -1198,7 +1213,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     paymentProofReference?: string;
   }): Promise<Order | null> => {
     if (cart.length === 0) {
-      addToast('error', 'Empty Basket', 'Cannot create order with an empty requisition basket.');
+      addToast('error', 'Empty Basket', 'Cannot create order with an empty basket.');
+      return null;
+    }
+
+    if (
+      orderData.paymentMethod === 'BANK_TRANSFER' &&
+      !isBankTransferAvailable(merchandiseTotalForPayment(cartTotals))
+    ) {
+      addToast(
+        'error',
+        'Payment method unavailable',
+        `Bank transfer is available on orders of £${BANK_TRANSFER_MIN_MERCHANDISE_TOTAL.toFixed(2)} and above. Use cryptocurrency for this basket.`
+      );
       return null;
     }
 
@@ -1206,7 +1233,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const destCountry = orderData.shippingAddress.country || destinationCountryCode;
     const destCalc = calculateEligibleShippingMethods(
       destCountry,
-      cartTotals.subtotal - cartTotals.itemDiscounts - cartTotals.couponDiscount,
+      cartTotals.subtotal,
       shippingMethods,
       selectedShippingMethodId
     );
@@ -1335,7 +1362,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         toStatus: paymentProof ? 'PAYMENT_SUBMITTED' : 'PENDING_PAYMENT',
         actor: currentUser.name || currentUser.email,
         actorRole: currentUser.role,
-        note: `Order requisition registered via ${orderData.paymentMethod.replace('_', ' ')}.`,
+        note: `Order registered via ${orderData.paymentMethod.replace('_', ' ')}.`,
       },
     ];
 
@@ -1387,8 +1414,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         'error',
         'Order not registered',
         persistResult.reference
-          ? `The requisition could not be stored. Reference: ${persistResult.reference}`
-          : 'The requisition could not be stored. Please try again.'
+          ? `The order could not be stored. Reference: ${persistResult.reference}`
+          : 'The order could not be stored. Please try again.'
       );
       return null;
     }
@@ -1436,7 +1463,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     clearCart();
     setAppliedCouponCode(null);
-    addToast('success', 'Order Requisition Registered', `Order #${newOrder.orderNumber} successfully registered.`);
+    addToast('success', 'Order Registered', `Order #${newOrder.orderNumber} successfully registered.`);
     return newOrder;
   };
 
@@ -1612,7 +1639,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     void persistPaymentRequest(nextOrder, nextPayment);
 
-    addToast('success', 'Payment Verified', `Order #${order.orderNumber} verified. Requisition ready for processing.`);
+    addToast('success', 'Payment Verified', `Order #${order.orderNumber} verified. Order ready for processing.`);
     return true;
   };
 
@@ -1816,6 +1843,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       status: newStatus,
       trackingNumber: options?.trackingNumber || order.trackingNumber,
       courier: options?.courier || order.courier,
+      trackingUrl: options?.trackingNumber
+        ? `https://www.royalmail.com/track-your-item#/tracking-results/${options.trackingNumber}`
+        : order.trackingUrl,
+      history: [...(order.history || []), historyEvent],
+      updatedAt: nowIso,
     };
 
     let notifType: OrderNotification['type'] | null = null;
@@ -1828,6 +1860,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const notif = createOrderNotification(notifType, updatedOrder);
       setNotifications((prev) => [notif, ...prev]);
     }
+
+    const payment = payments.find((p) => p.orderId === orderId || p.id === order.paymentId);
+    void persistAdminOrderRequest(updatedOrder, payment, notifType || undefined);
 
     logAuditEvent('ORDER_STATUS_CHANGED', 'ORDER', orderId, {
       orderNumber: order.orderNumber,

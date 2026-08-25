@@ -195,7 +195,7 @@ export const INITIAL_ORDERS: Order[] = [
         toStatus: 'PENDING_PAYMENT',
         actor: 'Dr. Arthur Harrison',
         actorRole: 'CUSTOMER',
-        note: 'Requisition placed with Bank Transfer payment method.',
+        note: 'Order placed with Bank Transfer payment method.',
       },
       {
         id: 'h-2',

@@ -40,8 +40,8 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     setError(null);
     setMessage(
       result.providerStatus === 'NOT_CONNECTED_TO_EMAIL_PROVIDER'
-        ? 'Subscription stored. NOT CONNECTED TO EMAIL PROVIDER — we will not send mail until a provider integration is connected.'
-        : 'Subscription stored. Email sending remains disabled until the provider integration is completed.'
+        ? 'Subscription stored. A confirmation email could not be sent because an email provider is not connected.'
+        : 'Subscription stored. A confirmation email is on its way to this address.'
     );
     setEmail('');
     setConsent(false);
@@ -51,7 +51,9 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     <form onSubmit={onSubmit} className="space-y-3">
       <div>
         <h3 className={`text-sm font-bold font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>{heading}</h3>
-        <p className={`mt-1 text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{description}</p>
+        {description ? (
+          <p className={`mt-1 text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{description}</p>
+        ) : null}
       </div>
       <input
         type="email"
@@ -82,7 +84,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
       </fieldset>
       <label className={`flex items-start gap-2 text-[11px] ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
         <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-0.5" />
-        I consent to Research Peptides UK storing this email for the selected update topics. This is not a live mailing list until an email provider is connected.
+        I consent to Research Peptides UK storing this email for the selected update topics. A confirmation message will be sent to this address.
       </label>
       {error && <p className="text-[11px] text-rose-500">{error}</p>}
       {message && <p className="text-[11px] text-emerald-500">{message}</p>}

@@ -14,7 +14,7 @@ export async function loadPublicBootstrap(correlationId?: string): Promise<Publi
     newsletter: {
       providerConnected: isEmailProviderConnected(),
       providerStatus: isEmailProviderConnected()
-        ? 'PROVIDER_CONFIGURED_NOT_SENDING'
+        ? 'CONNECTED'
         : 'NOT_CONNECTED_TO_EMAIL_PROVIDER',
     },
     settlement: emptySettlement,

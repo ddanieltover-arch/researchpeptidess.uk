@@ -142,6 +142,28 @@ export async function persistOrderRequest(params: {
   }
 }
 
+export async function persistAdminOrderRequest(
+  order: Order,
+  payment?: Payment,
+  eventType?: string
+): Promise<{ ok: boolean; reference?: string }> {
+  try {
+    const response = await fetch('/api/orders/lifecycle', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ order, payment, eventType }),
+    });
+    const body = await readJson(response);
+    return {
+      ok: response.ok,
+      reference: typeof body.reference === 'string' ? body.reference : undefined,
+    };
+  } catch {
+    return { ok: false };
+  }
+}
+
 export async function persistPaymentRequest(order: Order, payment: Payment): Promise<{ ok: boolean; reference?: string }> {
   try {
     const response = await fetch('/api/orders/payment', {

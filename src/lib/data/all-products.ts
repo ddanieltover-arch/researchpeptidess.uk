@@ -4,6 +4,7 @@ import { PRODUCTS_NASAL } from './products-nasal';
 import { PRODUCTS_REAGENTS, PRODUCTS_EQUIPMENT } from './products-reagents-equipment';
 import { getProductImage } from '../product-image-generator';
 import { applyShopCategory } from '../shop-category-assignment';
+import { withPurchasableCatalogueStock } from '../catalogue-stock';
 import { REMOVED_PRODUCT_SLUGS } from '../removed-product-slugs';
 import { WOOCOMMERCE_PRODUCTS } from './generated/from-woocommerce';
 import catalog from './generated/woocommerce-catalog.json';
@@ -53,4 +54,5 @@ function withCatalogueImages(product: Product): Product {
 export const ALL_CATALOGUE_PRODUCTS: Product[] = [...WOOCOMMERCE_PRODUCTS, ...EXTRA_PRODUCTS]
   .filter((product) => !REMOVED_PRODUCT_SLUGS.has(product.slug))
   .map(applyShopCategory)
-  .map(withCatalogueImages);
+  .map(withCatalogueImages)
+  .map(withPurchasableCatalogueStock);

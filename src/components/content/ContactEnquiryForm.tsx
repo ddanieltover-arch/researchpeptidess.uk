@@ -30,7 +30,7 @@ export const ContactEnquiryForm: React.FC = () => {
     addToast(
       'success',
       'Enquiry received',
-      `Your message was stored for operations follow-up. You can also email ${storeSettings.supportEmail}.`
+      `Your message was stored. A confirmation has been sent to your inbox, and the operations team can also be reached at ${storeSettings.supportEmail}.`
     );
     setName('');
     setEmail('');

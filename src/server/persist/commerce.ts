@@ -312,7 +312,7 @@ export async function persistOrderBundle(params: {
       }),
     });
   } catch {
-    // Audit is best-effort and must not roll back a paid-path requisition.
+    // Audit is best-effort and must not roll back a paid-path order.
   }
 
   return { duplicate: false, order, payment };
@@ -355,6 +355,39 @@ export async function persistPaymentUpdate(payment: Payment, order: Order): Prom
       status: toDbOrderStatus(safeOrder.status),
       paymentProofReference: safeOrder.paymentProofReference,
       trackingNumber: safeOrder.trackingNumber,
+      updatedAt: now,
+    })
+    .where(eq(orders.id, order.id));
+}
+
+/** Admin-authenticated path: persist the submitted lifecycle state without customer-side sanitization. */
+export async function persistTrustedOrderUpdate(order: Order, payment?: Payment): Promise<void> {
+  const db = await getReadyDb();
+  if (!db) throw new PersistStageError('database_connection', 'DATABASE_UNAVAILABLE', 'DATABASE_UNAVAILABLE');
+  const now = new Date();
+
+  if (payment?.id) {
+    await db
+      .update(orderPayments)
+      .set({
+        status: payment.status,
+        transactionHash: payment.transactionHash,
+        evidenceNotes: payment.evidenceNotes,
+        payloadJson: JSON.stringify(payment),
+        updatedAt: now,
+      })
+      .where(eq(orderPayments.id, payment.id));
+  }
+
+  await db
+    .update(orders)
+    .set({
+      payloadJson: JSON.stringify(order),
+      appStatus: order.status,
+      paymentStatus: order.paymentStatus,
+      status: toDbOrderStatus(order.status),
+      paymentProofReference: order.paymentProofReference,
+      trackingNumber: order.trackingNumber,
       updatedAt: now,
     })
     .where(eq(orders.id, order.id));

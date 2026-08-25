@@ -17,6 +17,7 @@ import { HeroFeaturedProduct } from '../components/home/HeroFeaturedProduct';
 import { HeroIntro } from '../components/home/HeroIntro';
 import { HeroTrustBar } from '../components/home/HeroTrustBar';
 import { HomeProofSection } from '../components/home/HomeProofSection';
+import { HomeBuyPeptidesKeywords } from '../components/home/HomeBuyPeptidesKeywords';
 
 export const HomePage: React.FC = () => {
   const { publishedProducts, categories, orders, inventoryTransactions, storeSettings } = useStore();
@@ -211,6 +212,8 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
+      <HomeBuyPeptidesKeywords />
+
       <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
         <div className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 md:grid-cols-2">
           <div>
@@ -228,7 +231,7 @@ export const HomePage: React.FC = () => {
             <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-slate-600">
               <li>Choose a category or search the catalogue.</li>
               <li>Select a format, quantity, and add it to the cart.</li>
-              <li>Check out as a guest or with an account using bank transfer or cryptocurrency.</li>
+              <li>Check out as a guest or with an account. Cryptocurrency is available on every order; bank transfer is available from £100.</li>
             </ol>
           </div>
         </div>

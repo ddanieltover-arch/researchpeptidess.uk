@@ -5,6 +5,7 @@
  */
 
 import { ShippingMethod, ShippingZone } from '../types';
+import { resolveFreeShipping } from './pricing';
 
 export interface CountryInfo {
   code: string;
@@ -41,8 +42,22 @@ export const RESEARCH_DESTINATION_COUNTRIES: CountryInfo[] = [
   { code: 'PT', name: 'Portugal', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
   { code: 'PL', name: 'Poland', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
   { code: 'CZ', name: 'Czech Republic', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'BG', name: 'Bulgaria', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'HR', name: 'Croatia', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'CY', name: 'Cyprus', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'EE', name: 'Estonia', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'GR', name: 'Greece', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'HU', name: 'Hungary', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'IS', name: 'Iceland', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'LV', name: 'Latvia', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'LI', name: 'Liechtenstein', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'LT', name: 'Lithuania', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'MT', name: 'Malta', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'RO', name: 'Romania', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'SK', name: 'Slovakia', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
+  { code: 'SI', name: 'Slovenia', defaultZone: 'EUROPE_ZONE_2', isEligible: true },
 
-  // International Tier 1 (Authorized Academic Requisition Zones)
+  // International Tier 1 (Authorized Academic Shipping Zones)
   { code: 'US', name: 'United States (Academic Labs Only)', defaultZone: 'INTERNATIONAL', isEligible: true },
   { code: 'CA', name: 'Canada (Institutional Labs)', defaultZone: 'INTERNATIONAL', isEligible: true },
   { code: 'AU', name: 'Australia (Research Core Facilities)', defaultZone: 'INTERNATIONAL', isEligible: true },
@@ -109,20 +124,12 @@ export function calculateEligibleShippingMethods(
   }
 
   const eligibleMethods = activeZoneMethods.map((method) => {
-    const freeThreshold = method.freeShippingThreshold;
-    const isFreeEligible = freeThreshold !== undefined && freeThreshold !== null && freeThreshold > 0;
-    const freeShippingQualified = isFreeEligible && subtotalAfterDiscounts >= freeThreshold;
-    const amountNeededForFreeShipping = isFreeEligible
-      ? Math.max(0, Number((freeThreshold - subtotalAfterDiscounts).toFixed(2)))
-      : 0;
-
-    const calculatedPrice = freeShippingQualified ? 0 : method.price;
-
+    const shipping = resolveFreeShipping(subtotalAfterDiscounts, method);
     return {
       method,
-      calculatedPrice,
-      freeShippingQualified,
-      amountNeededForFreeShipping,
+      calculatedPrice: shipping.fee,
+      freeShippingQualified: shipping.qualified,
+      amountNeededForFreeShipping: shipping.amountNeeded,
     };
   });
 
@@ -140,4 +147,40 @@ export function calculateEligibleShippingMethods(
     selectedMethod: selectedEntry?.method,
     selectedPrice: selectedEntry ? selectedEntry.calculatedPrice : 0,
   };
+}
+
+export const FEATURED_CHECKOUT_COUNTRY_CODES = ['GB', 'IE', 'DE', 'FR', 'NL', 'SE'] as const;
+
+export function isEuropeanShippingZone(zone: ShippingZone): boolean {
+  return zone === 'EUROPE_ZONE_1' || zone === 'EUROPE_ZONE_2';
+}
+
+export function checkoutDestinationOptionLabel(country: CountryInfo): string {
+  if (country.code === 'GB') {
+    return 'United Kingdom (Tracked 24 / Guaranteed Next-Day)';
+  }
+  if (country.code === 'IE') {
+    return 'Ireland (DHL Express International)';
+  }
+  if (isEuropeanShippingZone(country.defaultZone)) {
+    return `${country.name} (EU Priority Tracked)`;
+  }
+  return country.name;
+}
+
+export function getCheckoutDestinationGroups(): {
+  featured: CountryInfo[];
+  otherEuropean: CountryInfo[];
+} {
+  const featuredCodes = new Set<string>(FEATURED_CHECKOUT_COUNTRY_CODES);
+  const featured = FEATURED_CHECKOUT_COUNTRY_CODES.map((code) =>
+    RESEARCH_DESTINATION_COUNTRIES.find((country) => country.code === code && country.isEligible)
+  ).filter((country): country is CountryInfo => Boolean(country));
+
+  const otherEuropean = RESEARCH_DESTINATION_COUNTRIES.filter(
+    (country) =>
+      country.isEligible && isEuropeanShippingZone(country.defaultZone) && !featuredCodes.has(country.code)
+  ).sort((a, b) => a.name.localeCompare(b.name));
+
+  return { featured, otherEuropean };
 }

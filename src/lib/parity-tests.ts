@@ -9,7 +9,16 @@ import { getBestsellerEntries } from './merchandising';
 import { productMatchesQuery, searchCatalogueProducts } from './catalogue-search';
 import { getStorefrontTrustMetrics } from './trust-metrics';
 import { subscribeToResearchUpdates } from './newsletter';
-import { getRelatedProducts } from './related-products';
+import { getCartCrossSellProducts, getRelatedProducts } from './related-products';
+import {
+  buildCataloguePurchaseFeed,
+  buildPurchaseNotificationFeed,
+  formatBuyerLabel,
+  formatPurchaseProductLabel,
+  formatRelativeMinutesAgo,
+  shouldShowPurchaseNotifications,
+} from './purchase-notifications';
+import { withPurchasableCatalogueStock } from './catalogue-stock';
 import { INITIAL_ORDERS, INITIAL_SHIPPING_METHODS, INITIAL_PRODUCTS } from './mock-data';
 import { INITIAL_CATEGORIES } from './data/categories';
 import { Product, ProductCategory, Order } from '../types';
@@ -159,6 +168,44 @@ export function runParityTests(): TestResult[] {
   );
 
   results.push(
+    run('Catalogue variants are in stock for purchase', () => {
+      const unavailable = INITIAL_PRODUCTS.flatMap((product) =>
+        (product.variants || []).filter(
+          (variant) => variant.stock <= 0 || variant.status === 'OUT_OF_STOCK'
+        )
+      );
+      const restored = withPurchasableCatalogueStock(
+        sampleProduct({
+          status: 'OUT_OF_STOCK',
+          variants: [
+            {
+              id: 'v-empty',
+              productId: 'p-test',
+              name: '1mg',
+              size: '1mg',
+              sku: 'RPUK-EMPTY-1',
+              price: 79.99,
+              stock: 0,
+              lowStockThreshold: 2,
+              status: 'OUT_OF_STOCK',
+            },
+          ],
+        })
+      );
+      const passed =
+        unavailable.length === 0 &&
+        restored.status === 'PUBLISHED' &&
+        restored.variants[0].stock > 0 &&
+        restored.variants[0].status === 'ACTIVE';
+      return {
+        passed,
+        expected: 'Every listed variant has stock and is ACTIVE',
+        actual: `unavailable=${unavailable.length} restoredStock=${restored.variants[0].stock} restoredStatus=${restored.variants[0].status}`,
+      };
+    })
+  );
+
+  results.push(
     run('Multi-variant cards use Select options and a live price range', () => {
       const product = sampleProduct();
       return {
@@ -286,6 +333,27 @@ export function runParityTests(): TestResult[] {
   );
 
   results.push(
+    run('Cart drawer cross-sell excludes items already in the basket', () => {
+      const inCart = sampleProduct({ id: 'cart-item', slug: 'cart-item', name: 'In cart' });
+      const related = sampleProduct({ id: 'rel-cart', slug: 'rel-cart', name: 'Suggested' });
+      const alsoInCart = sampleProduct({ id: 'also-cart', slug: 'also-cart', name: 'Already added' });
+      const suggestions = getCartCrossSellProducts(
+        [inCart.id, alsoInCart.id],
+        [inCart, related, alsoInCart],
+        4
+      );
+      return {
+        passed:
+          suggestions.some((item) => item.id === 'rel-cart') &&
+          !suggestions.some((item) => item.id === 'cart-item') &&
+          !suggestions.some((item) => item.id === 'also-cart'),
+        expected: 'Related catalogue items only; in-cart products omitted',
+        actual: suggestions.map((item) => item.id).join(',') || 'none',
+      };
+    })
+  );
+
+  results.push(
     run('Completed-order merchandising ignores draft orders', () => {
       const draft: Order = {
         ...INITIAL_ORDERS[0],
@@ -309,6 +377,114 @@ export function runParityTests(): TestResult[] {
         passed: entries.length === 0,
         expected: 'No bestsellers from DRAFT orders',
         actual: String(entries.length),
+      };
+    })
+  );
+
+  results.push(
+    run('Purchase notice copy anonymises names and formats relative time', () => {
+      const label = formatBuyerLabel('Dr. Arthur Harrison');
+      const hours = formatRelativeMinutesAgo(780);
+      const extra = formatPurchaseProductLabel(
+        'Bacteriostatic Water 0.9% Sodium Chloride 10mL – Hospira USP Injection',
+        3
+      );
+      const passed =
+        label === 'Arthur H' &&
+        hours === '13 hours ago' &&
+        extra.includes('& 3 more products');
+      return {
+        passed,
+        expected: 'Arthur H / 13 hours ago / & 3 more products',
+        actual: `${label} | ${hours} | ${extra}`,
+      };
+    })
+  );
+
+  results.push(
+    run('Catalogue purchase feed prefers bacteriostatic water and is clickable', () => {
+      const preferred = sampleProduct({
+        id: 'prod-bac',
+        name: 'Bacteriostatic Water 0.9% Sodium Chloride 10mL – Hospira USP Injection',
+        slug: 'bacteriostatic-water-0-9-sodium-chloride',
+      });
+      const other = sampleProduct({
+        id: 'prod-other',
+        slug: 'other-peptide',
+        name: 'Other Peptide',
+        isFeatured: true,
+      });
+      const hidden = sampleProduct({
+        id: 'prod-hidden',
+        slug: 'hidden',
+        name: 'Hidden',
+        visibility: 'ADMIN_ONLY',
+      });
+      const feed = buildCataloguePurchaseFeed([hidden, other, preferred]);
+      const first = feed[0];
+      const passed = Boolean(
+        first?.productSlug === 'bacteriostatic-water-0-9-sodium-chloride' &&
+          first.buyerLabel === 'Nathan D' &&
+          first.extraProductCount === 3 &&
+          first.href === '/product/bacteriostatic-water-0-9-sodium-chloride' &&
+          formatRelativeMinutesAgo(first.minutesAgo) === '13 hours ago' &&
+          !feed.some((item) => item.productId === 'prod-hidden')
+      );
+      return {
+        passed,
+        expected: 'Nathan D, preferred slug, 13 hours ago, product href, private omitted',
+        actual: `${first?.buyerLabel} ${first?.productSlug} ${first?.href} extra=${first?.extraProductCount} n=${feed.length}`,
+      };
+    })
+  );
+
+  results.push(
+    run('Recent completed orders populate purchase notices; drafts do not', () => {
+      const product = sampleProduct({ id: 'prod-live', slug: 'live-peptide', name: 'Live Peptide' });
+      const now = Date.parse('2026-08-25T10:00:00.000Z');
+      const recent: Order = {
+        ...INITIAL_ORDERS[0],
+        id: 'ord-recent',
+        status: 'PAYMENT_VERIFIED',
+        customerName: 'Nathan Drake',
+        createdAt: '2026-08-24T21:00:00.000Z',
+        items: [
+          { ...INITIAL_ORDERS[0].items[0], productId: 'prod-live' },
+          { ...INITIAL_ORDERS[0].items[1], productId: 'prod-extra' },
+        ],
+      };
+      const draft: Order = { ...recent, id: 'ord-draft', status: 'DRAFT' };
+      const old: Order = { ...recent, id: 'ord-old', createdAt: '2026-01-01T00:00:00.000Z' };
+      const fromRecent = buildPurchaseNotificationFeed([product], [recent], now);
+      const fromDraft = buildPurchaseNotificationFeed([product], [draft], now);
+      const fromOld = buildPurchaseNotificationFeed([product], [old], now);
+      const passed = Boolean(
+        fromRecent[0]?.buyerLabel === 'Nathan D' &&
+          fromRecent[0]?.href === '/product/live-peptide' &&
+          fromRecent[0]?.extraProductCount === 1 &&
+          fromDraft[0]?.id.startsWith('catalogue-') &&
+          fromOld[0]?.id.startsWith('catalogue-')
+      );
+      return {
+        passed,
+        expected: 'Recent verified order becomes clickable notice; draft/old fall back to catalogue',
+        actual: `recent=${fromRecent[0]?.id}/${fromRecent[0]?.buyerLabel} draft=${fromDraft[0]?.id} old=${fromOld[0]?.id}`,
+      };
+    })
+  );
+
+  results.push(
+    run('Purchase notifications are hidden on checkout and admin routes', () => {
+      const passed =
+        shouldShowPurchaseNotifications('home') &&
+        shouldShowPurchaseNotifications('product') &&
+        !shouldShowPurchaseNotifications('checkout') &&
+        !shouldShowPurchaseNotifications('admin') &&
+        !shouldShowPurchaseNotifications('account-login');
+      return {
+        passed,
+        expected: 'Visible on storefront; hidden on checkout/admin/login',
+        actual: `home=${shouldShowPurchaseNotifications('home')} checkout=${shouldShowPurchaseNotifications('checkout')} admin=${shouldShowPurchaseNotifications('admin')}`,
       };
     })
   );

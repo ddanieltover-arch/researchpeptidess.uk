@@ -196,7 +196,7 @@ export async function registerCustomerAccount(input: {
   const password = input.password || '';
 
   if (name.length < 2 || name.length > 120) {
-    return { error: 'Enter the name that should appear on laboratory requisitions.' };
+    return { error: 'Enter the name that should appear on laboratory orders.' };
   }
   if (!email.includes('@') || email.length > 254) {
     return { error: 'Enter a valid email address.' };

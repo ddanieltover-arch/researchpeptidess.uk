@@ -5,6 +5,7 @@
   --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Sora", ui-sans-serif, system-ui, sans-serif;
   --animate-announcement-marquee: announcement-marquee 36s linear infinite;
+  --animate-disclaimer-marquee: announcement-marquee 80s linear infinite;
 }
 
 @keyframes announcement-marquee {
@@ -59,8 +60,31 @@
   }
 }
 
+@layer utilities {
+  .animate-disclaimer-marquee {
+    animation: announcement-marquee 80s linear infinite;
+  }
+
+  .animate-purchase-notice-in {
+    animation: purchase-notice-in 280ms ease-out;
+  }
+}
+
+@keyframes purchase-notice-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-announcement-marquee {
+  .animate-announcement-marquee,
+  .animate-disclaimer-marquee,
+  .animate-purchase-notice-in {
     animation: none;
   }
 }

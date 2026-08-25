@@ -7,12 +7,13 @@ export interface CatalogueSearchHit {
 }
 
 function normalize(value: string): string {
-  return value.trim().toLowerCase();
+  return String(value || '').trim().toLowerCase();
 }
 
 export function productMatchesQuery(product: Product, query: string, categoryName?: string): boolean {
   const q = normalize(query);
   if (!q) return true;
+  const variants = product.variants || [];
   const haystacks = [
     product.name,
     product.slug,
@@ -21,9 +22,9 @@ export function productMatchesQuery(product: Product, query: string, categoryNam
     product.shortDescription,
     product.categoryName,
     categoryName,
-    ...product.variants.map((variant) => variant.sku),
-    ...product.variants.map((variant) => variant.casNumber || ''),
-    ...product.variants.map((variant) => variant.size),
+    ...variants.map((variant) => variant.sku),
+    ...variants.map((variant) => variant.casNumber || ''),
+    ...variants.map((variant) => variant.size),
   ];
   return haystacks.some((value) => value && normalize(value).includes(q));
 }
@@ -37,9 +38,10 @@ export function searchCatalogueProducts(
   const q = normalize(query);
   if (!q) return [];
 
-  const categoryById = new Map(categories.map((category) => [category.id, category.name]));
+  const list = Array.isArray(products) ? products : [];
+  const categoryById = new Map((categories || []).map((category) => [category.id, category.name]));
 
-  return products
+  return list
     .map((product) => {
       const categoryName = categoryById.get(product.categoryId) || product.categoryName || '';
       if (!productMatchesQuery(product, q, categoryName)) {
@@ -49,19 +51,20 @@ export function searchCatalogueProducts(
       const sku = normalize(product.sku);
       const slug = normalize(product.slug);
       const cas = normalize(product.casNumber || '');
-      const variantSkuMatch = product.variants.some((variant) => normalize(variant.sku) === q);
+      const variants = product.variants || [];
+      const variantSkuMatch = variants.some((variant) => normalize(variant.sku) === q);
       const directMatch =
         name === q || sku === q || slug === q || cas === q || variantSkuMatch || name.startsWith(q);
       let score = 10;
       if (directMatch) score += 50;
       if (name.includes(q)) score += 20;
-      if (sku.includes(q) || product.variants.some((variant) => normalize(variant.sku).includes(q))) score += 15;
+      if (sku.includes(q) || variants.some((variant) => normalize(variant.sku).includes(q))) score += 15;
       if (cas.includes(q)) score += 12;
       if (normalize(categoryName).includes(q)) score += 8;
       return { product, score, directMatch };
     })
     .filter((hit): hit is CatalogueSearchHit => Boolean(hit))
-    .sort((a, b) => b.score - a.score || a.product.name.localeCompare(b.product.name))
+    .sort((a, b) => b.score - a.score || (a.product.name || '').localeCompare(b.product.name || ''))
     .slice(0, limit);
 }
 

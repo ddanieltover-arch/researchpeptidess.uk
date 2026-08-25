@@ -11,6 +11,7 @@ import { Footer } from './components/layout/Footer';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CartDrawer } from './components/layout/CartDrawer';
 import { CookieConsentBanner } from './components/layout/CookieConsentBanner';
+import { RecentPurchaseNotification } from './components/layout/RecentPurchaseNotification';
 import { MetaTags } from './components/seo/MetaTags';
 import { ToastContainer } from './components/ui/Toast';
 import { CMSPageView } from './components/content/CMSPageView';
@@ -102,7 +103,7 @@ const AppContent: React.FC = () => {
 
   // Maintenance Mode Guard (Permits Admin access to settings/verification)
   const isMaintenanceActive =
-    (storeSettings.storeStatus === 'MAINTENANCE' || storeSettings.maintenanceMode) &&
+    (storeSettings?.storeStatus === 'MAINTENANCE' || storeSettings?.maintenanceMode) &&
     !isAdminAuthenticated &&
     activeRoute.kind !== 'admin' &&
     activeRoute.kind !== 'admin-login';
@@ -123,6 +124,14 @@ const AppContent: React.FC = () => {
     if (!isAdminAuthenticated) {
       return <AdminLoginPage />;
     }
+    return (
+      <div className="min-h-screen bg-stone-50 text-slate-900">
+        <MetaTags seo={currentSeo} />
+        <RouteErrorBoundary resetKey="admin-console" title="The admin console could not be displayed">
+          <AdminPage />
+        </RouteErrorBoundary>
+      </div>
+    );
   }
 
   // 4. Page Router — unique slug per page
@@ -161,10 +170,6 @@ const AppContent: React.FC = () => {
           return <AccountLoginPage />;
         }
         return <AccountPage />;
-      case 'admin':
-        return <AdminPage />;
-      case 'admin-login':
-        return <AdminPage />;
       case 'cms':
         if (matchedCmsPage) {
           return <CMSPageView page={matchedCmsPage} />;
@@ -213,6 +218,7 @@ const AppContent: React.FC = () => {
       {/* Global Modals & Drawers */}
       <CartDrawer />
       <CookieConsentBanner />
+      <RecentPurchaseNotification />
     </div>
   );
 };

@@ -45,10 +45,10 @@ export const Drawer: React.FC<DrawerProps> = ({
         className="fixed inset-0 bg-slate-950/50 backdrop-blur-2xs transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
-      <div className="fixed inset-y-0 right-0 flex pl-10">
+      <div className="fixed inset-y-0 right-0 flex min-h-0 pl-10">
         <div
           className={cn(
-            'flex w-screen flex-col bg-white shadow-2xl border-l border-stone-200 animate-in slide-in-from-right duration-250',
+            'flex h-full min-h-0 w-screen flex-col bg-white shadow-2xl border-l border-stone-200 animate-in slide-in-from-right duration-250',
             widths[width]
           )}
         >
@@ -67,11 +67,11 @@ export const Drawer: React.FC<DrawerProps> = ({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6">{children}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
 
           {/* Footer */}
           {footer && (
-            <div className="border-t border-stone-200 bg-stone-50/80 p-6">
+            <div className="max-h-[48vh] shrink-0 overflow-y-auto border-t border-stone-200 bg-stone-50/80 p-6">
               {footer}
             </div>
           )}

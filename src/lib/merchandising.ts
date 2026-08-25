@@ -25,10 +25,11 @@ export interface BestsellerEntry {
   pinned: boolean;
 }
 
-export function isPublicCatalogueProduct(product: Product): boolean {
-  return (
-    product.visibility === 'PUBLIC' &&
-    (product.status === 'PUBLISHED' || product.status === 'OUT_OF_STOCK')
+export function isPublicCatalogueProduct(product: Product | null | undefined): boolean {
+  return Boolean(
+    product &&
+      product.visibility === 'PUBLIC' &&
+      (product.status === 'PUBLISHED' || product.status === 'OUT_OF_STOCK')
   );
 }
 

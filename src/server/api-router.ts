@@ -96,9 +96,19 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
       await handlePaymentUpdate(req, res);
       return true;
     }
+    if (path === '/api/orders/lifecycle' && (req.method === 'POST' || req.method === 'PUT')) {
+      const { handleOrderLifecycleUpdate } = await import('./order-http');
+      await handleOrderLifecycleUpdate(req, res);
+      return true;
+    }
     if (path === '/api/admin/orders' && req.method === 'GET') {
       const { handleAdminCommerceRead } = await import('./commerce-http');
       await handleAdminCommerceRead(req, res);
+      return true;
+    }
+    if (path === '/api/admin/orders' && (req.method === 'PUT' || req.method === 'POST')) {
+      const { handleAdminOrderUpdate } = await import('./order-http');
+      await handleAdminOrderUpdate(req, res);
       return true;
     }
     if (path === '/api/account/orders' && req.method === 'GET') {
@@ -144,6 +154,14 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
           idempotencyKey,
           ipHash: hashIp(getClientAddress(req)),
         });
+        if (!result.duplicate) {
+          try {
+            const { dispatchContactEmails } = await import('./email/dispatch');
+            await dispatchContactEmails(result.record, correlationId);
+          } catch (error) {
+            logServerError({ correlationId, route: path, operation: 'contact_email_dispatch', error });
+          }
+        }
         sendJson(res, result.duplicate ? 200 : 201, { enquiry: result.record, duplicate: result.duplicate });
       } catch (error) {
         if (error instanceof Error && error.message === 'RATE_LIMITED') {
@@ -176,6 +194,15 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
           topics: topics.length > 0 ? (topics as string[]) : ['NEW_CATALOGUE'],
           consentSource: 'storefront_newsletter_form',
         });
+        try {
+          const { dispatchNewsletterEmails } = await import('./email/dispatch');
+          await dispatchNewsletterEmails(
+            { email: result.record.email, topics: result.record.topics, created: result.created },
+            correlationId
+          );
+        } catch (error) {
+          logServerError({ correlationId, route: path, operation: 'newsletter_email_dispatch', error });
+        }
         sendJson(res, 200, {
           subscription: result.record,
           created: result.created,

@@ -110,6 +110,15 @@ export async function handleCustomerRegister(req: NodeRequest, res: ServerRespon
       return;
     }
     clearLoginAttempts(`customer-register:${ip}`);
+    try {
+      const { dispatchAccountEmails } = await import('./email/dispatch');
+      await dispatchAccountEmails(
+        { name: result.user.name, email: result.user.email, institution: result.user.institution },
+        undefined
+      );
+    } catch {
+      /* Account creation must succeed even if mail dispatch fails. */
+    }
     const token = createCustomerSessionToken(result.user);
     sendJson(res, 201, { user: result.user }, { 'Set-Cookie': sessionCookieHeader(token, req) });
   } catch {

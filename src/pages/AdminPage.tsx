@@ -221,25 +221,29 @@ export const AdminPage: React.FC = () => {
   });
 
   // Metrics
-  const pendingPayments = payments.filter(
+  const paymentList = Array.isArray(payments) ? payments : [];
+  const orderList = Array.isArray(orders) ? orders : [];
+  const productList = Array.isArray(products) ? products : [];
+  const categoryList = Array.isArray(categories) ? categories : [];
+  const pendingPayments = paymentList.filter(
     (p) =>
       p.status === 'SUBMITTED' ||
       p.status === 'UNDER_REVIEW' ||
       p.status === 'AWAITING_CUSTOMER_ACTION'
   );
-  const pendingOrders = orders.filter(
+  const pendingOrders = orderList.filter(
     (o) =>
       o.status === 'PENDING_PAYMENT' ||
       o.status === 'PAYMENT_SUBMITTED' ||
       o.status === 'PAYMENT_VERIFIED' ||
       o.status === 'PROCESSING'
   );
-  const verifiedRevenue = orders
+  const verifiedRevenue = orderList
     .filter((o) => o.status === 'PAYMENT_VERIFIED' || o.status === 'PROCESSING' || o.status === 'SHIPPED' || o.status === 'DELIVERED')
-    .reduce((sum, o) => sum + o.total, 0);
+    .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
   // Filtered products
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = productList.filter((p) => {
     if (statusFilter !== 'ALL' && p.status !== statusFilter) return false;
     if (categoryFilter !== 'ALL' && p.categoryId !== categoryFilter) return false;
     if (productSearch.trim()) {
@@ -489,14 +493,14 @@ export const AdminPage: React.FC = () => {
         <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-1 shadow-2xs">
           <span className="text-[10px] uppercase font-bold text-emerald-800">Verified Revenue</span>
           <div className="text-2xl font-black text-emerald-950">{formatPrice(verifiedRevenue, currency)}</div>
-          <span className="text-[10px] text-emerald-700 font-sans block">Settled laboratory requisitions</span>
+          <span className="text-[10px] text-emerald-700 font-sans block">Settled laboratory orders</span>
         </div>
 
         <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-1 shadow-2xs">
           <span className="text-[10px] uppercase font-bold text-slate-500">Catalogue Compounds</span>
-          <div className="text-2xl font-black text-slate-900">{products.length}</div>
+          <div className="text-2xl font-black text-slate-900">{productList.length}</div>
           <span className="text-[10px] text-slate-500 font-sans block">
-            {products.filter((p) => p.status === 'PUBLISHED').length} Published / {products.filter((p) => p.status === 'DRAFT').length} Draft
+            {productList.filter((p) => p.status === 'PUBLISHED').length} Published / {productList.filter((p) => p.status === 'DRAFT').length} Draft
           </span>
         </div>
 
@@ -510,14 +514,14 @@ export const AdminPage: React.FC = () => {
       {/* Navigation Sub-Tabs */}
       <div className="flex border-b border-stone-200 gap-1 overflow-x-auto pb-0.5">
         {[
-          { id: 'products', label: `Products (${products.length})`, icon: Package },
+          { id: 'products', label: `Products (${productList.length})`, icon: Package },
           { id: 'import_export', label: 'CSV / Data Pipeline', icon: Upload },
-          { id: 'categories', label: `Categories (${categories.length})`, icon: Layers },
+          { id: 'categories', label: `Categories (${categoryList.length})`, icon: Layers },
           { id: 'batches_docs', label: `Batches & COAs (${batches.length})`, icon: FileCheck2 },
           { id: 'pricing_promotions', label: 'Pricing & Coupons', icon: Tag },
           { id: 'merchandising', label: 'Merchandising', icon: Sparkles },
-          { id: 'orders_operations', label: `Orders (${orders.length})`, icon: Truck, badge: pendingOrders.length > 0 ? `${pendingOrders.length}` : undefined },
-          { id: 'payments_verification', label: `Payments Queue (${payments.length})`, icon: CreditCard, badge: pendingPayments.length > 0 ? `${pendingPayments.length}` : undefined },
+          { id: 'orders_operations', label: `Orders (${orderList.length})`, icon: Truck, badge: pendingOrders.length > 0 ? `${pendingOrders.length}` : undefined },
+          { id: 'payments_verification', label: `Payments Queue (${paymentList.length})`, icon: CreditCard, badge: pendingPayments.length > 0 ? `${pendingPayments.length}` : undefined },
           { id: 'inventory_ledger', label: `Inventory & Stock`, icon: Box },
           { id: 'cms_pages', label: 'CMS & Policies', icon: FileText },
           { id: 'store_settings', label: 'Store Settings', icon: Settings },
@@ -587,7 +591,7 @@ export const AdminPage: React.FC = () => {
                 className="text-xs bg-stone-50 border border-stone-300 rounded-md px-3 py-1.5 font-mono focus:border-amber-600"
               >
                 <option value="ALL">All Categories</option>
-                {categories.map((c) => (
+                {categoryList.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
@@ -1561,7 +1565,7 @@ export const AdminPage: React.FC = () => {
         <Modal
           isOpen={Boolean(selectedOrder)}
           onClose={() => setSelectedOrder(null)}
-          title={`Cold Dispatch Requisition #${selectedOrder.orderNumber}`}
+          title={`Cold Dispatch Order #${selectedOrder.orderNumber}`}
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 space-y-1 font-sans">

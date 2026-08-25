@@ -73,7 +73,7 @@ export const ResearchDisclaimerModal: React.FC = () => {
             onClick={() => setComplianceModalOpen(false)}
             className="text-xs font-semibold text-slate-500 hover:text-slate-900"
           >
-            Cancel Requisition
+            Cancel
           </button>
           <Button
             variant="gold"

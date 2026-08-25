@@ -199,9 +199,9 @@ Our products are available to qualified researchers, academic institutions, corp
 
 #### Which payment methods do you accept?
 We accept:
-1. **UK Faster Payments / Bank Transfer:** Destination details are shown only when they have been published. Payment is verified manually after funds arrive.
-2. **SEPA Euro Bank Transfers:** Available when an IBAN is published for the order.
-3. **Cryptocurrency:** Bitcoin (BTC) and other networks only when a receiving wallet is published at checkout, with a 5% settlement discount after verification. This is not instant settlement.
+1. **Cryptocurrency:** Bitcoin (BTC) and other networks only when a receiving wallet is published at checkout, with a 5% settlement discount after verification. This is not instant settlement. Cryptocurrency is available on every order.
+2. **UK Faster Payments / Bank Transfer:** Available on orders of £100.00 and above. Destination details are shown only when they have been published. Payment is verified manually after funds arrive.
+3. **SEPA Euro Bank Transfers:** Available on the same £100.00 threshold when an IBAN is published for the order.
 
 #### How is payment verified?
 Once you complete checkout and transfer funds, enter your payment reference code or transaction hash on the order confirmation screen. Our compliance team verifies settlements against bank and blockchain ledgers, typically within 1–4 business hours.
@@ -251,7 +251,7 @@ Our team is available Monday through Friday, 09:00 to 17:00 GMT to assist with o
 
 ---
 
-### Institutional Procurement & Bulk Requisitions
+### Institutional Procurement & Bulk Orders
 
 Universities, research institutes, and commercial laboratories requiring custom peptide synthesis, larger batch quantities, or formal purchase orders may submit inquiries directly to **[SUPPORT_CONTACT_EMAIL]** with institutional letterhead and specific peptide sequence requirements.
     `,
@@ -277,7 +277,7 @@ Checkout uses the configured shipping engine. Destination, method name, price, e
 Current default UK mainland method (from store configuration):
 - **Method:** Royal Mail Tracked 24 (Next Business Day)
 - **Price:** £4.99
-- **Free threshold:** £75.00
+- **Free threshold:** £200.00
 - **Estimated window:** 1 working day (order by 3 PM) as configured
 - **Tracking:** available after dispatch
 
@@ -380,7 +380,7 @@ By placing an order, the Purchaser represents and warrants that:
 ### 4. Pricing, Payment & Inventory
 
 - All prices are quoted in **Pounds Sterling (GBP)** or **Euros (EUR)** and are subject to change without notice prior to order confirmation.
-- Orders must be paid in full via approved payment mechanisms (Bank Transfer or Cryptocurrency) within 24 hours of requisition creation. Inventory reservations expire automatically after 24 hours if payment confirmation is not received.
+- Orders must be paid in full via approved payment mechanisms (Bank Transfer or Cryptocurrency) within 24 hours of order creation. Inventory reservations expire automatically after 24 hours if payment confirmation is not received.
 - **[LEGAL_ENTITY_NAME]** reserves the right to decline, cancel, or refund any order suspected of violating our research-use compliance terms.
 
 ---

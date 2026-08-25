@@ -238,7 +238,7 @@ export const OrderOperationsManager: React.FC = () => {
               {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-slate-500 font-sans">
-                    No requisitions found matching the selected filters.
+                    No orders found matching the selected filters.
                   </td>
                 </tr>
               ) : (
@@ -320,7 +320,7 @@ export const OrderOperationsManager: React.FC = () => {
         <Modal
           isOpen={Boolean(selectedOrder)}
           onClose={() => setSelectedOrder(null)}
-          title={`Order Operations: Requisition #${selectedOrder.orderNumber}`}
+          title={`Order Operations: Order #${selectedOrder.orderNumber}`}
           maxWidth="2xl"
         >
           <div className="space-y-6 text-xs font-mono max-h-[80vh] overflow-y-auto pr-1">
@@ -348,7 +348,7 @@ export const OrderOperationsManager: React.FC = () => {
                     className="text-xs font-mono h-8 bg-amber-600 hover:bg-amber-700 text-white"
                   >
                     <Truck className="h-3.5 w-3.5 mr-1" />
-                    Dispatch Requisition
+                    Dispatch Order
                   </Button>
                 )}
 
@@ -558,7 +558,7 @@ export const OrderOperationsManager: React.FC = () => {
         <Modal
           isOpen={isDispatchModalOpen}
           onClose={() => setIsDispatchModalOpen(false)}
-          title={`Cold Dispatch Requisition #${selectedOrder.orderNumber}`}
+          title={`Cold Dispatch Order #${selectedOrder.orderNumber}`}
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 space-y-1">
@@ -617,7 +617,7 @@ export const OrderOperationsManager: React.FC = () => {
         <Modal
           isOpen={isCancelModalOpen}
           onClose={() => setIsCancelModalOpen(false)}
-          title={`Cancel Requisition #${selectedOrder.orderNumber}`}
+          title={`Cancel Order #${selectedOrder.orderNumber}`}
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="p-3 bg-rose-50 rounded-lg border border-rose-200 text-rose-950 font-sans">
@@ -644,7 +644,7 @@ export const OrderOperationsManager: React.FC = () => {
                 Cancel
               </Button>
               <Button variant="gold" onClick={handleCancelConfirm} className="bg-rose-700 hover:bg-rose-800 text-white">
-                Cancel Requisition
+                Cancel Order
               </Button>
             </div>
           </div>
@@ -656,7 +656,7 @@ export const OrderOperationsManager: React.FC = () => {
         <Modal
           isOpen={isRefundModalOpen}
           onClose={() => setIsRefundModalOpen(false)}
-          title={`Process Refund: Requisition #${selectedOrder.orderNumber}`}
+          title={`Process Refund: Order #${selectedOrder.orderNumber}`}
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-amber-950 font-sans">
@@ -704,7 +704,7 @@ export const OrderOperationsManager: React.FC = () => {
         <Modal
           isOpen={isOverrideModalOpen}
           onClose={() => setIsOverrideModalOpen(false)}
-          title={`Manual State Override: Requisition #${selectedOrder.orderNumber}`}
+          title={`Manual State Override: Order #${selectedOrder.orderNumber}`}
         >
           <div className="space-y-4 text-xs font-mono">
             <div className="p-3 bg-stone-100 rounded-lg border border-stone-300 text-slate-900 font-sans">

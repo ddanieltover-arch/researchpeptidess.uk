@@ -29,9 +29,9 @@ export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCartCount = (cart || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
   const route = parseAppPath(currentPath);
-  const moreCategories = categories.filter(
+  const moreCategories = (categories || []).filter(
     (category) =>
       isListedShopCategory(category) &&
       category.slug !== PEPTIDES_CATEGORY_SLUG &&

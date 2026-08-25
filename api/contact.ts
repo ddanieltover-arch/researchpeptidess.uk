@@ -36,6 +36,14 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       idempotencyKey,
       ipHash: hashIp(getClientAddress(req)),
     });
+    if (!result.duplicate) {
+      try {
+        const { dispatchContactEmails } = await import('../src/server/email/dispatch');
+        await dispatchContactEmails(result.record, correlationId);
+      } catch (error) {
+        logServerError({ correlationId, route: '/api/contact', operation: 'contact_email_dispatch', error });
+      }
+    }
     sendJson(res, result.duplicate ? 200 : 201, { enquiry: result.record, duplicate: result.duplicate });
   } catch (error) {
     if (error instanceof Error && error.message === 'RATE_LIMITED') {

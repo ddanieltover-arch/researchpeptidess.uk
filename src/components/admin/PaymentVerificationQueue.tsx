@@ -319,10 +319,10 @@ export const PaymentVerificationQueue: React.FC = () => {
               </div>
             </div>
 
-            {/* Requisition & Customer Info */}
+            {/* Order & Customer Info */}
             <div className="grid grid-cols-2 gap-3 p-3 bg-white rounded-lg border border-stone-200">
               <div>
-                <span className="text-[10px] text-slate-500 block">Associated Requisition</span>
+                <span className="text-[10px] text-slate-500 block">Associated Order</span>
                 <span className="font-bold text-slate-900">{selectedPayment.orderNumber}</span>
               </div>
               <div>

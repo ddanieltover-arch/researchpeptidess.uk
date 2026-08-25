@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -7,7 +7,18 @@ import { Checkbox } from '../components/ui/Checkbox';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { Badge } from '../components/ui/Badge';
 import { formatPrice } from '../lib/utils';
+import {
+  BANK_TRANSFER_MIN_MERCHANDISE_TOTAL,
+  isBankTransferAvailable,
+  merchandiseTotalForPayment,
+} from '../lib/pricing';
 import { STORE_CONTACT_EMAIL } from '../lib/store-contact';
+import { ResearchPurchaseDisclaimer } from '../components/layout/ResearchPurchaseDisclaimer';
+import {
+  checkoutDestinationOptionLabel,
+  getCheckoutDestinationGroups,
+  resolveCountryInfo,
+} from '../lib/shipping-engine';
 import { PaymentMethod, ShippingAddress, Order } from '../types';
 import {
   Building2,
@@ -34,6 +45,10 @@ export const CheckoutPage: React.FC = () => {
     currentUser,
     addToast,
     settlement,
+    setDestinationCountryCode,
+    eligibleShippingCalculation,
+    selectedShippingMethodId,
+    setSelectedShippingMethodId,
   } = useStore();
 
   const [step, setStep] = useState<'details' | 'confirmation'>('details');
@@ -42,7 +57,6 @@ export const CheckoutPage: React.FC = () => {
   // Form Fields
   const [email, setEmail] = useState(currentUser.email || '');
   const [fullName, setFullName] = useState(currentUser.id === 'guest' ? '' : currentUser.name || '');
-  const [institution, setInstitution] = useState(currentUser.institution || '');
   const [addressLine1, setAddressLine1] = useState('');
   const [addressLine2, setAddressLine2] = useState('');
   const [city, setCity] = useState('');
@@ -64,6 +78,48 @@ export const CheckoutPage: React.FC = () => {
   const [copiedCrypto, setCopiedCrypto] = useState(false);
   const bankSettlement = settlement.bank;
   const cryptoSettlement = settlement.crypto;
+  const merchandiseTotal = merchandiseTotalForPayment(cartTotals);
+  const bankTransferAvailable = isBankTransferAvailable(merchandiseTotal);
+  const checkoutPaymentMethod: PaymentMethod = bankTransferAvailable
+    ? selectedPaymentMethod
+    : 'CRYPTOCURRENCY';
+
+  const paymentOptions = useMemo(() => {
+    const cryptoOption = {
+      value: 'CRYPTOCURRENCY',
+      title: 'Cryptocurrency (Bitcoin / Ethereum / USDT-TRC20)',
+      description:
+        'Cryptocurrency transfer with a 5% discount on the order total. Settlement is verified manually after you send the transaction — this is not instant.',
+      badge: '5% DISCOUNT APPLIED',
+      icon: <Coins className="h-5 w-5 text-sky-500" />,
+    };
+    if (!bankTransferAvailable) {
+      return [cryptoOption];
+    }
+    return [
+      {
+        value: 'BANK_TRANSFER',
+        title: 'UK Faster Payments / SEPA Bank Transfer',
+        description:
+          'Direct institutional bank transfer via UK Faster Payments or SEPA. Verified manually by our laboratory compliance team upon receipt.',
+        icon: <Building2 className="h-5 w-5 text-[#4353FF]" />,
+      },
+      cryptoOption,
+    ];
+  }, [bankTransferAvailable]);
+
+  const checkoutDestinations = useMemo(() => getCheckoutDestinationGroups(), []);
+
+  useEffect(() => {
+    const eligibleIds = eligibleShippingCalculation.eligibleMethods.map((entry) => entry.method.id);
+    if (eligibleIds.length > 0 && !eligibleIds.includes(selectedShippingMethodId)) {
+      setSelectedShippingMethodId(eligibleIds[0]);
+    }
+  }, [
+    eligibleShippingCalculation.eligibleMethods,
+    selectedShippingMethodId,
+    setSelectedShippingMethodId,
+  ]);
 
   if (cart.length === 0 && step !== 'confirmation') {
     return (
@@ -71,7 +127,7 @@ export const CheckoutPage: React.FC = () => {
         <h2 className="text-xl font-bold font-mono text-slate-900">Your basket is empty</h2>
         <p className="text-xs text-slate-500">Add compounds before proceeding to checkout.</p>
         <Button variant="primary" size="md" onClick={() => navigate('/shop')} className="shadow-md shadow-blue-500/20">
-          Browse Requisition Catalogue
+          Browse Catalogue
         </Button>
       </div>
     );
@@ -83,25 +139,32 @@ export const CheckoutPage: React.FC = () => {
       addToast('error', 'Compliance Required', 'Please accept the Research-Use and In-Vitro Terms.');
       return;
     }
+    if (checkoutPaymentMethod === 'BANK_TRANSFER' && !bankTransferAvailable) {
+      addToast(
+        'error',
+        'Payment method unavailable',
+        `Bank transfer is available on orders of ${formatPrice(BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, currency)} and above.`
+      );
+      return;
+    }
 
     setIsSubmitting(true);
 
     const shippingAddress: ShippingAddress = {
       fullName,
-      institution,
       addressLine1,
       addressLine2,
       city,
       county,
       postcode,
       country,
-      countryName: country === 'GB' ? 'United Kingdom' : country,
+      countryName: resolveCountryInfo(country)?.name || country,
       phone,
       email,
     };
 
     const paymentProof =
-      selectedPaymentMethod === 'BANK_TRANSFER' ? bankRefInput.trim() : cryptoTxInput.trim();
+      checkoutPaymentMethod === 'BANK_TRANSFER' ? bankRefInput.trim() : cryptoTxInput.trim();
 
     setTimeout(() => {
       void (async () => {
@@ -109,7 +172,7 @@ export const CheckoutPage: React.FC = () => {
           customerEmail: email,
           customerName: fullName,
           shippingAddress,
-          paymentMethod: selectedPaymentMethod,
+          paymentMethod: checkoutPaymentMethod,
           paymentProofReference: paymentProof,
         });
 
@@ -144,7 +207,7 @@ export const CheckoutPage: React.FC = () => {
       <Breadcrumbs
         items={[
           { label: 'Basket', onClick: () => navigate('/cart') },
-          { label: step === 'confirmation' ? 'Order Confirmed' : 'Requisition Checkout' },
+          { label: step === 'confirmation' ? 'Order Confirmed' : 'Checkout' },
         ]}
       />
 
@@ -155,52 +218,52 @@ export const CheckoutPage: React.FC = () => {
               Institutional Dispatch &amp; Settlement
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-950 tracking-tight mt-0.5">
-              Requisition Checkout
+              Checkout
             </h1>
           </div>
+
+          <ResearchPurchaseDisclaimer className="rounded-xl" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Columns: Address & Payment Details */}
             <div className="lg:col-span-8 space-y-8">
-              {/* Section 1: Institutional & Contact Details */}
+              {/* Section 1: Contact Details */}
               <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-2xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <h3 className="text-sm font-bold uppercase font-mono tracking-wider text-slate-900">
-                    1. Requisitioner &amp; Facility Details
+                    1. Contact Details
                   </h3>
                   <span className="text-xs text-slate-400 font-mono">Guest / Account Checkout</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <Input
+                      label="Full Name"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Dr. Alistair Harrison"
+                      autoComplete="name"
+                    />
+                  </div>
                   <Input
-                    label="Contact Investigator / Full Name"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Dr. Alistair Harrison"
-                  />
-                  <Input
-                    label="Academic / Institutional Email"
+                    label="Email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="investigator@institution.ac.uk"
+                    placeholder="you@email.com"
+                    autoComplete="email"
                   />
                   <Input
-                    label="Institution / Department / Company"
-                    value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
-                    placeholder="e.g. Dept of Biochemistry / Laboratory Core"
-                    className="sm:col-span-2"
-                  />
-                  <Input
-                    label="Facility Phone / Direct Line"
+                    label="Phone Number"
+                    type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+44 7700 900000"
-                    className="sm:col-span-2"
+                    autoComplete="tel"
                   />
                 </div>
               </div>
@@ -256,17 +319,52 @@ export const CheckoutPage: React.FC = () => {
                     </label>
                     <select
                       value={country}
-                      onChange={(e) => setCountry(e.target.value)}
+                      onChange={(e) => {
+                        const nextCountry = e.target.value;
+                        setCountry(nextCountry);
+                        setDestinationCountryCode(nextCountry);
+                      }}
                       className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#4353FF] focus:ring-1 focus:ring-[#4353FF] font-mono"
                     >
-                      <option value="GB">United Kingdom (Tracked 24 / Guaranteed Next-Day)</option>
-                      <option value="IE">Ireland (DHL Express International)</option>
-                      <option value="DE">Germany (EU Priority Tracked)</option>
-                      <option value="FR">France (EU Priority Tracked)</option>
-                      <option value="NL">Netherlands (EU Priority Tracked)</option>
-                      <option value="SE">Sweden (EU Priority Tracked)</option>
+                      {checkoutDestinations.featured.map((destination) => (
+                        <option key={destination.code} value={destination.code}>
+                          {checkoutDestinationOptionLabel(destination)}
+                        </option>
+                      ))}
+                      {checkoutDestinations.otherEuropean.length > 0 && (
+                        <optgroup label="Other European Countries">
+                          {checkoutDestinations.otherEuropean.map((destination) => (
+                            <option key={destination.code} value={destination.code}>
+                              {checkoutDestinationOptionLabel(destination)}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </div>
+
+                  {eligibleShippingCalculation.eligibleMethods.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 font-mono">
+                        Dispatch Method
+                      </label>
+                      <select
+                        value={selectedShippingMethodId}
+                        onChange={(e) => setSelectedShippingMethodId(e.target.value)}
+                        className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-[#4353FF] focus:ring-1 focus:ring-[#4353FF] font-mono"
+                      >
+                        {eligibleShippingCalculation.eligibleMethods.map((entry) => (
+                          <option key={entry.method.id} value={entry.method.id}>
+                            {entry.freeShippingQualified
+                              ? `${entry.method.name} (FREE)`
+                              : entry.method.freeShippingThreshold
+                                ? `${entry.method.name} (${formatPrice(entry.method.price, currency)} or Free over ${formatPrice(entry.method.freeShippingThreshold, currency)})`
+                                : `${entry.method.name} (${formatPrice(entry.calculatedPrice, currency)})`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -283,29 +381,20 @@ export const CheckoutPage: React.FC = () => {
 
                 <RadioGroup
                   name="paymentMethod"
-                  value={selectedPaymentMethod}
+                  value={checkoutPaymentMethod}
                   onChange={(val) => setSelectedPaymentMethod(val as PaymentMethod)}
-                  options={[
-                    {
-                      value: 'BANK_TRANSFER',
-                      title: 'UK Faster Payments / SEPA Bank Transfer',
-                      description:
-                        'Direct institutional bank transfer via UK Faster Payments or SEPA. Verified manually by our laboratory compliance team upon receipt.',
-                      icon: <Building2 className="h-5 w-5 text-[#4353FF]" />,
-                    },
-                    {
-                      value: 'CRYPTOCURRENCY',
-                      title: 'Cryptocurrency (Bitcoin / Ethereum / USDT-TRC20)',
-                      description:
-                        'Cryptocurrency transfer with a 5% discount on the order total. Settlement is verified manually after you send the transaction — this is not instant.',
-                      badge: '5% DISCOUNT APPLIED',
-                      icon: <Coins className="h-5 w-5 text-sky-500" />,
-                    },
-                  ]}
+                  options={paymentOptions}
                 />
+                {!bankTransferAvailable && (
+                  <p className="text-[11px] leading-relaxed text-slate-500">
+                    Bank transfer is available on orders of {formatPrice(BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, currency)}{' '}
+                    and above. This basket is {formatPrice(merchandiseTotal, currency)}, so cryptocurrency is the
+                    settlement option.
+                  </p>
+                )}
 
                 {/* Conditional Payment Instructions Preview */}
-                {selectedPaymentMethod === 'BANK_TRANSFER' ? (
+                {checkoutPaymentMethod === 'BANK_TRANSFER' ? (
                   <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3 font-mono text-xs">
                     <div className="flex items-center justify-between font-bold text-slate-900">
                       <span>UK Bank Transfer</span>
@@ -456,7 +545,7 @@ export const CheckoutPage: React.FC = () => {
                     </div>
                   )}
 
-                  {selectedPaymentMethod === 'CRYPTOCURRENCY' && cartTotals.cryptoDiscount > 0 && (
+                  {checkoutPaymentMethod === 'CRYPTOCURRENCY' && cartTotals.cryptoDiscount > 0 && (
                     <div className="flex justify-between text-emerald-700 font-medium">
                       <span>Crypto Discount (5%)</span>
                       <span className="font-mono">-{formatPrice(cartTotals.cryptoDiscount, currency)}</span>
@@ -465,7 +554,7 @@ export const CheckoutPage: React.FC = () => {
 
                   <div className="flex justify-between text-slate-600">
                     <span>Tracked Shipping</span>
-                    <span className="font-mono">
+                    <span className={`font-mono ${cartTotals.shippingFee === 0 ? 'font-semibold text-emerald-700' : ''}`}>
                       {cartTotals.shippingFee === 0 ? 'FREE' : formatPrice(cartTotals.shippingFee, currency)}
                     </span>
                   </div>
@@ -487,7 +576,7 @@ export const CheckoutPage: React.FC = () => {
                   className="w-full font-mono text-sm tracking-wide shadow-md shadow-blue-500/20 justify-center"
                 >
                   <Lock className="h-4 w-4 mr-1" />
-                  <span>Submit Requisition Order</span>
+                  <span>Place Order</span>
                 </Button>
 
                 <div className="text-[11px] text-slate-500 font-mono text-center leading-relaxed">
@@ -505,7 +594,7 @@ export const CheckoutPage: React.FC = () => {
               <CheckCircle2 className="h-9 w-9" />
             </div>
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-800 block">
-              Requisition Successfully Registered
+              Order Successfully Registered
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-950">
               Order #{createdOrder?.orderNumber}
@@ -561,7 +650,7 @@ export const CheckoutPage: React.FC = () => {
 
                 <p className="text-[11px] font-sans text-slate-600 leading-relaxed">
                   Payment remains unverified until an administrator records receipt. Dispatch happens after that
-                  verification, not when the requisition is submitted.
+                  verification, not when the order is submitted.
                 </p>
               </div>
             ) : (

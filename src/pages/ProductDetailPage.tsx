@@ -253,7 +253,6 @@ export const ProductDetailPage: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {product.variants.map((v) => {
                 const isSelected = v.id === selectedVariant.id;
-                const inStock = v.stock > 0;
                 return (
                   <button
                     key={v.id}
@@ -268,13 +267,7 @@ export const ProductDetailPage: React.FC = () => {
                     <span className="text-xs font-mono font-semibold text-slate-700 mt-1">
                       {formatPrice(v.price, currency)}
                     </span>
-                    <span
-                      className={`text-[10px] font-mono mt-0.5 ${
-                        inStock ? 'text-emerald-700' : 'text-rose-600'
-                      }`}
-                    >
-                      {inStock ? `${v.stock} in UK Stock` : 'Out of Stock'}
-                    </span>
+                    <span className="text-[10px] font-mono mt-0.5 text-emerald-700">In stock</span>
                   </button>
                 );
               })}
@@ -284,13 +277,13 @@ export const ProductDetailPage: React.FC = () => {
           {/* Volume Pricing Matrix Table */}
           <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 space-y-2 text-xs">
             <div className="flex items-center justify-between font-bold text-slate-900 uppercase font-mono tracking-wider text-[11px]">
-              <span>Volume Requisition Tier Schedule</span>
+              <span>Volume Tier Schedule</span>
               <span className="text-[#4353FF]">Authoritative Tier Pricing</span>
             </div>
             <div
               className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4"
               role="radiogroup"
-              aria-label="Volume requisition tier"
+              aria-label="Volume pricing tier"
             >
               {[
                 { label: '1–2 units', qty: 1, min: 1, max: 2 },
@@ -335,7 +328,7 @@ export const ProductDetailPage: React.FC = () => {
           <div className="space-y-4 pt-4 border-t border-slate-200">
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="text-xs text-slate-500 font-mono block">Requisition Total (ex. VAT)</span>
+                <span className="text-xs text-slate-500 font-mono block">Order Total (ex. VAT)</span>
                 <div className="text-3xl font-extrabold font-mono text-slate-950 tracking-tight">
                   {formatPrice(selectedVariant.price * quantity - lineDiscount, currency)}
                 </div>
@@ -366,12 +359,9 @@ export const ProductDetailPage: React.FC = () => {
                 size="lg"
                 onClick={handleAddToCart}
                 isLoading={isAdding}
-                disabled={selectedVariant.stock <= 0}
                 className="sm:col-span-9 font-mono text-sm tracking-wide shadow-md shadow-blue-500/20"
               >
-                <span>
-                  {selectedVariant.stock > 0 ? 'Add to Cart' : 'Compound Out of Stock'}
-                </span>
+                <span>Add to Cart</span>
               </Button>
 
               <div className="sm:col-span-3 flex gap-2">
@@ -380,7 +370,7 @@ export const ProductDetailPage: React.FC = () => {
                   size="lg"
                   onClick={() => toggleWishlist(product.id)}
                   className={`flex-1 ${isWishlisted ? 'text-rose-600 border-rose-300 bg-rose-50' : ''}`}
-                  title="Save Requisition"
+                  title="Save for later"
                 >
                   <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-rose-600' : ''}`} />
                 </Button>

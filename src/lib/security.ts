@@ -126,7 +126,7 @@ export function authorizeOrderAccess(order: Order, user?: User | null): { allowe
 
   return {
     allowed: false,
-    reason: 'IDOR_REJECTED: User lacks authority to access the requested order requisition.',
+    reason: 'IDOR_REJECTED: User lacks authority to access the requested order.',
   };
 }
 

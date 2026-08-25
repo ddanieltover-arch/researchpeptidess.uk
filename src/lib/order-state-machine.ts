@@ -119,9 +119,9 @@ export function getOrderStatusDetails(status: OrderStatus): {
   switch (status) {
     case 'DRAFT':
       return {
-        label: 'Draft Requisition',
+        label: 'Draft Order',
         variant: 'neutral',
-        description: 'Requisition is in formulation stage.',
+        description: 'Order is in formulation stage.',
       };
     case 'PENDING_PAYMENT':
       return {
@@ -169,7 +169,7 @@ export function getOrderStatusDetails(status: OrderStatus): {
       return {
         label: 'Cancelled',
         variant: 'destructive',
-        description: 'Requisition cancelled and inventory reservations released.',
+        description: 'Order cancelled and inventory reservations released.',
       };
     case 'REFUNDED':
       return {

@@ -24,9 +24,9 @@ export async function upsertNewsletterSubscription(params: {
 
   const email = params.email.trim().toLowerCase();
   const now = new Date();
-  const providerStatus = isEmailProviderConnected()
-    ? 'PROVIDER_CONFIGURED_NOT_SENDING'
-    : 'NOT_CONNECTED_TO_EMAIL_PROVIDER';
+    const providerStatus = isEmailProviderConnected()
+      ? 'CONNECTED'
+      : 'NOT_CONNECTED_TO_EMAIL_PROVIDER';
 
   const [existing] = await db
     .select()

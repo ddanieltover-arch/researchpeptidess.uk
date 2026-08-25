@@ -22,7 +22,7 @@ Research Peptides UK is an independent e-commerce application engineered specifi
 
 All copy and product entities are bound to in-vitro laboratory guidelines:
 - **No Human / Veterinary Consumption Claims**: Audited by `/src/lib/compliance.ts`.
-- **Mandatory Compliance Disclaimer**: 3-point legal acknowledgment before requisition checkout.
+- **Mandatory Compliance Disclaimer**: 3-point legal acknowledgment before checkout.
 - **HPLC & Mass Spectrometry Transparency**: Product pages show HPLC/COA files and purity percentages only when those records exist on the product or batch.
 
 ---
@@ -43,7 +43,7 @@ All copy and product entities are bound to in-vitro laboratory guidelines:
 | `/` | Homepage with hero, trust statistics, featured compounds, HPLC transparency |
 | `/shop` | Full catalogue with search, category filtering, purity filters, grid/list view |
 | `/product/:slug` | Deep technical specifications, COA viewer, bulk tier matrix, variant selection |
-| `/cart` | Requisition basket, free shipping progress, tier discounts, coupon input |
+| `/cart` | Basket, free shipping progress, tier discounts, coupon input |
 | `/checkout` | 2-step checkout, bank transfer / crypto payment choice, compliance agreement |
 | `/account` | Customer portal, order history with live status badges, saved compounds |
 | `/admin` | Payment verification queue, courier dispatch tracking input, inventory manager |

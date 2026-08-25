@@ -43,8 +43,8 @@ export function publicPathForCategorySlug(slug: string): string {
   return CATEGORY_SLUG_TO_PUBLIC_PATH[resolved] || `/category/${resolved}`;
 }
 
-export function isListedShopCategory(category: { slug: string; isActive: boolean }): boolean {
-  return category.isActive && category.slug !== 'uncategorized';
+export function isListedShopCategory(category: { slug?: string; isActive?: boolean } | null | undefined): boolean {
+  return Boolean(category?.isActive && category.slug && category.slug !== 'uncategorized');
 }
 
 export function liveCategoryProductCount(

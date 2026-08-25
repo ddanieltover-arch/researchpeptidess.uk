@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { InventoryTransaction, Order, Payment } from '../types';
+import { InventoryTransaction, NotificationType, Order, Payment } from '../types';
 import { classifyPersistError, recommendedPersistFix } from '../lib/persist-error';
 import { readAdminSessionFromCookieHeader } from './admin-auth';
 import { readCustomerSessionFromCookieHeader } from './customer-auth';
@@ -11,7 +11,25 @@ import {
   sendPublicError,
   type NodeRequest,
 } from './http';
-import { persistInventoryEvent, persistOrderBundle, persistPaymentUpdate } from './persist/commerce';
+import { persistInventoryEvent, persistOrderBundle, persistPaymentUpdate, persistTrustedOrderUpdate } from './persist/commerce';
+
+function asNotificationType(value: unknown): NotificationType | undefined {
+  const allowed: NotificationType[] = [
+    'ORDER_RECEIVED',
+    'PAYMENT_INSTRUCTIONS',
+    'PAYMENT_SUBMITTED',
+    'PAYMENT_VERIFIED',
+    'PAYMENT_REJECTED',
+    'ORDER_PROCESSING',
+    'ORDER_SHIPPED',
+    'ORDER_DELIVERED',
+    'ORDER_CANCELLED',
+    'REFUND_PROCESSED',
+  ];
+  return typeof value === 'string' && allowed.includes(value as NotificationType)
+    ? (value as NotificationType)
+    : undefined;
+}
 
 function actorUserId(req: IncomingMessage): string | null {
   const customer = readCustomerSessionFromCookieHeader(req.headers.cookie);
@@ -60,6 +78,14 @@ export async function handleCreateOrder(req: IncomingMessage, res: ServerRespons
       idempotencyKey,
       userId: actorUserId(req),
     });
+    if (!result.duplicate) {
+      try {
+        const { dispatchOrderCreatedEmails } = await import('./email/dispatch');
+        await dispatchOrderCreatedEmails(result.order, result.payment, correlationId);
+      } catch (error) {
+        logServerError({ correlationId, route: '/api/orders', operation: 'order_email_dispatch', error });
+      }
+    }
     sendJson(res, result.duplicate ? 200 : 201, result, { 'x-correlation-id': correlationId });
   } catch (error) {
     const classified = classifyPersistError(error);
@@ -87,7 +113,24 @@ export async function handlePaymentUpdate(req: IncomingMessage, res: ServerRespo
     return;
   }
   try {
-    await persistPaymentUpdate(payment, order);
+    const admin = readAdminSessionFromCookieHeader(req.headers.cookie);
+    if (admin) {
+      await persistTrustedOrderUpdate(order, payment);
+      try {
+        const { dispatchInferredOrderEmails } = await import('./email/dispatch');
+        await dispatchInferredOrderEmails(order, payment, undefined, correlationId);
+      } catch (error) {
+        logServerError({ correlationId, route: '/api/orders/payment', operation: 'order_email_dispatch', error });
+      }
+    } else {
+      await persistPaymentUpdate(payment, order);
+      try {
+        const { dispatchOrderEventEmails } = await import('./email/dispatch');
+        await dispatchOrderEventEmails('PAYMENT_SUBMITTED', order, payment, correlationId);
+      } catch (error) {
+        logServerError({ correlationId, route: '/api/orders/payment', operation: 'order_email_dispatch', error });
+      }
+    }
     sendJson(res, 200, { ok: true }, { 'x-correlation-id': correlationId });
   } catch (error) {
     const classified = classifyPersistError(error);
@@ -129,3 +172,58 @@ export async function handleInventoryEvent(req: IncomingMessage, res: ServerResp
     });
   }
 }
+
+export async function handleOrderLifecycleUpdate(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const correlationId = readCorrelationId(req);
+  res.setHeader('x-correlation-id', correlationId);
+  if (req.method !== 'PUT' && req.method !== 'POST') {
+    sendPublicError(res, 405, correlationId, 'Method not allowed.');
+    return;
+  }
+
+  const admin = readAdminSessionFromCookieHeader(req.headers.cookie);
+  const customer = readCustomerSessionFromCookieHeader(req.headers.cookie);
+  const body = await readJsonBody(req as NodeRequest);
+  const order = body.order as Order | undefined;
+  const payment = body.payment as Payment | undefined;
+  const eventType = asNotificationType(body.eventType);
+  if (!order?.id) {
+    sendPublicError(res, 400, correlationId, 'Order payload is required.');
+    return;
+  }
+
+  const customerOwnsOrder =
+    Boolean(customer) &&
+    (order.customerId === customer?.id ||
+      order.customerEmail.trim().toLowerCase() === customer?.email.trim().toLowerCase());
+  const customerCancelling = customerOwnsOrder && order.status === 'CANCELLED';
+  if (!admin && !customerCancelling) {
+    sendPublicError(res, 401, correlationId, 'Administrator authentication is required.');
+    return;
+  }
+
+  try {
+    await persistTrustedOrderUpdate(order, payment);
+    try {
+      const { dispatchInferredOrderEmails } = await import('./email/dispatch');
+      await dispatchInferredOrderEmails(
+        order,
+        payment,
+        eventType || (customerCancelling ? 'ORDER_CANCELLED' : undefined),
+        correlationId
+      );
+    } catch (error) {
+      logServerError({ correlationId, route: '/api/orders/lifecycle', operation: 'order_email_dispatch', error });
+    }
+    sendJson(res, 200, { ok: true }, { 'x-correlation-id': correlationId });
+  } catch (error) {
+    const classified = classifyPersistError(error);
+    logServerError({ correlationId, route: '/api/orders/lifecycle', operation: classified.stage, error });
+    sendPublicError(res, 500, correlationId, 'Order could not be updated. Reference: ' + correlationId, {
+      stage: classified.stage,
+      classification: classified.classification,
+    });
+  }
+}
+
+export const handleAdminOrderUpdate = handleOrderLifecycleUpdate;
