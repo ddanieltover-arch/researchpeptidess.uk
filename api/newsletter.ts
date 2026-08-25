@@ -1,28 +1,28 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { logServerError, readCorrelationId, readJsonBody, sendJson, sendPublicError, type NodeRequest } from '../src/server/http';
 
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  const correlationId = readCorrelationId(req);
-  res.setHeader('x-correlation-id', correlationId);
-  if (req.method !== 'POST') {
-    sendPublicError(res, 405, correlationId, 'Method not allowed.');
-    return;
-  }
-  const body = await readJsonBody(req as NodeRequest);
-  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-  const consent = body.consent === true;
-  const topics = Array.isArray(body.topics) ? body.topics.filter((item) => typeof item === 'string') : [];
-  if (!consent) {
-    sendPublicError(res, 422, correlationId, 'Consent is required before a subscription record can be stored.');
-    return;
-  }
-  if (!email.includes('@')) {
-    sendPublicError(res, 400, correlationId, 'Enter a valid email address.');
-    return;
-  }
   try {
+    const { readCorrelationId, readJsonBody, sendJson, sendPublicError } = await import('../src/server/http');
+    const correlationId = readCorrelationId(req);
+    res.setHeader('x-correlation-id', correlationId);
+    if (req.method !== 'POST') {
+      sendPublicError(res, 405, correlationId, 'Method not allowed.');
+      return;
+    }
+    const body = await readJsonBody(req);
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const consent = body.consent === true;
+    const topics = Array.isArray(body.topics) ? body.topics.filter((item) => typeof item === 'string') : [];
+    if (!consent) {
+      sendPublicError(res, 422, correlationId, 'Consent is required before a subscription record can be stored.');
+      return;
+    }
+    if (!email.includes('@')) {
+      sendPublicError(res, 400, correlationId, 'Enter a valid email address.');
+      return;
+    }
     const { upsertNewsletterSubscription } = await import('../src/server/persist/newsletter');
     const result = await upsertNewsletterSubscription({
       email,
@@ -34,8 +34,10 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       created: result.created,
       providerStatus: result.record.providerStatus,
     });
-  } catch (error) {
-    logServerError({ correlationId, route: '/api/newsletter', operation: 'newsletter_upsert', error });
-    sendPublicError(res, 500, correlationId, 'The subscription could not be stored. Reference: ' + correlationId);
+  } catch {
+    if (res.headersSent) return;
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.end(JSON.stringify({ error: 'The subscription could not be stored.', stage: 'newsletter_upsert' }));
   }
 }
