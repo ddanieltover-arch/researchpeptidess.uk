@@ -1,8 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { handleAccountOrdersRead } from '../../src/server/commerce-http';
-import { handleCustomerApiRequest } from '../../src/server/customer-http';
+import { runLazyApi, vercelNodeConfig } from '../../src/server/lazy-api';
 
-export const config = { runtime: 'nodejs' };
+export const config = vercelNodeConfig;
 
 function withAccountPrefix(req: IncomingMessage): string {
   const raw = (req.url || '').split('?')[0] || '/';
@@ -17,9 +16,17 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const query = (req.url || '').includes('?') ? req.url!.slice(req.url!.indexOf('?')) : '';
   req.url = path + query;
 
-  if (path === '/api/account/orders') {
-    await handleAccountOrdersRead(req, res);
-    return;
-  }
-  await handleCustomerApiRequest(req, res);
+  await runLazyApi(
+    req,
+    res,
+    async () => {
+      if (path === '/api/account/orders') {
+        const { handleAccountOrdersRead } = await import('../../src/server/commerce-http');
+        return handleAccountOrdersRead;
+      }
+      const { handleCustomerApiRequest } = await import('../../src/server/customer-http');
+      return handleCustomerApiRequest;
+    },
+    'The account request could not be completed.'
+  );
 }

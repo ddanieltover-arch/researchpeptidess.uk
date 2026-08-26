@@ -50,6 +50,7 @@ import {
 import { MerchandisingRecord } from '../lib/merchandising-persistence';
 import { INITIAL_CMS_PAGES, DEFAULT_STORE_SETTINGS } from '../lib/cms-data';
 import { withCanonicalStoreContactEmails } from '../lib/store-contact';
+import { toRenderableText } from '../lib/react-text';
 import {
   getBankSettlementInstructions,
   getCryptoSettlementInstructions,
@@ -358,7 +359,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addToast = (type: ToastMessage['type'], title: string, message: string) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setToasts((prev) => [
+      ...prev,
+      {
+        id,
+        type,
+        title: toRenderableText(title) || 'Notice',
+        message: toRenderableText(message),
+      },
+    ]);
     setTimeout(() => {
       removeToast(id);
     }, 4500);
@@ -467,7 +476,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setProducts((prev) => applyMerchandisingOverlay(prev, snapshot.merchandising));
       }
       if (snapshot.storeSettings) {
-        setStoreSettings(withCanonicalStoreContactEmails(snapshot.storeSettings));
+        try {
+          setStoreSettings(withCanonicalStoreContactEmails(snapshot.storeSettings));
+        } catch {
+          setStoreSettings(DEFAULT_STORE_SETTINGS);
+        }
       }
       if (snapshot.shippingMethods?.length) {
         setShippingMethods(snapshot.shippingMethods);
@@ -489,7 +502,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Shipping & Pricing calculations
   const appliedCoupon =
-    coupons.find((c) => c.code.toUpperCase() === appliedCouponCode?.toUpperCase()) || null;
+    coupons.find(
+      (c) => typeof c?.code === 'string' && c.code.toUpperCase() === appliedCouponCode?.toUpperCase()
+    ) || null;
 
   const intermediateSubtotal = useMemo(() => {
     let sub = 0;

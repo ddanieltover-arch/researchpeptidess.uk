@@ -1,8 +1,16 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { handleInventoryEvent } from '../src/server/order-http';
+import { runLazyApi, vercelNodeConfig } from '../src/server/lazy-api';
 
-export const config = { runtime: 'nodejs' };
+export const config = vercelNodeConfig;
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  await handleInventoryEvent(req, res);
+  await runLazyApi(
+    req,
+    res,
+    async () => {
+      const { handleInventoryEvent } = await import('../src/server/order-http');
+      return handleInventoryEvent;
+    },
+    'Inventory could not be stored.'
+  );
 }

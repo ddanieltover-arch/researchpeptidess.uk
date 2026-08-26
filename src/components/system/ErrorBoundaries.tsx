@@ -1,5 +1,13 @@
 // @ts-nocheck
 import React from 'react';
+import { toRenderableText } from '../../lib/react-text';
+
+function formatBoundaryMessage(error) {
+  if (error instanceof Error) {
+    return toRenderableText(error.message) || error.name || '';
+  }
+  return toRenderableText(error);
+}
 
 interface WidgetProps {
   name: string;
@@ -59,7 +67,7 @@ export class RouteErrorBoundary extends React.Component<RouteProps, RouteState> 
   }
 
   static getDerivedStateFromError(error: Error): RouteState {
-    return { hasError: true, message: error?.message ? String(error.message) : '' };
+    return { hasError: true, message: formatBoundaryMessage(error) };
   }
 
   componentDidCatch(error: Error) {

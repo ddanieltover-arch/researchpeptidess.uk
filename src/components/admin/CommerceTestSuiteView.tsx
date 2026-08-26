@@ -3,6 +3,7 @@ import { useStore } from '../../context/StoreContext';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { formatPrice, formatDate } from '../../lib/utils';
+import { toRenderableText } from '../../lib/react-text';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -225,7 +226,7 @@ export const CommerceTestSuiteView: React.FC = () => {
 
                           {!test.passed && test.error && (
                             <div className="p-2.5 bg-rose-50 rounded-lg border border-rose-200 text-rose-900 text-[11px] font-mono mt-2">
-                              <strong>Assertion Failure:</strong> {test.error}
+                              <strong>Assertion Failure:</strong> {toRenderableText(test.error)}
                             </div>
                           )}
 

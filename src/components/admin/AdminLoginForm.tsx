@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Mail } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { ADMIN_HOME_PATH } from '../../lib/admin-session';
+import { toRenderableText } from '../../lib/react-text';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -19,7 +20,7 @@ export const AdminLoginForm: React.FC = () => {
     try {
       const result = await signInAdmin(email, password);
       if (!('user' in result)) {
-        setError(result.error);
+        setError(toRenderableText(result.error) || 'Invalid email or password.');
         return;
       }
       navigate(ADMIN_HOME_PATH, { replace: true });

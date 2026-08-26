@@ -58,9 +58,9 @@ export const CATEGORY_NAV_LABELS: Record<string, string> = {
 
 export function categoryNavLabel(category: { slug?: string; name?: string } | null | undefined): string {
   if (!category) return 'Catalogue';
-  const slug = category.slug || '';
+  const slug = typeof category.slug === 'string' ? category.slug : '';
   if (CATEGORY_NAV_LABELS[slug]) return CATEGORY_NAV_LABELS[slug];
-  const name = (category.name || '').trim();
+  const name = typeof category.name === 'string' ? category.name.trim() : '';
   return name || 'Catalogue';
 }
 

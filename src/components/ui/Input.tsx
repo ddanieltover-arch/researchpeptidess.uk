@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { toRenderableText } from '../../lib/react-text';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -46,7 +47,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
         </div>
-        {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
+        {error ? <p className="text-xs text-rose-600 font-medium">{toRenderableText(error)}</p> : null}
         {helperText && !error && <p className="text-xs text-slate-500">{helperText}</p>}
       </div>
     );

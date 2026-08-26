@@ -59,9 +59,9 @@ function DisclaimerSegments({ storeHost, duplicate = false }: { storeHost: strin
 
 export const ResearchPurchaseDisclaimer: React.FC<{ className?: string }> = ({ className }) => {
   const { storeSettings } = useStore();
-  const storeHost = (storeSettings?.primaryDomain || 'https://researchpeptidess.uk')
-    .replace(/^https?:\/\//, '')
-    .replace(/\/$/, '');
+  const domainSource =
+    typeof storeSettings?.primaryDomain === 'string' ? storeSettings.primaryDomain : 'https://researchpeptidess.uk';
+  const storeHost = domainSource.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   return (
     <aside

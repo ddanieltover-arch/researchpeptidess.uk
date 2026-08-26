@@ -14,6 +14,7 @@ import { Product } from '../types';
 import { isPublicBootstrapSafe } from './public-bootstrap';
 import { normalizeNeonConnectionString } from './neon-connection-string';
 import { classifyPersistError, recommendedPersistFix } from './persist-error';
+import { toRenderableText } from './react-text';
 
 function run(
   name: string,
@@ -242,6 +243,36 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'SCHEMA_MISSING and CONNECTION classifications',
         actual: `${missing.classification}/${conn.classification}`,
+      };
+    }),
+    run('Plain {code, message} objects stringify instead of crashing React children', () => {
+      const rendered = toRenderableText({ code: '42P01', message: 'relation "orders" does not exist' });
+      const nested = toRenderableText({ error: { code: 'VALIDATION', message: 'Invalid payload' } });
+      const empty = toRenderableText(undefined);
+      const passed =
+        rendered === '42P01: relation "orders" does not exist' &&
+        nested === 'VALIDATION: Invalid payload' &&
+        empty === '';
+      return {
+        passed,
+        expected: 'code: message strings; empty for undefined',
+        actual: `${rendered} | ${nested} | "${empty}"`,
+      };
+    }),
+    run('Non-string store contact emails fall back to the canonical inbox', () => {
+      const next = withCanonicalStoreContactEmails({
+        primaryEmail: { code: 'X', message: 'bad' } as unknown as string,
+        supportEmail: { code: 'Y', message: 'bad' } as unknown as string,
+        privacyEmail: null,
+      });
+      const passed =
+        next.primaryEmail === STORE_CONTACT_EMAIL &&
+        next.supportEmail === STORE_CONTACT_EMAIL &&
+        next.privacyEmail === STORE_CONTACT_EMAIL;
+      return {
+        passed,
+        expected: STORE_CONTACT_EMAIL,
+        actual: `${next.primaryEmail}/${next.supportEmail}/${next.privacyEmail}`,
       };
     }),
     run('Robots.txt lists sitemap and disallows cart, checkout, account, and admin', () => {

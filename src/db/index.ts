@@ -8,7 +8,6 @@ import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { resolveDatabaseUrl } from '../lib/neon-connection-string';
 import * as schema from './schema';
-import { ensureCommerceSchema } from '../server/persist/ensure-schema';
 
 export interface DatabaseConfig {
   connectionString?: string;
@@ -49,6 +48,7 @@ export function getDb(): AppDb | null {
 export async function getReadyDb(): Promise<AppDb | null> {
   const db = getDb();
   if (!db) return null;
+  const { ensureCommerceSchema } = await import('../server/persist/ensure-schema');
   await ensureCommerceSchema();
   return db;
 }

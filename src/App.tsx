@@ -231,7 +231,9 @@ export default function App() {
       <RouteErrorBoundary title="The storefront could not be displayed">
         <AppContent />
       </RouteErrorBoundary>
-      <ToastContainer />
+      <RouteErrorBoundary title="A notification could not be displayed">
+        <ToastContainer />
+      </RouteErrorBoundary>
     </StoreProvider>
   );
 }

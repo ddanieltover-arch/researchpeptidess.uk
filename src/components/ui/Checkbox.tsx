@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { Check } from 'lucide-react';
+import { toRenderableText } from '../../lib/react-text';
 
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: React.ReactNode;
@@ -45,7 +46,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               <span className="block text-sm font-medium text-slate-800">{label}</span>
             )}
             {description && <span className="block text-xs text-slate-500">{description}</span>}
-            {error && <span className="block text-xs text-rose-600 font-medium">{error}</span>}
+            {error ? <span className="block text-xs text-rose-600 font-medium">{toRenderableText(error)}</span> : null}
           </span>
         )}
       </label>

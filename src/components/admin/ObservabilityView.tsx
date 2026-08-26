@@ -23,6 +23,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { LogLevel } from '../../types';
+import { toRenderableText } from '../../lib/react-text';
 
 export const ObservabilityView: React.FC = () => {
   const [logs, setLogs] = useState(getObservabilityLogs());
@@ -52,10 +53,10 @@ export const ObservabilityView: React.FC = () => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (
-        log.correlationId.toLowerCase().includes(q) ||
-        log.route.toLowerCase().includes(q) ||
-        log.operation.toLowerCase().includes(q) ||
-        log.message.toLowerCase().includes(q)
+        toRenderableText(log.correlationId).toLowerCase().includes(q) ||
+        toRenderableText(log.route).toLowerCase().includes(q) ||
+        toRenderableText(log.operation).toLowerCase().includes(q) ||
+        toRenderableText(log.message).toLowerCase().includes(q)
       );
     }
     return true;
@@ -169,7 +170,7 @@ export const ObservabilityView: React.FC = () => {
                     </div>
                   </div>
 
-                  <p className="text-stone-700 text-xs leading-relaxed">{log.message}</p>
+                  <p className="text-stone-700 text-xs leading-relaxed">{toRenderableText(log.message)}</p>
 
                   {log.details && Object.keys(log.details).length > 0 && (
                     <pre className="bg-stone-900 text-stone-200 p-2.5 rounded-lg text-[11px] overflow-x-auto leading-tight">

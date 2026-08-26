@@ -1,7 +1,16 @@
 import { AdminSessionUser, isAdminSessionUser } from './admin-session';
+import { toRenderableText } from './react-text';
 
-interface ApiErrorBody {
-  error?: string;
+function asApiErrorMessage(body: unknown, fallback: string): string {
+  if (!body || typeof body !== 'object') {
+    return typeof body === 'string' && body.trim() ? body : fallback;
+  }
+  const record = body as { error?: unknown; message?: unknown };
+  const fromError = toRenderableText(record.error);
+  if (fromError) return fromError;
+  const fromMessage = toRenderableText(record.message);
+  if (fromMessage) return fromMessage;
+  return fallback;
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -38,11 +47,12 @@ export async function loginAdmin(
     },
     body: JSON.stringify({ email, password }),
   });
-  const body = (await readJson(response)) as ApiErrorBody & { user?: unknown };
-  if (!response.ok || !isAdminSessionUser(body.user)) {
-    return { error: body.error || 'Invalid email or password.' };
+  const body = await readJson(response);
+  const record = (body && typeof body === 'object' ? body : {}) as { user?: unknown };
+  if (!response.ok || !isAdminSessionUser(record.user)) {
+    return { error: asApiErrorMessage(body, 'Invalid email or password.') };
   }
-  return { user: body.user };
+  return { user: record.user };
 }
 
 export async function logoutAdmin(): Promise<void> {

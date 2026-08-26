@@ -6,6 +6,7 @@ import { ResearchPurchaseDisclaimer } from './ResearchPurchaseDisclaimer';
 import { WhatsAppContactLink } from './WhatsAppContactLink';
 import { parseAppPath, ROUTES } from '../../lib/routing';
 import { useStore } from '../../context/StoreContext';
+import { toRenderableText } from '../../lib/react-text';
 
 export const Footer: React.FC = () => {
   const { currentPath, storeSettings } = useStore();
@@ -32,10 +33,10 @@ export const Footer: React.FC = () => {
               UK laboratory catalogue for research peptides, reagents, and documented batches where records exist.
             </p>
             <a
-              href={`mailto:${storeSettings?.supportEmail || ''}`}
+              href={`mailto:${toRenderableText(storeSettings?.supportEmail)}`}
               className="text-xs text-slate-500 hover:text-white transition-colors"
             >
-              {storeSettings?.supportEmail}
+              {toRenderableText(storeSettings?.supportEmail)}
             </a>
             <WhatsAppContactLink className="text-slate-400 hover:text-[#25D366]" />
           </div>

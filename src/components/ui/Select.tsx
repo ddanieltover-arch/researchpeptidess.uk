@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { ChevronDown } from 'lucide-react';
+import { toRenderableText } from '../../lib/react-text';
 
 export interface SelectOption {
   value: string;
@@ -47,7 +48,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             <ChevronDown className="h-4 w-4" />
           </div>
         </div>
-        {error && <p className="text-xs text-rose-600 font-medium">{error}</p>}
+        {error ? <p className="text-xs text-rose-600 font-medium">{toRenderableText(error)}</p> : null}
         {helperText && !error && <p className="text-xs text-slate-500">{helperText}</p>}
       </div>
     );

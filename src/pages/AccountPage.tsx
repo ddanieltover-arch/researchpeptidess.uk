@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { ProductCard } from '../components/ui/ProductCard';
 import { formatPrice, formatDate } from '../lib/utils';
 import { filterOrdersForCustomer } from '../lib/account-orders';
+import { toRenderableText } from '../lib/react-text';
 import { Order } from '../types';
 import {
   User,
@@ -39,7 +40,7 @@ export const AccountPage: React.FC = () => {
 
   const customerOrders = filterOrdersForCustomer(orders, currentUser);
   const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
-  const displayName = currentUser.name?.trim() || currentUser.email || 'Account';
+  const displayName = toRenderableText(currentUser.name).trim() || toRenderableText(currentUser.email) || 'Account';
   const avatarInitial = displayName.charAt(0).toUpperCase() || '?';
 
   const getStatusBadge = (status: Order['status']) => {
@@ -82,14 +83,14 @@ export const AccountPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold font-mono text-slate-950">{displayName}</h1>
               <Badge variant="brand" size="sm">
-                {currentUser.role}
+                {toRenderableText(currentUser.role)}
               </Badge>
             </div>
-            <p className="text-xs text-slate-500 font-mono mt-0.5">{currentUser.email}</p>
+            <p className="text-xs text-slate-500 font-mono mt-0.5">{toRenderableText(currentUser.email)}</p>
             {currentUser.institution && (
               <p className="text-xs text-[#4353FF] font-medium flex items-center gap-1 mt-1 font-mono">
                 <Building2 className="h-3.5 w-3.5" />
-                {currentUser.institution}
+                {toRenderableText(currentUser.institution)}
               </p>
             )}
           </div>
@@ -240,19 +241,19 @@ export const AccountPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <span className="text-slate-500 block text-[10px]">Contact Person:</span>
-              <span className="font-bold text-slate-900">{currentUser.name}</span>
+              <span className="font-bold text-slate-900">{toRenderableText(currentUser.name)}</span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">Email Address:</span>
-              <span className="font-bold text-slate-900">{currentUser.email}</span>
+              <span className="font-bold text-slate-900">{toRenderableText(currentUser.email)}</span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">Institution:</span>
-              <span className="font-bold text-slate-900">{currentUser.institution || 'N/A'}</span>
+              <span className="font-bold text-slate-900">{toRenderableText(currentUser.institution) || 'N/A'}</span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px]">Telephone:</span>
-              <span className="font-bold text-slate-900">{currentUser.phone || 'N/A'}</span>
+              <span className="font-bold text-slate-900">{toRenderableText(currentUser.phone) || 'N/A'}</span>
             </div>
           </div>
         </div>

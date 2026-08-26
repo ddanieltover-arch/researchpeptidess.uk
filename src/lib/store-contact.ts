@@ -13,7 +13,7 @@ const LEGACY_STORE_INBOXES = new Set([
 ]);
 
 export function canonicalizeStoreContactEmail(email: string | undefined | null): string {
-  const trimmed = (email ?? '').trim();
+  const trimmed = typeof email === 'string' ? email.trim() : '';
   if (!trimmed || LEGACY_STORE_INBOXES.has(trimmed.toLowerCase())) {
     return STORE_CONTACT_EMAIL;
   }

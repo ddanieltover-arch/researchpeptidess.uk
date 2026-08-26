@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Building2, Lock, Mail, User } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { ACCOUNT_HOME_PATH } from '../../lib/customer-session';
+import { toRenderableText } from '../../lib/react-text';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -27,7 +28,7 @@ export const AccountAuthForm: React.FC = () => {
           ? await registerCustomer({ name, email, password, institution })
           : await signInCustomer(email, password);
       if (!('user' in result)) {
-        setError(result.error);
+        setError(toRenderableText(result.error) || (mode === 'register' ? 'Unable to create this account.' : 'Invalid email or password.'));
         return;
       }
       navigate(ACCOUNT_HOME_PATH, { replace: true });

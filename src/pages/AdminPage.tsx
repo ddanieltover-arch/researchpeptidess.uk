@@ -6,6 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { formatPrice, formatDate } from '../lib/utils';
+import { toRenderableText } from '../lib/react-text';
 import {
   Order,
   Product,
@@ -248,9 +249,9 @@ export const AdminPage: React.FC = () => {
     if (categoryFilter !== 'ALL' && p.categoryId !== categoryFilter) return false;
     if (productSearch.trim()) {
       const q = productSearch.toLowerCase();
-      const matchName = (p.name || '').toLowerCase().includes(q);
-      const matchSku = (p.sku || '').toLowerCase().includes(q);
-      const matchCas = p.casNumber?.toLowerCase().includes(q);
+      const matchName = toRenderableText(p.name).toLowerCase().includes(q);
+      const matchSku = toRenderableText(p.sku).toLowerCase().includes(q);
+      const matchCas = toRenderableText(p.casNumber).toLowerCase().includes(q);
       if (!matchName && !matchSku && !matchCas) return false;
     }
     return true;
@@ -438,7 +439,7 @@ export const AdminPage: React.FC = () => {
               Operations & Catalogue Pipeline
             </span>
             <Badge variant="scientific" size="sm">
-              {currentUser.email}
+              {toRenderableText(currentUser?.email)}
             </Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-serif text-slate-950 tracking-tight mt-1">
@@ -593,7 +594,7 @@ export const AdminPage: React.FC = () => {
                 <option value="ALL">All Categories</option>
                 {categoryList.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {toRenderableText(c.name)}
                   </option>
                 ))}
               </select>
@@ -695,13 +696,13 @@ export const AdminPage: React.FC = () => {
                             />
                           </td>
                           <td className="p-3">
-                            <div className="font-bold text-slate-900 font-sans text-xs">{p.name}</div>
+                            <div className="font-bold text-slate-900 font-sans text-xs">{toRenderableText(p.name)}</div>
                             <div className="text-[10px] text-slate-500">
-                              SKU: {p.sku} {p.casNumber ? `| CAS: ${p.casNumber}` : ''}
+                              SKU: {toRenderableText(p.sku)} {p.casNumber ? `| CAS: ${toRenderableText(p.casNumber)}` : ''}
                             </div>
                           </td>
                           <td className="p-3">
-                            <span className="text-slate-700">{p.categoryName || 'General'}</span>
+                            <span className="text-slate-700">{toRenderableText(p.categoryName) || 'General'}</span>
                           </td>
                           <td className="p-3">
                             <Badge
@@ -716,7 +717,7 @@ export const AdminPage: React.FC = () => {
                               }
                               size="sm"
                             >
-                              {p.status}
+                              {toRenderableText(p.status)}
                             </Badge>
                           </td>
                           <td className="p-3">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { isPlainDataObject, toRenderableText } from '../../lib/react-text';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'gold' | 'scientific' | 'success' | 'warning' | 'destructive' | 'neutral' | 'outline' | 'brand' | 'sky';
@@ -40,7 +41,7 @@ export const Badge: React.FC<BadgeProps> = ({
       )}
       {...props}
     >
-      {children}
+      {isPlainDataObject(children) ? toRenderableText(children) : children}
     </span>
   );
 };

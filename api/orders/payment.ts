@@ -1,8 +1,16 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { handlePaymentUpdate } from '../../src/server/order-http';
+import { runLazyApi, vercelNodeConfig } from '../../src/server/lazy-api';
 
-export const config = { runtime: 'nodejs' };
+export const config = vercelNodeConfig;
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  await handlePaymentUpdate(req, res);
+  await runLazyApi(
+    req,
+    res,
+    async () => {
+      const { handlePaymentUpdate } = await import('../../src/server/order-http');
+      return handlePaymentUpdate;
+    },
+    'Payment state could not be stored.'
+  );
 }

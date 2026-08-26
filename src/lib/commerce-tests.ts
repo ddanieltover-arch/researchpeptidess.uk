@@ -17,6 +17,7 @@ import { runPersistenceTests } from './persistence-tests';
 import { runEmailTests } from './email/email-tests';
 import { filterOrdersForCustomer } from './account-orders';
 import { isSecureCookieRequest } from './cookie-security';
+import { toRenderableText } from './react-text';
 import { normalizePaymentProofReference } from './settlement-instructions';
 
 export interface TestResult {
@@ -67,7 +68,7 @@ export function runAllCommerceTests(): TestSuiteReport {
         passed: false,
         expected: 'Successful execution',
         actual: `Exception: ${err?.message || String(err)}`,
-        error: err?.message,
+        error: toRenderableText((err as { message?: unknown })?.message ?? err),
         durationMs,
       });
     }

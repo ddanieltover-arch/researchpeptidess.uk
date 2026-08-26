@@ -3,6 +3,7 @@ import { NEWSLETTER_TOPIC_OPTIONS } from '../../lib/newsletter';
 import { submitNewsletterRequest } from '../../lib/persistence-api';
 import { NewsletterTopic } from '../../types';
 import { Button } from '../ui/Button';
+import { toRenderableText } from '../../lib/react-text';
 
 interface NewsletterSignupProps {
   variant?: 'light' | 'dark';
@@ -86,7 +87,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
         <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-0.5" />
         I consent to Research Peptides UK storing this email for the selected update topics. A confirmation message will be sent to this address.
       </label>
-      {error && <p className="text-[11px] text-rose-500">{error}</p>}
+      {error ? <p className="text-[11px] text-rose-500">{toRenderableText(error)}</p> : null}
       {message && <p className="text-[11px] text-emerald-500">{message}</p>}
       <Button type="submit" variant="primary" size="sm" className="w-full text-xs">
         Subscribe with consent

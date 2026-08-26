@@ -1,15 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { handleAdminApiRequest } from '../../src/server/admin-http';
-import {
-  handleAdminEnvStatus,
-  handleAdminMerchandising,
-  handleAdminShipping,
-  handleAdminStoreSettings,
-} from '../../src/server/admin-persist-http';
-import { handleAdminCommerceRead } from '../../src/server/commerce-http';
-import { handleAdminOrderUpdate } from '../../src/server/order-http';
+import { runLazyApi, vercelNodeConfig } from '../../src/server/lazy-api';
 
-export const config = { runtime: 'nodejs' };
+export const config = vercelNodeConfig;
 
 function withAdminPrefix(req: IncomingMessage): string {
   const raw = (req.url || '').split('?')[0] || '/';
@@ -24,29 +16,37 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const query = (req.url || '').includes('?') ? req.url!.slice(req.url!.indexOf('?')) : '';
   req.url = path + query;
 
-  if (path === '/api/admin/orders') {
-    if (req.method === 'GET') {
-      await handleAdminCommerceRead(req, res);
-      return;
-    }
-    await handleAdminOrderUpdate(req, res);
-    return;
-  }
-  if (path === '/api/admin/merchandising') {
-    await handleAdminMerchandising(req, res);
-    return;
-  }
-  if (path === '/api/admin/store-settings') {
-    await handleAdminStoreSettings(req, res);
-    return;
-  }
-  if (path === '/api/admin/shipping') {
-    await handleAdminShipping(req, res);
-    return;
-  }
-  if (path === '/api/admin/env-status') {
-    await handleAdminEnvStatus(req, res);
-    return;
-  }
-  await handleAdminApiRequest(req, res);
+  await runLazyApi(
+    req,
+    res,
+    async () => {
+      if (path === '/api/admin/orders') {
+        if (req.method === 'GET') {
+          const { handleAdminCommerceRead } = await import('../../src/server/commerce-http');
+          return handleAdminCommerceRead;
+        }
+        const { handleAdminOrderUpdate } = await import('../../src/server/order-http');
+        return handleAdminOrderUpdate;
+      }
+      if (path === '/api/admin/merchandising') {
+        const { handleAdminMerchandising } = await import('../../src/server/admin-persist-http');
+        return handleAdminMerchandising;
+      }
+      if (path === '/api/admin/store-settings') {
+        const { handleAdminStoreSettings } = await import('../../src/server/admin-persist-http');
+        return handleAdminStoreSettings;
+      }
+      if (path === '/api/admin/shipping') {
+        const { handleAdminShipping } = await import('../../src/server/admin-persist-http');
+        return handleAdminShipping;
+      }
+      if (path === '/api/admin/env-status') {
+        const { handleAdminEnvStatus } = await import('../../src/server/admin-persist-http');
+        return handleAdminEnvStatus;
+      }
+      const { handleAdminApiRequest } = await import('../../src/server/admin-http');
+      return handleAdminApiRequest;
+    },
+    'The admin request could not be completed.'
+  );
 }

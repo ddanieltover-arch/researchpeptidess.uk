@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from '../../context/StoreContext';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { toRenderableText } from '../../lib/react-text';
 
 export const ToastContainer: React.FC = () => {
   const { toasts, removeToast } = useStore();
@@ -35,8 +36,8 @@ export const ToastContainer: React.FC = () => {
           >
             <div className="mt-0.5">{icons[toast.type]}</div>
             <div className="flex-1 space-y-0.5">
-              <h6 className="text-xs font-bold text-slate-900">{toast.title}</h6>
-              <p className="text-xs text-slate-600 leading-relaxed">{toast.message}</p>
+              <h6 className="text-xs font-bold text-slate-900">{toRenderableText(toast.title)}</h6>
+              <p className="text-xs text-slate-600 leading-relaxed">{toRenderableText(toast.message)}</p>
             </div>
             <button
               onClick={() => removeToast(toast.id)}

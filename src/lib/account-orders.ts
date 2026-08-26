@@ -6,7 +6,7 @@ export function filterOrdersForCustomer(
 ): Order[] {
   if (!Array.isArray(orders) || !user) return [];
 
-  const email = (user.email || '').trim().toLowerCase();
+  const email = typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
   const userId = user.id || '';
 
   return orders.filter((order) => {
