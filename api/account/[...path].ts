@@ -1,45 +1,8 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { dispatchVercelApi } from '../../src/server/vercel-handler';
+
 export const config = { runtime: 'nodejs' };
 
-function send(
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean },
-  status: number,
-  body: unknown
-): void {
-  if (res.headersSent) return;
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(JSON.stringify(body));
-}
-
-function loadError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : 'load_failed';
-  return raw
-    .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]')
-    .replace(/postgresql:\/\/\S+/gi, '[redacted]')
-    .slice(0, 160);
-}
-
-function withAccountPrefix(url?: string): string {
-  const raw = (url || '').split('?')[0] || '/';
-  if (raw.startsWith('/api/account')) return raw;
-  if (raw.startsWith('/account')) return `/api${raw}`;
-  const rest = raw.startsWith('/') ? raw : `/${raw}`;
-  return `/api/account${rest === '/' ? '' : rest}`;
-}
-
-export default async function handler(
-  req: { method?: string; url?: string },
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
-): Promise<void> {
-  const path = withAccountPrefix(req.url);
-  const query = (req.url || '').includes('?') ? req.url!.slice(req.url!.indexOf('?')) : '';
-  req.url = path + query;
-
-  try {
-    const { handleCustomerApiRequest } = await import('../../src/server/customer-http');
-    await handleCustomerApiRequest(req as never, res as never);
-  } catch (error) {
-    send(res, 500, { error: 'The account request could not be completed.', detail: loadError(error) });
-  }
+export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  await dispatchVercelApi(req, res, 'The account request could not be completed.');
 }

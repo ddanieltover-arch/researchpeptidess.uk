@@ -1,7 +1,7 @@
-export const config = { runtime: 'nodejs' };
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 function send(
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean },
+  res: ServerResponse,
   status: number,
   body: unknown
 ): void {
@@ -20,14 +20,18 @@ function loadError(error: unknown): string {
     .slice(0, 160);
 }
 
-export default async function handler(
-  req: { method?: string },
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
+export async function dispatchVercelApi(
+  req: IncomingMessage,
+  res: ServerResponse,
+  fallbackMessage: string
 ): Promise<void> {
   try {
-    const mod = await import('../src/server/bootstrap-http');
-    await mod.handleBootstrap(req as never, res as never);
+    const { handleApiRequest } = await import('./api-router');
+    const handled = await handleApiRequest(req, res);
+    if (!handled && !res.headersSent) {
+      send(res, 404, { error: 'Not found.' });
+    }
   } catch (error) {
-    send(res, 500, { error: 'Store bootstrap could not be loaded.', detail: loadError(error) });
+    send(res, 500, { error: fallbackMessage, detail: loadError(error) });
   }
 }
