@@ -230,7 +230,7 @@ Yes. We deliver to selected European countries with compliant customs documentat
     category: 'SUPPORT',
     lastUpdated: '2026-08-18',
     isPublished: true,
-    requiredBusinessInputs: ['[PRIMARY_CONTACT_EMAIL]', '[SUPPORT_CONTACT_EMAIL]', '[PRIMARY_CONTACT_PHONE]', '[REGISTERED_OFFICE_ADDRESS]'],
+    requiredBusinessInputs: ['[PRIMARY_CONTACT_EMAIL]', '[SUPPORT_CONTACT_EMAIL]'],
     seoTitle: 'Contact Us | Research Peptides UK Support & Inquiries',
     seoDescription: 'Contact Research Peptides UK for laboratory order assistance, institutional procurement, bulk synthesis inquiries, and payment verification support.',
     contentMarkdown: `
@@ -243,11 +243,7 @@ Our team is available Monday through Friday, 09:00 to 17:00 GMT to assist with o
 ### Contact Coordinates
 
 - **Email:** [PRIMARY_CONTACT_EMAIL]
-- **Telephone:** [PRIMARY_CONTACT_PHONE]
-- **Postal / Registered Address:**
-  [LEGAL_ENTITY_NAME]  
-  [REGISTERED_OFFICE_ADDRESS]  
-  United Kingdom
+- **WhatsApp (messages only):** [WHATSAPP_CONTACT]
 
 ---
 

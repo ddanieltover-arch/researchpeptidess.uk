@@ -26,6 +26,9 @@ export interface OrderCalculationResult {
 export const DEFAULT_FREE_SHIPPING_THRESHOLD = 200.0; // £200.00
 export const CRYPTO_DISCOUNT_PERCENT = 5; // 5% business rule discount
 export const BANK_TRANSFER_MIN_MERCHANDISE_TOTAL = 100.0;
+/** RESEARCH10: 10% off when catalogue subtotal (before volume discounts) is £300 or more. */
+export const RESEARCH10_CODE = 'RESEARCH10';
+export const RESEARCH10_MIN_SPEND = 300;
 
 export function merchandiseTotalForPayment(totals: {
   subtotal: number;
@@ -108,6 +111,7 @@ export function calculateTierDiscountForLine(
 
 /**
  * Validates whether a coupon is eligible for application.
+ * `subtotal` must be catalogue subtotal (before volume, coupon, or crypto), matching apply-time checks.
  */
 export function validateCoupon(
   coupon: Coupon | null | undefined,
@@ -172,7 +176,7 @@ export function calculateOrderTotals(
   let appliedCouponDetails: OrderCalculationResult['appliedCouponDetails'];
 
   if (activeCoupon) {
-    const validation = validateCoupon(activeCoupon, discountedSubtotal);
+    const validation = validateCoupon(activeCoupon, subtotal);
     if (validation.isValid) {
       if (activeCoupon.discountType === 'PERCENTAGE') {
         couponDiscount = discountedSubtotal * (activeCoupon.discountValue / 100);

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { User, Menu, X, Heart, ChevronDown, Search } from 'lucide-react';
+import { Heart, ChevronDown, Search, User, Menu, X } from 'lucide-react';
 import { BrandLogo } from '../ui/BrandLogo';
 import { AppLink } from '../ui/AppLink';
 import { CatalogueSearchBox } from '../search/CatalogueSearchBox';
 import { categoryPath, isNavActive, parseAppPath, ROUTES } from '../../lib/routing';
 import {
+  categoryNavLabel,
   isListedShopCategory,
-  PEPTIDES_CATEGORY_SLUG,
-  RESEARCH_CHEMICALS_CATEGORY_SLUG,
+  isPrimaryCatalogueCategory,
 } from '../../lib/catalogue-collections';
 
 export const Header: React.FC = () => {
@@ -32,10 +32,7 @@ export const Header: React.FC = () => {
   const totalCartCount = (cart || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
   const route = parseAppPath(currentPath);
   const moreCategories = (categories || []).filter(
-    (category) =>
-      isListedShopCategory(category) &&
-      category.slug !== PEPTIDES_CATEGORY_SLUG &&
-      category.slug !== RESEARCH_CHEMICALS_CATEGORY_SLUG
+    (category) => isListedShopCategory(category) && !isPrimaryCatalogueCategory(category)
   );
 
   const navLinkClass = (href: string) =>
@@ -95,7 +92,7 @@ export const Header: React.FC = () => {
                     href={categoryPath(cat.slug)}
                     className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#4353FF]"
                   >
-                    <span>{cat.name}</span>
+                    <span>{categoryNavLabel(cat)}</span>
                     <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
                       {cat.productCount ?? 0}
                     </span>
@@ -236,11 +233,14 @@ export const Header: React.FC = () => {
             { href: '/quality', label: 'Quality' },
             { href: '/faq', label: 'FAQ' },
             { href: '/contact', label: 'Contact' },
-            { href: ROUTES.account, label: isAccountAuthenticated ? 'Account' : 'Sign in' },
+            {
+              href: isAccountAuthenticated ? ROUTES.account : ROUTES.accountLogin,
+              label: isAccountAuthenticated ? 'Account' : 'Sign in',
+            },
             { href: ROUTES.cart, label: `Cart (${totalCartCount})` },
           ].map((item) => (
             <AppLink
-              key={item.href}
+              key={`${item.href}-${item.label}`}
               href={item.href}
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full rounded-lg px-3 py-2 text-left font-display text-sm font-semibold text-slate-900 hover:bg-slate-50"
@@ -249,19 +249,17 @@ export const Header: React.FC = () => {
             </AppLink>
           ))}
           <div className="my-1 space-y-1 border-l-2 border-[#4353FF] pl-3">
-            {categories
-              .filter(isListedShopCategory)
-              .map((cat) => (
-                <AppLink
-                  key={cat.id}
-                  href={categoryPath(cat.slug)}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex w-full items-center justify-between px-2 py-1 text-xs text-slate-600 hover:text-[#4353FF]"
-                >
-                  <span>{cat.name}</span>
-                  <span className="font-mono text-[10px] text-slate-400">({cat.productCount ?? 0})</span>
-                </AppLink>
-              ))}
+            {categories.filter(isListedShopCategory).map((cat) => (
+              <AppLink
+                key={cat.id}
+                href={categoryPath(cat.slug)}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex w-full items-center justify-between px-2 py-1 text-xs text-slate-600 hover:text-[#4353FF]"
+              >
+                <span>{categoryNavLabel(cat)}</span>
+                <span className="font-mono text-[10px] text-slate-400">({cat.productCount ?? 0})</span>
+              </AppLink>
+            ))}
           </div>
           {isAdminAuthenticated && (
             <AppLink

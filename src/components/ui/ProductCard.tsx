@@ -79,12 +79,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
         )}
       </AppLink>
 
-      <div className="flex min-w-0 flex-1 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
         <AppLink href={productPath(product.slug)} className="flex-1">
           <p className="mb-1 font-display text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">
             {product.categoryName || 'Catalogue'}
           </p>
-          <h3 className="mb-1 flex items-start justify-between gap-2 font-display text-[15px] font-semibold leading-snug tracking-[-0.02em] text-slate-900 group-hover:text-[#4353FF]">
+          <h3 className="mb-1 flex items-start justify-between gap-1 font-display text-[13px] font-semibold leading-snug tracking-[-0.02em] text-slate-900 group-hover:text-[#4353FF] sm:gap-2 sm:text-[15px]">
             <span>{displayName}</span>
             <ArrowUpRight className="h-4 w-4 shrink-0 text-[#4353FF] opacity-0 transition-opacity group-hover:opacity-100" />
           </h3>

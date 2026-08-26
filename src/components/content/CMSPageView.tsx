@@ -8,7 +8,6 @@
  * - Dynamic SEO meta tags and canonical URLs
  * - Substitution of real business settings (or highlighting required business inputs)
  * - Research-use statutory reminder
- * - Print / Share actions
  */
 
 import React from 'react';
@@ -20,9 +19,10 @@ import { AppLink } from '../ui/AppLink';
 import { ROUTES } from '../../lib/routing';
 import { ContactEnquiryForm } from './ContactEnquiryForm';
 import { resolvePublicBusinessValue } from '../../lib/public-placeholders';
+import { STORE_WHATSAPP_DISPLAY } from '../../lib/store-contact';
+import { WhatsAppContactLink } from '../layout/WhatsAppContactLink';
 import {
   ShieldAlert,
-  Printer,
   ChevronRight,
   Building,
   Calendar,
@@ -50,7 +50,7 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
       '[PRIMARY_CONTACT_EMAIL]': storeSettings.primaryEmail,
       '[SUPPORT_CONTACT_EMAIL]': storeSettings.supportEmail,
       '[DATA_PROTECTION_EMAIL]': storeSettings.privacyEmail,
-      '[PRIMARY_CONTACT_PHONE]': resolvePublicBusinessValue(storeSettings.phone),
+      '[WHATSAPP_CONTACT]': STORE_WHATSAPP_DISPLAY,
       '[GOVERNING_LAW_COUNTRY]': resolvePublicBusinessValue(storeSettings.governingLaw),
     };
 
@@ -226,40 +226,22 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
 
         {/* Page Header Card */}
         <header className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-6">
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase bg-stone-100 text-stone-800 border border-stone-200">
-                <FileCheck className="w-3.5 h-3.5 text-amber-600" />
-                {page.category} POLICY
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
-                {page.title}
-              </h1>
-              {page.subtitle && (
-                <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
-                  {page.subtitle}
-                </p>
-              )}
+          <div className="space-y-1.5 border-b border-stone-100 pb-6">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase bg-stone-100 text-stone-800 border border-stone-200">
+              <FileCheck className="w-3.5 h-3.5 text-amber-600" />
+              {page.category} POLICY
             </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors border border-stone-200"
-                title="Print this official policy document"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print / PDF
-              </button>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
+              {page.title}
+            </h1>
+            {page.subtitle && (
+              <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
+                {page.subtitle}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-stone-500 pt-4 font-mono">
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-stone-400" />
-              Effective Date: {page.lastUpdated}
-            </span>
             <span className="flex items-center gap-1.5">
               <Building className="w-3.5 h-3.5 text-stone-400" />
               Jurisdiction: England & Wales
@@ -286,12 +268,20 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
 
         {page.slug === 'contact' && (
           <>
-            <div className="flex items-start gap-3 rounded-xl bg-stone-100 p-4 sm:p-5">
-              <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-[#4353FF]" aria-hidden="true" />
-              <div className="space-y-0.5 text-sm text-slate-600">
-                <h3 className="text-base font-bold text-slate-900">Shipping Days</h3>
-                <p>Mon - Fri / Except Holidays</p>
-                <p>Orders placed and paid after 12:00 GMT are shipped the following business day</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-3 rounded-xl bg-stone-100 p-4 sm:p-5">
+                <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-[#4353FF]" aria-hidden="true" />
+                <div className="space-y-0.5 text-sm text-slate-600">
+                  <h3 className="text-base font-bold text-slate-900">Shipping Days</h3>
+                  <p>Mon - Fri / Except Holidays</p>
+                  <p>Orders placed and paid after 12:00 GMT are shipped the following business day</p>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 sm:p-5">
+                <WhatsAppContactLink className="text-[#25D366]" />
+                <p className="text-sm text-slate-600">
+                  This is our WhatsApp desk only. The number is not used for voice calls.
+                </p>
               </div>
             </div>
             <ContactEnquiryForm />

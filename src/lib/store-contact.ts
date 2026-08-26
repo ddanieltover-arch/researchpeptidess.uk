@@ -1,5 +1,10 @@
 export const STORE_CONTACT_EMAIL = 'info@researchpeptidess.uk';
 
+/** Public WhatsApp desk. This number is for WhatsApp messages only, not voice calls. */
+export const STORE_WHATSAPP_DISPLAY = '+44 7927 039397';
+export const STORE_WHATSAPP_E164 = '447927039397';
+export const STORE_WHATSAPP_URL = `https://wa.me/${STORE_WHATSAPP_E164}`;
+
 const LEGACY_STORE_INBOXES = new Set([
   'lab@researchpeptidess.uk',
   'support@researchpeptidess.uk',

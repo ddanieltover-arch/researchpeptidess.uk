@@ -4,7 +4,7 @@
  * Payment Idempotency, Shipping Eligibility, and Role Security.
  */
 
-import { calculateOrderTotals, calculateTierDiscountForLine, isBankTransferAvailable, merchandiseTotalForPayment, validateCoupon } from './pricing';
+import { calculateOrderTotals, calculateTierDiscountForLine, isBankTransferAvailable, merchandiseTotalForPayment, RESEARCH10_CODE, RESEARCH10_MIN_SPEND, validateCoupon } from './pricing';
 import { checkVariantStockAvailability } from './inventory';
 import { validateOrderTransition, validatePaymentTransition } from './order-state-machine';
 import { calculateEligibleShippingMethods, getCheckoutDestinationGroups } from './shipping-engine';
@@ -291,6 +291,79 @@ export function runAllCommerceTests(): TestSuiteReport {
       passed,
       expected: '£242 subtotal qualifies for £0 shipping even after £48.40 volume saving',
       actual: `sub=${totals.subtotal} ship=${totals.shippingFee} total=${totals.total} dropdown=${methods.selectedPrice}`,
+    };
+  });
+
+  runTest('PRICING', 'RESEARCH10 applies 10% only when catalogue subtotal is £300 or more', () => {
+    const research10: Coupon = {
+      id: 'cpn-research10',
+      code: RESEARCH10_CODE,
+      discountType: 'PERCENTAGE',
+      discountValue: 10,
+      minSpend: RESEARCH10_MIN_SPEND,
+      maxDiscount: 150,
+      usedCount: 0,
+      isActive: true,
+    };
+    const shipping: ShippingMethod = {
+      id: 'ship-uk-standard',
+      name: 'Royal Mail Tracked 24',
+      zone: 'UK_MAINLAND',
+      carrier: 'Royal Mail',
+      price: 4.99,
+      estimatedDays: '1 Working Day',
+      trackingAvailable: true,
+      isActive: true,
+    };
+    const underMin: CartItem[] = [
+      {
+        id: 'c1',
+        productId: 'p1',
+        productName: 'Peptide A',
+        productSlug: 'pep-a',
+        variantId: 'v1',
+        variantName: 'Vial',
+        size: '5mg',
+        sku: 'SKU-A',
+        unitPrice: 299.99,
+        quantity: 1,
+        image: '',
+      },
+    ];
+    const atMin: CartItem[] = [
+      {
+        ...underMin[0],
+        unitPrice: 300,
+      },
+    ];
+    // £320 catalogue with 15% volume (8 units) nets £272 — coupon must still apply on catalogue £320
+    const volumeOverMin: CartItem[] = [
+      {
+        ...underMin[0],
+        unitPrice: 40,
+        quantity: 8,
+      },
+    ];
+
+    const blocked = calculateOrderTotals(underMin, 'BANK_TRANSFER', shipping, research10);
+    const applied = calculateOrderTotals(atMin, 'BANK_TRANSFER', shipping, research10);
+    const appliedWithVolume = calculateOrderTotals(volumeOverMin, 'BANK_TRANSFER', shipping, research10);
+    const minSpendGate =
+      !validateCoupon(research10, 299.99).isValid && validateCoupon(research10, 300).isValid;
+
+    const passed =
+      minSpendGate &&
+      blocked.couponDiscount === 0 &&
+      applied.subtotal === 300 &&
+      applied.couponDiscount === 30 &&
+      appliedWithVolume.subtotal === 320 &&
+      appliedWithVolume.itemDiscounts === 48 &&
+      appliedWithVolume.couponDiscount === 27.2;
+
+    return {
+      passed,
+      expected: '£299.99 blocked; £300 → £30 off; £320 catalogue with volume still qualifies (10% of £272 = £27.20)',
+      actual: `under=${blocked.couponDiscount} atMin=${applied.couponDiscount} volume=${appliedWithVolume.couponDiscount} gate=${minSpendGate}`,
     };
   });
 

@@ -3,6 +3,7 @@ import { BrandLogo } from '../ui/BrandLogo';
 import { AppLink } from '../ui/AppLink';
 import { NewsletterSignup } from '../content/NewsletterSignup';
 import { ResearchPurchaseDisclaimer } from './ResearchPurchaseDisclaimer';
+import { WhatsAppContactLink } from './WhatsAppContactLink';
 import { parseAppPath, ROUTES } from '../../lib/routing';
 import { useStore } from '../../context/StoreContext';
 
@@ -36,6 +37,7 @@ export const Footer: React.FC = () => {
             >
               {storeSettings?.supportEmail}
             </a>
+            <WhatsAppContactLink className="text-slate-400 hover:text-[#25D366]" />
           </div>
 
           <div className="flex flex-col gap-2">

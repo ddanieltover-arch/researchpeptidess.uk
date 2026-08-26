@@ -18,6 +18,7 @@ export const CartDrawer: React.FC = () => {
     cartTotals,
     currency,
     navigate,
+    appliedCoupon,
   } = useStore();
   const bankTransferAvailable = isBankTransferAvailable(merchandiseTotalForPayment(cartTotals));
 
@@ -75,6 +76,12 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex justify-between text-emerald-700 font-medium">
                   <span>Bulk Tier Discounts</span>
                   <span className="font-mono">-{formatPrice(cartTotals.itemDiscounts, currency)}</span>
+                </div>
+              )}
+              {cartTotals.couponDiscount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-medium">
+                  <span>Coupon ({appliedCoupon?.code})</span>
+                  <span className="font-mono">-{formatPrice(cartTotals.couponDiscount, currency)}</span>
                 </div>
               )}
               {cartTotals.cryptoDiscount > 0 && (

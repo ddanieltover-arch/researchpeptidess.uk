@@ -12,6 +12,7 @@ import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { CartDrawer } from './components/layout/CartDrawer';
 import { CookieConsentBanner } from './components/layout/CookieConsentBanner';
 import { RecentPurchaseNotification } from './components/layout/RecentPurchaseNotification';
+import { WhatsAppFloatingButton } from './components/layout/WhatsAppFloatingButton';
 import { MetaTags } from './components/seo/MetaTags';
 import { ToastContainer } from './components/ui/Toast';
 import { CMSPageView } from './components/content/CMSPageView';
@@ -219,6 +220,7 @@ const AppContent: React.FC = () => {
       <CartDrawer />
       <CookieConsentBanner />
       <RecentPurchaseNotification />
+      <WhatsAppFloatingButton />
     </div>
   );
 };

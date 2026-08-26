@@ -1,7 +1,7 @@
 import { TestResult } from './commerce-tests';
 import { applyMerchandisingOverlay } from './merchandising';
 import { neutralizeUnsafePublicCopy } from './public-copy-safety';
-import { STORE_CONTACT_EMAIL, withCanonicalStoreContactEmails } from './store-contact';
+import { STORE_CONTACT_EMAIL, STORE_WHATSAPP_DISPLAY, STORE_WHATSAPP_URL, withCanonicalStoreContactEmails } from './store-contact';
 import {
   getBankSettlementInstructions,
   getCryptoSettlementInstructions,
@@ -149,6 +149,16 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: STORE_CONTACT_EMAIL,
         actual: `${next.primaryEmail}/${next.supportEmail}/${next.privacyEmail}`,
+      };
+    }),
+    run('WhatsApp desk uses the published messages-only number', () => {
+      const passed =
+        STORE_WHATSAPP_DISPLAY === '+44 7927 039397' &&
+        STORE_WHATSAPP_URL === 'https://wa.me/447927039397';
+      return {
+        passed,
+        expected: '+44 7927 039397 via wa.me/447927039397',
+        actual: `${STORE_WHATSAPP_DISPLAY} ${STORE_WHATSAPP_URL}`,
       };
     }),
     run('Sample bank and crypto destinations are not treated as live settlement details', () => {

@@ -14,6 +14,7 @@ import {
 } from '../lib/pricing';
 import { STORE_CONTACT_EMAIL } from '../lib/store-contact';
 import { ResearchPurchaseDisclaimer } from '../components/layout/ResearchPurchaseDisclaimer';
+import { CouponCodeForm } from '../components/commerce/CouponCodeForm';
 import {
   checkoutDestinationOptionLabel,
   getCheckoutDestinationGroups,
@@ -49,6 +50,7 @@ export const CheckoutPage: React.FC = () => {
     eligibleShippingCalculation,
     selectedShippingMethodId,
     setSelectedShippingMethodId,
+    appliedCoupon,
   } = useStore();
 
   const [step, setStep] = useState<'details' | 'confirmation'>('details');
@@ -271,7 +273,7 @@ export const CheckoutPage: React.FC = () => {
               {/* Section 2: Laboratory Shipping Destination */}
               <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-2xs space-y-4">
                 <h3 className="text-sm font-bold uppercase font-mono tracking-wider text-slate-900 pb-3 border-b border-slate-100">
-                  2. Laboratory Dispatch Destination
+                    2. Dispatch Destination
                 </h3>
 
                 <div className="space-y-4">
@@ -545,6 +547,13 @@ export const CheckoutPage: React.FC = () => {
                     </div>
                   )}
 
+                  {cartTotals.couponDiscount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-medium">
+                      <span>Coupon ({appliedCoupon?.code})</span>
+                      <span className="font-mono">-{formatPrice(cartTotals.couponDiscount, currency)}</span>
+                    </div>
+                  )}
+
                   {checkoutPaymentMethod === 'CRYPTOCURRENCY' && cartTotals.cryptoDiscount > 0 && (
                     <div className="flex justify-between text-emerald-700 font-medium">
                       <span>Crypto Discount (5%)</span>
@@ -566,6 +575,8 @@ export const CheckoutPage: React.FC = () => {
                     </span>
                   </div>
                 </div>
+
+                <CouponCodeForm />
 
                 <Button
                   type="submit"

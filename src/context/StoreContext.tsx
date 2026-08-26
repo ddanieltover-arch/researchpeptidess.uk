@@ -68,6 +68,7 @@ import {
   isBankTransferAvailable,
   merchandiseTotalForPayment,
   OrderCalculationResult,
+  validateCoupon,
 } from '../lib/pricing';
 import { checkVariantStockAvailability, recordInventoryTransaction } from '../lib/inventory';
 import { executeCatalogueImport, exportCatalogueToCsv } from '../lib/catalogue-import';
@@ -487,7 +488,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // Shipping & Pricing calculations
-  const appliedCoupon = coupons.find((c) => c.code === appliedCouponCode) || null;
+  const appliedCoupon =
+    coupons.find((c) => c.code.toUpperCase() === appliedCouponCode?.toUpperCase()) || null;
 
   const intermediateSubtotal = useMemo(() => {
     let sub = 0;
@@ -534,12 +536,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       addToast('error', 'Coupon Not Found', `Code "${code}" is invalid or does not exist.`);
       return false;
     }
-    if (!match.isActive) {
-      addToast('error', 'Inactive Coupon', 'This voucher code is currently disabled.');
-      return false;
-    }
-    if (match.minSpend && cartTotals.subtotal < match.minSpend) {
-      addToast('error', 'Minimum Spend Required', `Minimum order value of £${match.minSpend.toFixed(2)} required.`);
+    const validation = validateCoupon(match, cartTotals.subtotal);
+    if (!validation.isValid) {
+      addToast('error', 'Coupon Not Applied', validation.reason || 'This voucher cannot be used on this basket.');
       return false;
     }
 

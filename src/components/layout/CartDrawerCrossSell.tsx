@@ -28,7 +28,7 @@ export const CartDrawerCrossSell: React.FC = () => {
   };
 
   return (
-    <section className="space-y-3 border-t border-stone-200 pt-4" aria-labelledby="cart-cross-sell-heading">
+    <section className="space-y-3 border-t-2 border-[#4353FF] pt-4" aria-labelledby="cart-cross-sell-heading">
       <h3 id="cart-cross-sell-heading" className="text-sm font-bold text-slate-900">
         You May Also Like
       </h3>

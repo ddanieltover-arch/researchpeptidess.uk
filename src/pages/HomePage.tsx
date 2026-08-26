@@ -69,7 +69,7 @@ export const HomePage: React.FC = () => {
               Shop catalogue →
             </AppLink>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {bestsellers.map((entry) => (
               <ProductCard key={entry.product.id} product={entry.product} />
             ))}
@@ -87,7 +87,7 @@ export const HomePage: React.FC = () => {
               <h2 className="font-mono text-xl font-bold text-slate-900 sm:text-2xl">Featured catalogue</h2>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {featured.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -98,7 +98,7 @@ export const HomePage: React.FC = () => {
       {newArrivals.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
           <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">New arrivals</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {newArrivals.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -109,7 +109,7 @@ export const HomePage: React.FC = () => {
       {restocked.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
           <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">Back in stock</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
             {restocked.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

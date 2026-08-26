@@ -19,6 +19,7 @@ import {
   shouldShowPurchaseNotifications,
 } from './purchase-notifications';
 import { withPurchasableCatalogueStock } from './catalogue-stock';
+import { categoryNavLabel } from './catalogue-collections';
 import { INITIAL_ORDERS, INITIAL_SHIPPING_METHODS, INITIAL_PRODUCTS } from './mock-data';
 import { INITIAL_CATEGORIES } from './data/categories';
 import { Product, ProductCategory, Order } from '../types';
@@ -163,6 +164,30 @@ export function runParityTests(): TestResult[] {
         passed: !hasCategory && uncategorizedProducts.length === 0,
         expected: 'No Uncategorized category or products',
         actual: `category=${hasCategory} products=${uncategorizedProducts.length}`,
+      };
+    })
+  );
+
+  results.push(
+    run('Nav labels use short shop names instead of WooCommerce SEO titles', () => {
+      const labels = INITIAL_CATEGORIES.map((category) => categoryNavLabel(category));
+      const hasSeoTitle = labels.some(
+        (label) =>
+          /usa/i.test(label) ||
+          /buy nootropics online/i.test(label) ||
+          /high-quality liquid sarms/i.test(label) ||
+          /for sale online/i.test(label)
+      );
+      const hasShortNames =
+        labels.includes('Nootropics') &&
+        labels.includes('SARMs') &&
+        labels.includes('Peptides') &&
+        labels.includes('Research Chemicals') &&
+        labels.includes('Featured peptides');
+      return {
+        passed: hasShortNames && !hasSeoTitle,
+        expected: 'Nootropics, SARMs, Peptides, Research Chemicals, Featured peptides',
+        actual: labels.join(' | '),
       };
     })
   );

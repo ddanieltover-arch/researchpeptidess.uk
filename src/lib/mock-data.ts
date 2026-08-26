@@ -15,6 +15,7 @@ import {
 import { INITIAL_CATEGORIES } from './data/categories';
 import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
 import { INITIAL_SHIPPING_METHODS } from './shipping-methods';
+import { RESEARCH10_CODE, RESEARCH10_MIN_SPEND } from './pricing';
 
 export { INITIAL_CATEGORIES, INITIAL_SHIPPING_METHODS };
 export const INITIAL_PRODUCTS: Product[] = ALL_CATALOGUE_PRODUCTS;
@@ -22,11 +23,11 @@ export const INITIAL_PRODUCTS: Product[] = ALL_CATALOGUE_PRODUCTS;
 export const INITIAL_COUPONS: Coupon[] = [
   {
     id: 'cpn-research10',
-    code: 'RESEARCH10',
-    description: '10% Institutional Laboratory Research Allowance',
+    code: RESEARCH10_CODE,
+    description: '10% off catalogue subtotal of £300 or more',
     discountType: 'PERCENTAGE',
     discountValue: 10,
-    minSpend: 0,
+    minSpend: RESEARCH10_MIN_SPEND,
     maxDiscount: 150,
     usageLimit: 500,
     usedCount: 38,

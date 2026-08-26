@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useStore } from '../context/StoreContext';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
+import { CouponCodeForm } from '../components/commerce/CouponCodeForm';
 import { formatPrice } from '../lib/utils';
 import { BANK_TRANSFER_MIN_MERCHANDISE_TOTAL, isBankTransferAvailable, merchandiseTotalForPayment } from '../lib/pricing';
 import {
@@ -14,7 +14,6 @@ import {
   Zap,
   Package,
   ArrowLeft,
-  Percent,
   Lock,
 } from 'lucide-react';
 
@@ -28,20 +27,9 @@ export const CartPage: React.FC = () => {
     currency,
     navigate,
     appliedCoupon,
-    applyCoupon,
-    removeCoupon,
   } = useStore();
 
-  const [couponInput, setCouponInput] = useState('');
   const bankTransferAvailable = isBankTransferAvailable(merchandiseTotalForPayment(cartTotals));
-
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (couponInput.trim()) {
-      applyCoupon(couponInput.trim());
-      setCouponInput('');
-    }
-  };
 
   if (cart.length === 0) {
     return (
@@ -196,7 +184,7 @@ export const CartPage: React.FC = () => {
 
               {cartTotals.couponDiscount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-medium">
-                  <span>Coupon Discount ({appliedCoupon})</span>
+                  <span>Coupon Discount ({appliedCoupon?.code})</span>
                   <span className="font-mono">-{formatPrice(cartTotals.couponDiscount, currency)}</span>
                 </div>
               )}
@@ -258,28 +246,7 @@ export const CartPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Coupon Code Input */}
-            <form onSubmit={handleApplyCoupon} className="space-y-1.5 pt-1">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Coupon code (e.g. RESEARCH10)"
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  className="text-xs h-9 font-mono uppercase"
-                />
-                <Button type="submit" variant="secondary" size="sm" className="font-mono text-xs shrink-0">
-                  Apply
-                </Button>
-              </div>
-              {appliedCoupon && (
-                <div className="flex items-center justify-between text-[11px] text-emerald-700 font-mono">
-                  <span>Active code: {appliedCoupon}</span>
-                  <button onClick={removeCoupon} className="text-rose-600 hover:underline">
-                    Remove
-                  </button>
-                </div>
-              )}
-            </form>
+            <CouponCodeForm />
 
             {/* Proceed to Checkout Button */}
             <Button

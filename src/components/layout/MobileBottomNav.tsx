@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, LayoutGrid, Search, User, ShoppingBag } from 'lucide-react';
+import { Home, LayoutGrid, Search, Mail, ShoppingBag } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { parseAppPath, ROUTES } from '../../lib/routing';
 import { cn } from '../../lib/utils';
@@ -42,7 +42,7 @@ function NavItem({
 }
 
 export const MobileBottomNav: React.FC = () => {
-  const { currentPath, cart, cartDrawerOpen, setCartDrawerOpen, isAccountAuthenticated } = useStore();
+  const { currentPath, cart, cartDrawerOpen, setCartDrawerOpen } = useStore();
   const route = parseAppPath(currentPath);
 
   if (route.kind === 'admin' || route.kind === 'admin-login') {
@@ -51,8 +51,7 @@ export const MobileBottomNav: React.FC = () => {
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const shopActive = route.kind === 'shop' || route.kind === 'category' || route.kind === 'product';
-  const accountHref = isAccountAuthenticated ? ROUTES.account : ROUTES.accountLogin;
-  const accountActive = route.kind === 'account' || route.kind === 'account-login';
+  const contactActive = route.kind === 'cms' && route.slug === 'contact';
   const cartActive = cartDrawerOpen || route.kind === 'cart' || route.kind === 'checkout';
 
   return (
@@ -77,13 +76,9 @@ export const MobileBottomNav: React.FC = () => {
           <span>Search</span>
         </NavItem>
 
-        <NavItem
-          href={accountHref}
-          active={accountActive}
-          label={isAccountAuthenticated ? 'Account' : 'Sign in'}
-        >
-          <User className="h-5 w-5" strokeWidth={accountActive ? 2.4 : 1.8} />
-          <span>{isAccountAuthenticated ? 'Account' : 'Sign in'}</span>
+        <NavItem href="/contact" active={contactActive} label="Contact">
+          <Mail className="h-5 w-5" strokeWidth={contactActive ? 2.4 : 1.8} />
+          <span>Contact</span>
         </NavItem>
 
         <button

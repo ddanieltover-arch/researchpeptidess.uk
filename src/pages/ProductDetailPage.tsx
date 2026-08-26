@@ -524,7 +524,7 @@ export const ProductDetailPage: React.FC = () => {
         <section className="space-y-6 pt-6 border-t border-slate-200">
           <h3 className="text-xl font-bold font-mono text-slate-950">Related catalogue items</h3>
           <p className="text-xs text-slate-500">Shown from the same category or product type. This is not a biological similarity claim.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
             {relatedProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

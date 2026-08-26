@@ -12,7 +12,7 @@
 
 import { Product, ProductCategory, CMSPage } from '../types';
 import { categoryPath } from './routing';
-import { STORE_CONTACT_EMAIL } from './store-contact';
+import { STORE_CONTACT_EMAIL, STORE_WHATSAPP_URL } from './store-contact';
 import { isListedShopCategory } from './catalogue-collections';
 import { isPublicCatalogueProduct } from './merchandising';
 
@@ -296,11 +296,12 @@ export function getSeoMetadataForPath(
         name: 'Research Peptides UK',
         url: PRIMARY_DOMAIN,
         logo: `${PRIMARY_DOMAIN}/logo.png`,
-        sameAs: [],
+        sameAs: [STORE_WHATSAPP_URL],
         contactPoint: {
           '@type': 'ContactPoint',
           contactType: 'customer support',
           email: STORE_CONTACT_EMAIL,
+          url: STORE_WHATSAPP_URL,
           availableLanguage: 'English',
         },
       },
