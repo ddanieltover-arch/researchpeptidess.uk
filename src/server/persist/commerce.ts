@@ -1,4 +1,4 @@
-import { InventoryTransaction, Order, Payment, PaymentStatus, User } from '../../types';
+import { InventoryTransaction, Order, OrderStatus, Payment, PaymentStatus, User } from '../../types';
 import { PersistStageError } from '../../lib/persist-error';
 import { toDbOrderStatus } from '../../lib/db-order-status';
 import { authorizeOrderAccess } from '../../lib/security';
