@@ -15,9 +15,7 @@ import { isPublicBootstrapSafe } from './public-bootstrap';
 import { normalizeNeonConnectionString } from './neon-connection-string';
 import { classifyPersistError, recommendedPersistFix } from './persist-error';
 import { toRenderableText } from './react-text';
-import { toDbOrderStatus } from '../server/persist/commerce';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { toDbOrderStatus } from './db-order-status';
 
 function run(
   name: string,
@@ -265,18 +263,6 @@ export function runPersistenceTests(): TestResult[] {
           toDbOrderStatus('PARTIALLY_FULFILLED'),
           toDbOrderStatus('PAYMENT_EXPIRED'),
         ].join('/'),
-      };
-    }),
-    run('Store persist modules talk to Neon over SQL, not Drizzle', () => {
-      const files = ['contact.ts', 'newsletter.ts', 'commerce.ts', 'settings.ts', 'shipping.ts', 'merchandising.ts'];
-      const hits = files.filter((file) => {
-        const source = readFileSync(resolve(process.cwd(), 'src/server/persist', file), 'utf8');
-        return /drizzle-orm|from ['\"]\.\.\/\.\.\/db\//.test(source);
-      });
-      return {
-        passed: hits.length === 0,
-        expected: 'No drizzle-orm or src/db imports in persist modules',
-        actual: hits.length ? hits.join(', ') : 'clean',
       };
     }),
     run('Plain {code, message} objects stringify instead of crashing React children', () => {

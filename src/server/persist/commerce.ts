@@ -1,48 +1,12 @@
-import {
-  InventoryTransaction,
-  Order,
-  OrderStatus,
-  Payment,
-  PaymentStatus,
-  User,
-} from '../../types';
+import { InventoryTransaction, Order, Payment, PaymentStatus, User } from '../../types';
 import { PersistStageError } from '../../lib/persist-error';
+import { toDbOrderStatus } from '../../lib/db-order-status';
 import { authorizeOrderAccess } from '../../lib/security';
 import { normalizePaymentProofReference } from '../../lib/settlement-instructions';
 import { asIso, asRowArray, getNeonSqlOrNull, requireNeonSql } from '../neon-sql';
 
-export type DbOrderStatus =
-  | 'pending_payment'
-  | 'payment_submitted'
-  | 'payment_verified'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'cancelled'
-  | 'refunded';
-
-export function toDbOrderStatus(status: OrderStatus): DbOrderStatus {
-  switch (status) {
-    case 'PAYMENT_SUBMITTED':
-      return 'payment_submitted';
-    case 'PAYMENT_VERIFIED':
-      return 'payment_verified';
-    case 'PROCESSING':
-    case 'PARTIALLY_FULFILLED':
-      return 'processing';
-    case 'SHIPPED':
-      return 'shipped';
-    case 'DELIVERED':
-      return 'delivered';
-    case 'CANCELLED':
-    case 'PAYMENT_EXPIRED':
-      return 'cancelled';
-    case 'REFUNDED':
-      return 'refunded';
-    default:
-      return 'pending_payment';
-  }
-}
+export { toDbOrderStatus };
+export type { DbOrderStatus } from '../../lib/db-order-status';
 
 function toPence(value: number): number {
   return Math.round(Number(value || 0) * 100);
