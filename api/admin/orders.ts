@@ -25,9 +25,14 @@ export default async function handler(
   res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
 ): Promise<void> {
   try {
-    const { handleCreateOrder } = await import('../src/server/order-http');
-    await handleCreateOrder(req as never, res as never);
+    if (req.method === 'GET' || req.method === 'HEAD') {
+      const { handleAdminCommerceRead } = await import('../../src/server/commerce-http');
+      await handleAdminCommerceRead(req as never, res as never);
+      return;
+    }
+    const { handleAdminOrderUpdate } = await import('../../src/server/order-http');
+    await handleAdminOrderUpdate(req as never, res as never);
   } catch (error) {
-    send(res, 500, { error: 'The order could not be stored.', detail: loadError(error) });
+    send(res, 500, { error: 'The admin request could not be completed.', detail: loadError(error) });
   }
 }

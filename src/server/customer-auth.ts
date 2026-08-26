@@ -1,44 +1,24 @@
 /**
  * Node-only customer authentication. Do not import from the Vite SPA bundle.
+ * Cookie HMAC helpers live in session-cookies so persist routes can boot without Drizzle.
  */
 
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { createDb, getDatabaseConfig } from '../db/index';
 import { users } from '../db/schema';
 import { UserRole } from '../types';
-import { CUSTOMER_SESSION_COOKIE, CustomerSessionUser } from '../lib/customer-session';
-import {
-  getAdminAuthConfig,
-  isAdminEmailAllowed,
-  isSecureCookieRequest,
-  normalizeEmail,
-  parseCookieHeader,
-} from './admin-auth';
+import { CustomerSessionUser } from '../lib/customer-session';
+import { isAdminEmailAllowed, normalizeEmail } from './session-cookies';
 import { getDummyPasswordHash, hashPassword, verifyPassword } from './password';
 
-const PLACEHOLDER_SECRETS = new Set([
-  '',
-  'your-64-character-cryptographically-secure-random-secret',
-  'your-session-encryption-secret-string',
-  'your-jwt-hmac-sha256-signing-key',
-]);
+export {
+  buildCustomerSessionCookie,
+  buildExpiredCustomerSessionCookie,
+  createCustomerSessionToken,
+  readCustomerSessionFromCookieHeader,
+} from './session-cookies';
 
-interface SessionPayload {
-  v: 1;
-  sub: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  institution?: string;
-  phone?: string;
-  iat: number;
-  exp: number;
-}
-
-function getSigningKey(): string {
-  return getAdminAuthConfig().signingKey;
-}
+export { isSecureCookieRequest } from './session-cookies';
 
 function toSessionUser(row: {
   id: string;
@@ -56,98 +36,6 @@ function toSessionUser(row: {
     institution: row.institution || undefined,
     phone: row.phone || undefined,
   };
-}
-
-function signPayload(payload: SessionPayload, signingKey: string): string {
-  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
-  const signature = createHmac('sha256', signingKey).update(encoded).digest('base64url');
-  return `${encoded}.${signature}`;
-}
-
-function verifyToken(token: string, signingKey: string): SessionPayload | null {
-  const [encoded, signature] = (token || '').split('.');
-  if (!encoded || !signature) return null;
-
-  const expected = createHmac('sha256', signingKey).update(encoded).digest('base64url');
-  const given = Buffer.from(signature);
-  const good = Buffer.from(expected);
-  if (given.length !== good.length || !timingSafeEqual(given, good)) {
-    return null;
-  }
-
-  try {
-    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8')) as SessionPayload;
-    const validRole = payload.role === 'CUSTOMER' || payload.role === 'ADMIN' || payload.role === 'ANALYST';
-    if (payload.v !== 1 || !validRole || payload.exp * 1000 < Date.now()) {
-      return null;
-    }
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
-export function createCustomerSessionToken(user: CustomerSessionUser): string {
-  const config = getAdminAuthConfig();
-  if (!config.signingKey || PLACEHOLDER_SECRETS.has(config.signingKey)) {
-    throw new Error('AUTH_SECRET is not configured');
-  }
-  const now = Math.floor(Date.now() / 1000);
-  return signPayload(
-    {
-      v: 1,
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      institution: user.institution,
-      phone: user.phone,
-      iat: now,
-      exp: now + config.expiryDays * 24 * 60 * 60,
-    },
-    config.signingKey
-  );
-}
-
-export function readCustomerSessionFromCookieHeader(cookieHeader: string | undefined): CustomerSessionUser | null {
-  const signingKey = getSigningKey();
-  if (!signingKey || PLACEHOLDER_SECRETS.has(signingKey)) return null;
-  const token = parseCookieHeader(cookieHeader)[CUSTOMER_SESSION_COOKIE];
-  if (!token) return null;
-  const payload = verifyToken(token, signingKey);
-  if (!payload) return null;
-  return {
-    id: payload.sub,
-    email: payload.email,
-    name: payload.name,
-    role: payload.role,
-    institution: payload.institution,
-    phone: payload.phone,
-  };
-}
-
-export function buildCustomerSessionCookie(token: string, maxAgeSeconds: number, secure: boolean): string {
-  const parts = [
-    `${CUSTOMER_SESSION_COOKIE}=${encodeURIComponent(token)}`,
-    'Path=/',
-    'HttpOnly',
-    'SameSite=Lax',
-    `Max-Age=${maxAgeSeconds}`,
-  ];
-  if (secure) parts.push('Secure');
-  return parts.join('; ');
-}
-
-export function buildExpiredCustomerSessionCookie(secure: boolean): string {
-  const parts = [
-    `${CUSTOMER_SESSION_COOKIE}=`,
-    'Path=/',
-    'HttpOnly',
-    'SameSite=Lax',
-    'Max-Age=0',
-  ];
-  if (secure) parts.push('Secure');
-  return parts.join('; ');
 }
 
 async function findUserByEmail(email: string) {
@@ -248,5 +136,3 @@ export async function registerCustomerAccount(input: {
     }),
   };
 }
-
-export { isSecureCookieRequest };

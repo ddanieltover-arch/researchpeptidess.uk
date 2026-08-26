@@ -1,8 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { InventoryTransaction, NotificationType, Order, Payment } from '../types';
 import { classifyPersistError, recommendedPersistFix } from '../lib/persist-error';
-import { readAdminSessionFromCookieHeader } from './admin-auth';
-import { readCustomerSessionFromCookieHeader } from './customer-auth';
+import { readAdminSessionFromCookieHeader, readCustomerSessionFromCookieHeader } from './session-cookies';
 import {
   logServerError,
   readCorrelationId,

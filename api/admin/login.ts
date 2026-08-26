@@ -12,22 +12,15 @@ function send(
   res.end(JSON.stringify(body));
 }
 
-function loadError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : 'load_failed';
-  return raw
-    .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]')
-    .replace(/postgresql:\/\/\S+/gi, '[redacted]')
-    .slice(0, 160);
-}
-
 export default async function handler(
-  req: { method?: string },
+  req: { method?: string; headers?: unknown; url?: string; body?: unknown },
   res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
 ): Promise<void> {
   try {
-    const { handleCreateOrder } = await import('../src/server/order-http');
-    await handleCreateOrder(req as never, res as never);
-  } catch (error) {
-    send(res, 500, { error: 'The order could not be stored.', detail: loadError(error) });
+    const { handleAdminLogin } = await import('../../src/server/admin-http');
+    await handleAdminLogin(req as never, res as never);
+  } catch {
+    if (res.headersSent) return;
+    send(res, 503, { error: 'Authentication service unavailable.' });
   }
 }

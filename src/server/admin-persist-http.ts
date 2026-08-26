@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ShippingMethod, StoreSettings } from '../types';
-import { readAdminSessionFromCookieHeader } from './admin-auth';
+import { readAdminSessionFromCookieHeader } from './session-cookies';
 import { buildEnvDiagnostic } from './env-status';
 import { logServerError, readCorrelationId, readJsonBody, sendJson, sendPublicError, type NodeRequest } from './http';
 

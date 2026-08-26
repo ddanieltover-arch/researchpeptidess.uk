@@ -14,9 +14,7 @@ import {
   readAdminSessionFromCookieHeader,
 } from './admin-auth';
 import { clearLoginAttempts, consumeLoginAttempt, getClientAddress } from './rate-limit';
-import { requestPath } from './http';
-
-type NodeRequest = IncomingMessage & { body?: unknown };
+import { readJsonBody, requestPath, type NodeRequest } from './http';
 
 function sendJson(res: ServerResponse, status: number, body: unknown, extraHeaders?: Record<string, string>): void {
   if (res.headersSent) return;
@@ -29,29 +27,6 @@ function sendJson(res: ServerResponse, status: number, body: unknown, extraHeade
     }
   }
   res.end(JSON.stringify(body));
-}
-
-function readRawBody(req: IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (chunk) => {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    });
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-    req.on('error', reject);
-  });
-}
-
-async function readJsonBody(req: NodeRequest): Promise<Record<string, unknown>> {
-  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
-    return req.body as Record<string, unknown>;
-  }
-  if (typeof req.body === 'string' && req.body.trim()) {
-    return JSON.parse(req.body) as Record<string, unknown>;
-  }
-  const raw = await readRawBody(req);
-  if (!raw.trim()) return {};
-  return JSON.parse(raw) as Record<string, unknown>;
 }
 
 function cookieSecure(req: IncomingMessage): boolean {
@@ -99,8 +74,17 @@ export async function handleAdminLogin(req: NodeRequest, res: ServerResponse): P
     sendJson(res, 200, { user: result.user }, {
       'Set-Cookie': buildSessionCookie(token, getSessionCookieMaxAge(config), cookieSecure(req)),
     });
-  } catch {
-    sendJson(res, 500, { error: 'Authentication service unavailable.' });
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        route: '/api/admin/login',
+        operation: 'admin_login',
+        errorType: error instanceof Error ? error.name : 'Error',
+        message: error instanceof Error ? error.message : 'Authentication service unavailable.',
+      })
+    );
+    sendJson(res, 503, { error: 'Authentication service unavailable.' });
   }
 }
 

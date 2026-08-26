@@ -15,6 +15,9 @@ import { isPublicBootstrapSafe } from './public-bootstrap';
 import { normalizeNeonConnectionString } from './neon-connection-string';
 import { classifyPersistError, recommendedPersistFix } from './persist-error';
 import { toRenderableText } from './react-text';
+import { toDbOrderStatus } from '../server/persist/commerce';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 function run(
   name: string,
@@ -243,6 +246,37 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'SCHEMA_MISSING and CONNECTION classifications',
         actual: `${missing.classification}/${conn.classification}`,
+      };
+    }),
+    run('Checkout order statuses map onto the Neon order_status enum', () => {
+      const passed =
+        toDbOrderStatus('PENDING_PAYMENT') === 'pending_payment' &&
+        toDbOrderStatus('PAYMENT_SUBMITTED') === 'payment_submitted' &&
+        toDbOrderStatus('PAYMENT_VERIFIED') === 'payment_verified' &&
+        toDbOrderStatus('PARTIALLY_FULFILLED') === 'processing' &&
+        toDbOrderStatus('PAYMENT_EXPIRED') === 'cancelled';
+      return {
+        passed,
+        expected: 'pending_payment/payment_submitted/payment_verified/processing/cancelled',
+        actual: [
+          toDbOrderStatus('PENDING_PAYMENT'),
+          toDbOrderStatus('PAYMENT_SUBMITTED'),
+          toDbOrderStatus('PAYMENT_VERIFIED'),
+          toDbOrderStatus('PARTIALLY_FULFILLED'),
+          toDbOrderStatus('PAYMENT_EXPIRED'),
+        ].join('/'),
+      };
+    }),
+    run('Store persist modules talk to Neon over SQL, not Drizzle', () => {
+      const files = ['contact.ts', 'newsletter.ts', 'commerce.ts', 'settings.ts', 'shipping.ts', 'merchandising.ts'];
+      const hits = files.filter((file) => {
+        const source = readFileSync(resolve(process.cwd(), 'src/server/persist', file), 'utf8');
+        return /drizzle-orm|from ['\"]\.\.\/\.\.\/db\//.test(source);
+      });
+      return {
+        passed: hits.length === 0,
+        expected: 'No drizzle-orm or src/db imports in persist modules',
+        actual: hits.length ? hits.join(', ') : 'clean',
       };
     }),
     run('Plain {code, message} objects stringify instead of crashing React children', () => {

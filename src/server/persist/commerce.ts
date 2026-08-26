@@ -1,23 +1,27 @@
-import { eq } from 'drizzle-orm';
 import {
   InventoryTransaction,
   Order,
   OrderStatus,
   Payment,
   PaymentStatus,
+  User,
 } from '../../types';
-import { getReadyDb } from '../../db/index';
-import { auditLogs, inventoryEvents, orderItems, orderPayments, orders, productVariants } from '../../db/schema';
 import { PersistStageError } from '../../lib/persist-error';
-import { normalizePaymentProofReference } from '../../lib/settlement-instructions';
 import { authorizeOrderAccess } from '../../lib/security';
-import { User } from '../../types';
+import { normalizePaymentProofReference } from '../../lib/settlement-instructions';
+import { asIso, asRowArray, getNeonSqlOrNull, requireNeonSql } from '../neon-sql';
 
-function toPence(value: number): number {
-  return Math.round(Number(value || 0) * 100);
-}
+export type DbOrderStatus =
+  | 'pending_payment'
+  | 'payment_submitted'
+  | 'payment_verified'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
 
-function toDbOrderStatus(status: OrderStatus): (typeof orders.$inferInsert)['status'] {
+export function toDbOrderStatus(status: OrderStatus): DbOrderStatus {
   switch (status) {
     case 'PAYMENT_SUBMITTED':
       return 'payment_submitted';
@@ -38,6 +42,10 @@ function toDbOrderStatus(status: OrderStatus): (typeof orders.$inferInsert)['sta
     default:
       return 'pending_payment';
   }
+}
+
+function toPence(value: number): number {
+  return Math.round(Number(value || 0) * 100);
 }
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
@@ -95,33 +103,39 @@ export async function loadCommerceState(): Promise<{
   payments: Payment[];
   inventoryTransactions: InventoryTransaction[];
 }> {
-  const db = await getReadyDb();
-  if (!db) {
+  const sql = getNeonSqlOrNull();
+  if (!sql) {
     return { orders: [], payments: [], inventoryTransactions: [] };
   }
 
-  const orderRows = await db.select().from(orders);
-  const paymentRows = await db.select().from(orderPayments);
-  const inventoryRows = await db.select().from(inventoryEvents);
+  const orderRows = asRowArray(await sql`SELECT payload_json FROM orders`);
+  const paymentRows = asRowArray(await sql`SELECT payload_json FROM order_payments`);
+  const inventoryRows = asRowArray(await sql`
+    SELECT id, variant_id, order_id, transaction_type, quantity_change, balance_after, notes, actor_id, payload_json, created_at
+    FROM inventory_events
+  `);
 
   return {
-    orders: orderRows.map((row) => coerceOrder(parseJson<Order | null>(row.payloadJson, null))).filter((row): row is Order => Boolean(row)),
+    orders: orderRows
+      .map((row) => coerceOrder(parseJson<Order | null>(String((row as { payload_json?: string }).payload_json || ''), null)))
+      .filter((row): row is Order => Boolean(row)),
     payments: paymentRows
-      .map((row) => coercePayment(parseJson<Payment | null>(row.payloadJson, null)))
+      .map((row) => coercePayment(parseJson<Payment | null>(String((row as { payload_json?: string }).payload_json || ''), null)))
       .filter((row): row is Payment => Boolean(row)),
-    inventoryTransactions: inventoryRows.map((row) =>
-      parseJson<InventoryTransaction>(row.payloadJson, {
-        id: row.id,
-        variantId: row.variantId,
-        orderId: row.orderId || undefined,
-        transactionType: row.transactionType as InventoryTransaction['transactionType'],
-        quantityChange: row.quantityChange,
-        balanceAfter: row.balanceAfter,
-        notes: row.notes || undefined,
-        actorId: row.actorId || undefined,
-        createdAt: row.createdAt.toISOString(),
-      })
-    ),
+    inventoryTransactions: inventoryRows.map((raw) => {
+      const row = raw as Record<string, unknown>;
+      return parseJson<InventoryTransaction>(row.payload_json ? String(row.payload_json) : '', {
+        id: String(row.id || ''),
+        variantId: String(row.variant_id || ''),
+        orderId: row.order_id ? String(row.order_id) : undefined,
+        transactionType: row.transaction_type as InventoryTransaction['transactionType'],
+        quantityChange: Number(row.quantity_change || 0),
+        balanceAfter: Number(row.balance_after || 0),
+        notes: row.notes ? String(row.notes) : undefined,
+        actorId: row.actor_id ? String(row.actor_id) : undefined,
+        createdAt: asIso(row.created_at),
+      });
+    }),
   };
 }
 
@@ -160,11 +174,7 @@ export async function persistOrderBundle(params: {
   idempotencyKey?: string;
   userId?: string | null;
 }): Promise<{ duplicate: boolean; order: Order; payment: Payment }> {
-  const db = await getReadyDb();
-  if (!db) {
-    throw new PersistStageError('database_connection', 'DATABASE_UNAVAILABLE', 'DATABASE_UNAVAILABLE');
-  }
-
+  const sql = requireNeonSql();
   const trusted = trustedCreateState(params.order, params.payment);
   const order = trusted.order;
   const payment = trusted.payment;
@@ -172,66 +182,76 @@ export async function persistOrderBundle(params: {
 
   if (params.idempotencyKey) {
     try {
-      const [existing] = await db
-        .select()
-        .from(orders)
-        .where(eq(orders.idempotencyKey, params.idempotencyKey))
-        .limit(1);
-      if (existing?.payloadJson) {
-        const parsed = coerceOrder(parseJson<Order | null>(existing.payloadJson, null));
-        if (parsed) {
-          const [paymentRow] = await db
-            .select()
-            .from(orderPayments)
-            .where(eq(orderPayments.orderId, parsed.id))
-            .limit(1);
-          return {
-            duplicate: true,
-            order: parsed,
-            payment: coercePayment(parseJson<Payment | null>(paymentRow?.payloadJson, null)) || payment,
-          };
-        }
+      const existing = await sql`
+        SELECT payload_json FROM orders WHERE idempotency_key = ${params.idempotencyKey} LIMIT 1
+      `;
+      const parsed = coerceOrder(
+        parseJson<Order | null>(String((existing[0] as { payload_json?: string } | undefined)?.payload_json || ''), null)
+      );
+      if (parsed) {
+        const paymentRow = await sql`
+          SELECT payload_json FROM order_payments WHERE order_id = ${parsed.id} LIMIT 1
+        `;
+        return {
+          duplicate: true,
+          order: parsed,
+          payment:
+            coercePayment(
+              parseJson<Payment | null>(String((paymentRow[0] as { payload_json?: string } | undefined)?.payload_json || ''), null)
+            ) || payment,
+        };
       }
-    } catch (error) {
+    } catch {
       throw new PersistStageError('idempotency_lookup', 'SCHEMA_MISSING', 'Idempotency lookup failed.');
     }
   }
 
   const now = new Date();
   try {
-    await db.insert(orders).values({
-      id: order.id,
-      orderNumber: order.orderNumber,
-      userId,
-      customerEmail: order.customerEmail,
-      customerName: order.customerName,
-      subtotalPence: toPence(order.subtotal),
-      tierDiscountPence: toPence(order.tierDiscountAmount || 0),
-      couponCode: order.couponCode,
-      couponDiscountPence: toPence(order.couponDiscountAmount || 0),
-      cryptoDiscountPence: toPence(order.cryptoDiscountAmount || 0),
-      shippingMethodId: order.shippingMethodId,
-      shippingPence: toPence(order.shippingFee),
-      totalPence: toPence(order.total),
-      currency: order.currency,
-      paymentMethod: order.paymentMethod,
-      status: toDbOrderStatus(order.status),
-      paymentProofReference: order.paymentProofReference,
-      trackingNumber: order.trackingNumber,
-      researchConsentSigned: order.researchConsentSigned,
-      shippingAddressJson: JSON.stringify(order.shippingAddress),
-      createdAt: now,
-      updatedAt: now,
-      payloadJson: JSON.stringify(order),
-      appStatus: order.status,
-      paymentStatus: order.paymentStatus,
-      idempotencyKey: params.idempotencyKey,
-    });
+    await sql`
+      INSERT INTO orders (
+        id, order_number, user_id, customer_email, customer_name,
+        subtotal_pence, tier_discount_pence, coupon_code, coupon_discount_pence,
+        crypto_discount_pence, shipping_method_id, shipping_pence, total_pence,
+        currency, payment_method, status, payment_proof_reference, tracking_number,
+        research_consent_signed, shipping_address_json, created_at, updated_at,
+        payload_json, app_status, payment_status, idempotency_key
+      ) VALUES (
+        ${order.id},
+        ${order.orderNumber},
+        ${userId},
+        ${order.customerEmail},
+        ${order.customerName},
+        ${toPence(order.subtotal)},
+        ${toPence(order.tierDiscountAmount || 0)},
+        ${order.couponCode ?? null},
+        ${toPence(order.couponDiscountAmount || 0)},
+        ${toPence(order.cryptoDiscountAmount || 0)},
+        ${order.shippingMethodId ?? null},
+        ${toPence(order.shippingFee)},
+        ${toPence(order.total)},
+        ${order.currency},
+        ${order.paymentMethod},
+        ${toDbOrderStatus(order.status)},
+        ${order.paymentProofReference ?? null},
+        ${order.trackingNumber ?? null},
+        ${Boolean(order.researchConsentSigned)},
+        ${JSON.stringify(order.shippingAddress || {})},
+        ${now},
+        ${now},
+        ${JSON.stringify(order)},
+        ${order.status},
+        ${order.paymentStatus},
+        ${params.idempotencyKey ?? null}
+      )
+    `;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/duplicate|unique|23505/i.test(message) && params.idempotencyKey) {
-      const [existing] = await db.select().from(orders).where(eq(orders.id, order.id)).limit(1);
-      const parsed = coerceOrder(parseJson<Order | null>(existing?.payloadJson, null));
+      const existing = await sql`SELECT payload_json FROM orders WHERE id = ${order.id} LIMIT 1`;
+      const parsed = coerceOrder(
+        parseJson<Order | null>(String((existing[0] as { payload_json?: string } | undefined)?.payload_json || ''), null)
+      );
       if (parsed) return { duplicate: true, order: parsed, payment };
     }
     if (/foreign key|23503/i.test(message) && userId) {
@@ -242,45 +262,51 @@ export async function persistOrderBundle(params: {
 
   try {
     for (const item of order.items) {
-      await db
-        .insert(orderItems)
-        .values({
-          id: item.id,
-          orderId: order.id,
-          productId: item.productId,
-          variantId: item.variantId,
-          sku: item.sku,
-          productName: item.productName,
-          variantName: item.variantName,
-          quantity: item.quantity,
-          unitPricePence: toPence(item.unitPrice),
-          totalPricePence: toPence(item.totalPrice),
-        })
-        .onConflictDoNothing();
+      await sql`
+        INSERT INTO order_items (
+          id, order_id, product_id, variant_id, sku, product_name, variant_name, quantity, unit_price_pence, total_price_pence
+        ) VALUES (
+          ${item.id},
+          ${order.id},
+          ${item.productId},
+          ${item.variantId},
+          ${item.sku},
+          ${item.productName},
+          ${item.variantName},
+          ${item.quantity},
+          ${toPence(item.unitPrice)},
+          ${toPence(item.totalPrice)}
+        )
+        ON CONFLICT (id) DO NOTHING
+      `;
     }
   } catch {
-    await db.delete(orders).where(eq(orders.id, order.id)).catch(() => undefined);
+    await sql`DELETE FROM orders WHERE id = ${order.id}`.catch(() => undefined);
     throw new PersistStageError('order_items_insert', 'CONSTRAINT', 'Order item snapshot insert failed.');
   }
 
   try {
-    await db.insert(orderPayments).values({
-      id: payment.id,
-      orderId: order.id,
-      method: payment.method,
-      amountPence: toPence(payment.amount),
-      currency: payment.currency,
-      status: payment.status,
-      reference: payment.reference,
-      transactionHash: payment.transactionHash,
-      evidenceNotes: payment.evidenceNotes,
-      payloadJson: JSON.stringify(payment),
-      createdAt: now,
-      updatedAt: now,
-    });
+    await sql`
+      INSERT INTO order_payments (
+        id, order_id, method, amount_pence, currency, status, reference, transaction_hash, evidence_notes, payload_json, created_at, updated_at
+      ) VALUES (
+        ${payment.id},
+        ${order.id},
+        ${payment.method},
+        ${toPence(payment.amount)},
+        ${payment.currency},
+        ${payment.status},
+        ${payment.reference ?? null},
+        ${payment.transactionHash ?? null},
+        ${payment.evidenceNotes ?? null},
+        ${JSON.stringify(payment)},
+        ${now},
+        ${now}
+      )
+    `;
   } catch {
-    await db.delete(orderItems).where(eq(orderItems.orderId, order.id)).catch(() => undefined);
-    await db.delete(orders).where(eq(orders.id, order.id)).catch(() => undefined);
+    await sql`DELETE FROM order_items WHERE order_id = ${order.id}`.catch(() => undefined);
+    await sql`DELETE FROM orders WHERE id = ${order.id}`.catch(() => undefined);
     throw new PersistStageError('payment_insert', 'CONSTRAINT', 'Payment record insert failed.');
   }
 
@@ -289,28 +315,31 @@ export async function persistOrderBundle(params: {
       await persistInventoryEvent(event);
     }
   } catch {
-    await db.delete(inventoryEvents).where(eq(inventoryEvents.orderId, order.id)).catch(() => undefined);
-    await db.delete(orderPayments).where(eq(orderPayments.orderId, order.id)).catch(() => undefined);
-    await db.delete(orderItems).where(eq(orderItems.orderId, order.id)).catch(() => undefined);
-    await db.delete(orders).where(eq(orders.id, order.id)).catch(() => undefined);
+    await sql`DELETE FROM inventory_events WHERE order_id = ${order.id}`.catch(() => undefined);
+    await sql`DELETE FROM order_payments WHERE order_id = ${order.id}`.catch(() => undefined);
+    await sql`DELETE FROM order_items WHERE order_id = ${order.id}`.catch(() => undefined);
+    await sql`DELETE FROM orders WHERE id = ${order.id}`.catch(() => undefined);
     throw new PersistStageError('inventory_reservation', 'CONSTRAINT', 'Inventory reservation failed.');
   }
 
   try {
-    await db.insert(auditLogs).values({
-      id: `aud_${order.id}`,
-      actor: order.customerEmail || 'guest',
-      actorId: userId,
-      action: 'ORDER_CREATED',
-      entityType: 'ORDER',
-      entityId: order.id,
-      payloadJson: JSON.stringify({
-        orderNumber: order.orderNumber,
-        status: order.status,
-        paymentStatus: order.paymentStatus,
-        itemCount: order.items.length,
-      }),
-    });
+    await sql`
+      INSERT INTO audit_logs (id, actor, actor_id, action, entity_type, entity_id, payload_json)
+      VALUES (
+        ${`aud_${order.id}`},
+        ${order.customerEmail || 'guest'},
+        ${userId},
+        ${'ORDER_CREATED'},
+        ${'ORDER'},
+        ${order.id},
+        ${JSON.stringify({
+          orderNumber: order.orderNumber,
+          status: order.status,
+          paymentStatus: order.paymentStatus,
+          itemCount: order.items.length,
+        })}
+      )
+    `;
   } catch {
     // Audit is best-effort and must not roll back a paid-path order.
   }
@@ -319,8 +348,7 @@ export async function persistOrderBundle(params: {
 }
 
 export async function persistPaymentUpdate(payment: Payment, order: Order): Promise<void> {
-  const db = await getReadyDb();
-  if (!db) throw new PersistStageError('database_connection', 'DATABASE_UNAVAILABLE', 'DATABASE_UNAVAILABLE');
+  const sql = requireNeonSql();
   const proof = normalizePaymentProofReference(order.paymentProofReference || payment.transactionHash);
   const safeOrder: Order = {
     ...order,
@@ -335,91 +363,88 @@ export async function persistPaymentUpdate(payment: Payment, order: Order): Prom
     verifiedBy: undefined,
   };
   const now = new Date();
-  await db
-    .update(orderPayments)
-    .set({
-      status: safePayment.status,
-      transactionHash: safePayment.transactionHash,
-      evidenceNotes: safePayment.evidenceNotes,
-      payloadJson: JSON.stringify(safePayment),
-      updatedAt: now,
-    })
-    .where(eq(orderPayments.id, payment.id));
-
-  await db
-    .update(orders)
-    .set({
-      payloadJson: JSON.stringify(safeOrder),
-      appStatus: safeOrder.status,
-      paymentStatus: safeOrder.paymentStatus,
-      status: toDbOrderStatus(safeOrder.status),
-      paymentProofReference: safeOrder.paymentProofReference,
-      trackingNumber: safeOrder.trackingNumber,
-      updatedAt: now,
-    })
-    .where(eq(orders.id, order.id));
+  await sql`
+    UPDATE order_payments
+    SET
+      status = ${safePayment.status},
+      transaction_hash = ${safePayment.transactionHash ?? null},
+      evidence_notes = ${safePayment.evidenceNotes ?? null},
+      payload_json = ${JSON.stringify(safePayment)},
+      updated_at = ${now}
+    WHERE id = ${payment.id}
+  `;
+  await sql`
+    UPDATE orders
+    SET
+      payload_json = ${JSON.stringify(safeOrder)},
+      app_status = ${safeOrder.status},
+      payment_status = ${safeOrder.paymentStatus},
+      status = ${toDbOrderStatus(safeOrder.status)},
+      payment_proof_reference = ${safeOrder.paymentProofReference ?? null},
+      tracking_number = ${safeOrder.trackingNumber ?? null},
+      updated_at = ${now}
+    WHERE id = ${order.id}
+  `;
 }
 
 /** Admin-authenticated path: persist the submitted lifecycle state without customer-side sanitization. */
 export async function persistTrustedOrderUpdate(order: Order, payment?: Payment): Promise<void> {
-  const db = await getReadyDb();
-  if (!db) throw new PersistStageError('database_connection', 'DATABASE_UNAVAILABLE', 'DATABASE_UNAVAILABLE');
+  const sql = requireNeonSql();
   const now = new Date();
 
   if (payment?.id) {
-    await db
-      .update(orderPayments)
-      .set({
-        status: payment.status,
-        transactionHash: payment.transactionHash,
-        evidenceNotes: payment.evidenceNotes,
-        payloadJson: JSON.stringify(payment),
-        updatedAt: now,
-      })
-      .where(eq(orderPayments.id, payment.id));
+    await sql`
+      UPDATE order_payments
+      SET
+        status = ${payment.status},
+        transaction_hash = ${payment.transactionHash ?? null},
+        evidence_notes = ${payment.evidenceNotes ?? null},
+        payload_json = ${JSON.stringify(payment)},
+        updated_at = ${now}
+      WHERE id = ${payment.id}
+    `;
   }
 
-  await db
-    .update(orders)
-    .set({
-      payloadJson: JSON.stringify(order),
-      appStatus: order.status,
-      paymentStatus: order.paymentStatus,
-      status: toDbOrderStatus(order.status),
-      paymentProofReference: order.paymentProofReference,
-      trackingNumber: order.trackingNumber,
-      updatedAt: now,
-    })
-    .where(eq(orders.id, order.id));
+  await sql`
+    UPDATE orders
+    SET
+      payload_json = ${JSON.stringify(order)},
+      app_status = ${order.status},
+      payment_status = ${order.paymentStatus},
+      status = ${toDbOrderStatus(order.status)},
+      payment_proof_reference = ${order.paymentProofReference ?? null},
+      tracking_number = ${order.trackingNumber ?? null},
+      updated_at = ${now}
+    WHERE id = ${order.id}
+  `;
 }
 
 export async function persistInventoryEvent(event: InventoryTransaction): Promise<void> {
-  const db = await getReadyDb();
-  if (!db) throw new PersistStageError('database_connection', 'DATABASE_UNAVAILABLE', 'DATABASE_UNAVAILABLE');
-  await db
-    .insert(inventoryEvents)
-    .values({
-      id: event.id,
-      variantId: event.variantId,
-      orderId: event.orderId,
-      transactionType: event.transactionType,
-      quantityChange: event.quantityChange,
-      balanceAfter: event.balanceAfter,
-      notes: event.notes,
-      actorId: event.actorId,
-      payloadJson: JSON.stringify(event),
-      createdAt: new Date(event.createdAt),
-    })
-    .onConflictDoNothing();
+  const sql = requireNeonSql();
+  await sql`
+    INSERT INTO inventory_events (
+      id, variant_id, order_id, transaction_type, quantity_change, balance_after, notes, actor_id, payload_json, created_at
+    ) VALUES (
+      ${event.id},
+      ${event.variantId},
+      ${event.orderId ?? null},
+      ${event.transactionType},
+      ${event.quantityChange},
+      ${event.balanceAfter},
+      ${event.notes ?? null},
+      ${event.actorId ?? null},
+      ${JSON.stringify(event)},
+      ${new Date(event.createdAt)}
+    )
+    ON CONFLICT (id) DO NOTHING
+  `;
 
   try {
-    await db
-      .update(productVariants)
-      .set({
-        stockQuantity: event.balanceAfter,
-        updatedAt: new Date(),
-      })
-      .where(eq(productVariants.id, event.variantId));
+    await sql`
+      UPDATE product_variants
+      SET stock_quantity = ${event.balanceAfter}, updated_at = ${new Date()}
+      WHERE id = ${event.variantId}
+    `;
   } catch {
     // Variant may exist only in the bundled catalogue snapshot.
   }

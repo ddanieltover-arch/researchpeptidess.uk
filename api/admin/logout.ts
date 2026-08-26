@@ -3,31 +3,30 @@ export const config = { runtime: 'nodejs' };
 function send(
   res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean },
   status: number,
-  body: unknown
+  body: unknown,
+  extraHeaders?: Record<string, string>
 ): void {
   if (res.headersSent) return;
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
+  if (extraHeaders) {
+    for (const [key, value] of Object.entries(extraHeaders)) {
+      res.setHeader(key, value);
+    }
+  }
   res.end(JSON.stringify(body));
 }
 
-function loadError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : 'load_failed';
-  return raw
-    .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]')
-    .replace(/postgresql:\/\/\S+/gi, '[redacted]')
-    .slice(0, 160);
-}
-
 export default async function handler(
-  req: { method?: string },
+  req: { method?: string; headers?: unknown; url?: string },
   res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
 ): Promise<void> {
   try {
-    const { handleCreateOrder } = await import('../src/server/order-http');
-    await handleCreateOrder(req as never, res as never);
-  } catch (error) {
-    send(res, 500, { error: 'The order could not be stored.', detail: loadError(error) });
+    const { handleAdminLogout } = await import('../../src/server/admin-http');
+    await handleAdminLogout(req as never, res as never);
+  } catch {
+    if (res.headersSent) return;
+    send(res, 200, { ok: true });
   }
 }

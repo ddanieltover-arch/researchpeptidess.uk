@@ -12,22 +12,15 @@ function send(
   res.end(JSON.stringify(body));
 }
 
-function loadError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : 'load_failed';
-  return raw
-    .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]')
-    .replace(/postgresql:\/\/\S+/gi, '[redacted]')
-    .slice(0, 160);
-}
-
 export default async function handler(
   req: { method?: string },
   res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
 ): Promise<void> {
   try {
-    const { handleCreateOrder } = await import('../src/server/order-http');
-    await handleCreateOrder(req as never, res as never);
+    const { handleAdminStoreSettings } = await import('../../src/server/admin-persist-http');
+    await handleAdminStoreSettings(req as never, res as never);
   } catch (error) {
-    send(res, 500, { error: 'The order could not be stored.', detail: loadError(error) });
+    const raw = error instanceof Error ? error.message : 'load_failed';
+    send(res, 500, { error: 'The admin request could not be completed.', detail: raw.slice(0, 160) });
   }
 }

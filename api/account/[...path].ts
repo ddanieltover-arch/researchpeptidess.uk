@@ -1,32 +1,45 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { runLazyApi, vercelNodeConfig } from '../../src/server/lazy-api';
+export const config = { runtime: 'nodejs' };
 
-export const config = vercelNodeConfig;
+function send(
+  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean },
+  status: number,
+  body: unknown
+): void {
+  if (res.headersSent) return;
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(body));
+}
 
-function withAccountPrefix(req: IncomingMessage): string {
-  const raw = (req.url || '').split('?')[0] || '/';
+function loadError(error: unknown): string {
+  const raw = error instanceof Error ? error.message : 'load_failed';
+  return raw
+    .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]')
+    .replace(/postgresql:\/\/\S+/gi, '[redacted]')
+    .slice(0, 160);
+}
+
+function withAccountPrefix(url?: string): string {
+  const raw = (url || '').split('?')[0] || '/';
   if (raw.startsWith('/api/account')) return raw;
   if (raw.startsWith('/account')) return `/api${raw}`;
   const rest = raw.startsWith('/') ? raw : `/${raw}`;
   return `/api/account${rest === '/' ? '' : rest}`;
 }
 
-export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  const path = withAccountPrefix(req);
+export default async function handler(
+  req: { method?: string; url?: string },
+  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
+): Promise<void> {
+  const path = withAccountPrefix(req.url);
   const query = (req.url || '').includes('?') ? req.url!.slice(req.url!.indexOf('?')) : '';
   req.url = path + query;
 
-  await runLazyApi(
-    req,
-    res,
-    async () => {
-      if (path === '/api/account/orders') {
-        const { handleAccountOrdersRead } = await import('../../src/server/commerce-http');
-        return handleAccountOrdersRead;
-      }
-      const { handleCustomerApiRequest } = await import('../../src/server/customer-http');
-      return handleCustomerApiRequest;
-    },
-    'The account request could not be completed.'
-  );
+  try {
+    const { handleCustomerApiRequest } = await import('../../src/server/customer-http');
+    await handleCustomerApiRequest(req as never, res as never);
+  } catch (error) {
+    send(res, 500, { error: 'The account request could not be completed.', detail: loadError(error) });
+  }
 }

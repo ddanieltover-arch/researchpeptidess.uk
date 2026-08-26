@@ -25,9 +25,9 @@ export default async function handler(
   res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
 ): Promise<void> {
   try {
-    const { handleCreateOrder } = await import('../src/server/order-http');
-    await handleCreateOrder(req as never, res as never);
+    const { handleAccountOrdersRead } = await import('../../src/server/commerce-http');
+    await handleAccountOrdersRead(req as never, res as never);
   } catch (error) {
-    send(res, 500, { error: 'The order could not be stored.', detail: loadError(error) });
+    send(res, 500, { error: 'The account request could not be completed.', detail: loadError(error) });
   }
 }

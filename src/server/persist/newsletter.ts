@@ -1,7 +1,5 @@
-import { eq } from 'drizzle-orm';
-import { getReadyDb } from '../../db/index';
-import { newsletterSubscriptions } from '../../db/schema';
 import { isEmailProviderConnected } from '../env-status';
+import { requireNeonSql } from '../neon-sql';
 
 export interface NewsletterRecord {
   id: string;
@@ -19,38 +17,36 @@ export async function upsertNewsletterSubscription(params: {
   topics: string[];
   consentSource: string;
 }): Promise<{ record: NewsletterRecord; created: boolean }> {
-  const db = await getReadyDb();
-  if (!db) throw new Error('DATABASE_UNAVAILABLE');
-
+  const sql = requireNeonSql();
   const email = params.email.trim().toLowerCase();
   const now = new Date();
-    const providerStatus = isEmailProviderConnected()
-      ? 'CONNECTED'
-      : 'NOT_CONNECTED_TO_EMAIL_PROVIDER';
+  const providerStatus = isEmailProviderConnected()
+    ? 'CONNECTED'
+    : 'NOT_CONNECTED_TO_EMAIL_PROVIDER';
+  const topicsJson = JSON.stringify(params.topics);
 
-  const [existing] = await db
-    .select()
-    .from(newsletterSubscriptions)
-    .where(eq(newsletterSubscriptions.email, email))
-    .limit(1);
+  const existing = await sql`
+    SELECT id FROM newsletter_subscriptions WHERE email = ${email} LIMIT 1
+  `;
+  const existingId = existing[0] ? String((existing[0] as { id: string }).id) : '';
 
-  if (existing) {
-    await db
-      .update(newsletterSubscriptions)
-      .set({
-        topics: JSON.stringify(params.topics),
-        consentTimestamp: now,
-        consentSource: params.consentSource,
-        status: 'ACTIVE',
-        unsubscribeStatus: 'SUBSCRIBED',
-        providerStatus,
-        updatedAt: now,
-      })
-      .where(eq(newsletterSubscriptions.email, email));
+  if (existingId) {
+    await sql`
+      UPDATE newsletter_subscriptions
+      SET
+        topics = ${topicsJson},
+        consent_timestamp = ${now},
+        consent_source = ${params.consentSource},
+        status = ${'ACTIVE'},
+        unsubscribe_status = ${'SUBSCRIBED'},
+        provider_status = ${providerStatus},
+        updated_at = ${now}
+      WHERE email = ${email}
+    `;
     return {
       created: false,
       record: {
-        id: existing.id,
+        id: existingId,
         email,
         topics: params.topics,
         consentTimestamp: now.toISOString(),
@@ -63,18 +59,22 @@ export async function upsertNewsletterSubscription(params: {
   }
 
   const id = `nl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  await db.insert(newsletterSubscriptions).values({
-    id,
-    email,
-    topics: JSON.stringify(params.topics),
-    consentTimestamp: now,
-    consentSource: params.consentSource,
-    status: 'ACTIVE',
-    unsubscribeStatus: 'SUBSCRIBED',
-    providerStatus,
-    createdAt: now,
-    updatedAt: now,
-  });
+  await sql`
+    INSERT INTO newsletter_subscriptions (
+      id, email, topics, consent_timestamp, consent_source, status, unsubscribe_status, provider_status, created_at, updated_at
+    ) VALUES (
+      ${id},
+      ${email},
+      ${topicsJson},
+      ${now},
+      ${params.consentSource},
+      ${'ACTIVE'},
+      ${'SUBSCRIBED'},
+      ${providerStatus},
+      ${now},
+      ${now}
+    )
+  `;
 
   return {
     created: true,

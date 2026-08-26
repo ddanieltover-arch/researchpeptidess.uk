@@ -48,6 +48,9 @@ export async function loginAdmin(
     body: JSON.stringify({ email, password }),
   });
   const body = await readJson(response);
+  if (response.status >= 500) {
+    return { error: 'Sign-in is temporarily unavailable. Please try again shortly.' };
+  }
   const record = (body && typeof body === 'object' ? body : {}) as { user?: unknown };
   if (!response.ok || !isAdminSessionUser(record.user)) {
     return { error: asApiErrorMessage(body, 'Invalid email or password.') };

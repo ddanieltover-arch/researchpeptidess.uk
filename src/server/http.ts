@@ -103,14 +103,15 @@ export function sendPublicError(
 }
 
 export function readRawBody(req: IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
+  const ended = (req as IncomingMessage & { readableEnded?: boolean }).readableEnded;
+  if (ended) return Promise.resolve('');
+  return (async () => {
     const chunks: Buffer[] = [];
-    req.on('data', (chunk) => {
+    for await (const chunk of req) {
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    });
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-    req.on('error', reject);
-  });
+    }
+    return Buffer.concat(chunks).toString('utf8');
+  })();
 }
 
 export async function readJsonBody(req: NodeRequest, timeoutMs = 8000): Promise<Record<string, unknown>> {

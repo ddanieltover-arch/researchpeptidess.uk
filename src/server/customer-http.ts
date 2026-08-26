@@ -12,7 +12,7 @@ import {
   readCustomerSessionFromCookieHeader,
   registerCustomerAccount,
 } from './customer-auth';
-import { getAdminAuthConfig } from './admin-auth';
+import { getAdminAuthConfig } from './session-cookies';
 import { getClientAddress, readJsonBody, requestPath, sendJson, type NodeRequest } from './http';
 import { clearLoginAttempts, consumeLoginAttempt } from './rate-limit';
 

@@ -19,7 +19,7 @@ import {
 import { ShippingMethod, StoreSettings } from '../types';
 
 async function requireAdmin(req: IncomingMessage, res: ServerResponse, correlationId: string): Promise<boolean> {
-  const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
+  const { readAdminSessionFromCookieHeader } = await import('./session-cookies');
   const user = readAdminSessionFromCookieHeader(req.headers.cookie);
   if (!user) {
     sendPublicError(res, 401, correlationId, 'Administrator authentication is required.');
@@ -231,7 +231,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
 
     if (path === '/api/admin/merchandising' && req.method === 'PUT') {
       if (!(await requireAdmin(req, res, correlationId))) return true;
-      const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
+      const { readAdminSessionFromCookieHeader } = await import('./session-cookies');
       const session = readAdminSessionFromCookieHeader(req.headers.cookie);
       const body = await readJsonBody(req as NodeRequest);
       const productId = typeof body.productId === 'string' ? body.productId : '';
@@ -265,7 +265,7 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
 
     if (path === '/api/admin/store-settings' && req.method === 'PUT') {
       if (!(await requireAdmin(req, res, correlationId))) return true;
-      const { readAdminSessionFromCookieHeader } = await import('./admin-auth');
+      const { readAdminSessionFromCookieHeader } = await import('./session-cookies');
       const session = readAdminSessionFromCookieHeader(req.headers.cookie);
       const body = await readJsonBody(req as NodeRequest);
       const settings = body.settings as StoreSettings | undefined;

@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { readAdminSessionFromCookieHeader } from './admin-auth';
-import { readCustomerSessionFromCookieHeader } from './customer-auth';
+import { readAdminSessionFromCookieHeader, readCustomerSessionFromCookieHeader } from './session-cookies';
 import { readCorrelationId, sendJson, sendPublicError } from './http';
 import { listCommerceForAdmin, listCommerceForCustomer } from './persist/commerce';
 
