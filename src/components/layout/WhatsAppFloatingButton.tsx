@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { formatProductDisplayName } from '../../lib/product-display';
 import { parseAppPath } from '../../lib/routing';
 import { STORE_WHATSAPP_DISPLAY, STORE_WHATSAPP_URL } from '../../lib/store-contact';
+import { getProductWhatsAppHref } from '../../lib/whatsapp-product';
 import { WhatsAppIcon } from '../ui/WhatsAppIcon';
 
 const fabClass =
@@ -17,8 +19,23 @@ function scrollToTop() {
 }
 
 export const WhatsAppFloatingButton: React.FC = () => {
-  const { currentPath, cartDrawerOpen } = useStore();
+  const { currentPath, cartDrawerOpen, selectedProductSlug, publishedProducts } = useStore();
   const kind = parseAppPath(currentPath).kind;
+  const pageProduct =
+    kind === 'product' && selectedProductSlug
+      ? publishedProducts.find((product) => product.slug === selectedProductSlug)
+      : undefined;
+  const pageProductName = pageProduct ? formatProductDisplayName(pageProduct.name) : '';
+  const whatsappHref = pageProduct
+    ? getProductWhatsAppHref({
+        name: pageProduct.name,
+        slug: pageProduct.slug,
+        sku: pageProduct.sku,
+      })
+    : STORE_WHATSAPP_URL;
+  const whatsappLabel = pageProduct
+    ? `Enquire about ${pageProductName} on WhatsApp (${STORE_WHATSAPP_DISPLAY}, messages only)`
+    : `WhatsApp ${STORE_WHATSAPP_DISPLAY} (messages only)`;
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -47,10 +64,10 @@ export const WhatsAppFloatingButton: React.FC = () => {
         </button>
       ) : null}
       <a
-        href={STORE_WHATSAPP_URL}
+        href={whatsappHref}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`WhatsApp ${STORE_WHATSAPP_DISPLAY} (messages only)`}
+        aria-label={whatsappLabel}
         className={`${fabClass} bg-[#25D366] text-white shadow-emerald-900/20 hover:bg-[#1EBE5D] focus-visible:ring-[#25D366]/60`}
       >
         <WhatsAppIcon className="h-6 w-6 text-white" />

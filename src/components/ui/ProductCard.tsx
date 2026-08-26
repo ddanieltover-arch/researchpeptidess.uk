@@ -4,6 +4,7 @@ import { useStore } from '../../context/StoreContext';
 import { Heart, ArrowUpRight } from 'lucide-react';
 import { AppLink } from './AppLink';
 import { Button } from './Button';
+import { WhatsAppProductButton } from './WhatsAppProductButton';
 import { productPath } from '../../lib/routing';
 import {
   formatProductDisplayName,
@@ -104,32 +105,47 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout = 'gri
             {formatProductPriceRange(product, currency)}
           </span>
 
-          {cta === 'ADD_TO_CART' ? (
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={handleQuickAdd}
-              isLoading={isAdding}
-              className={`max-w-full px-3 tracking-[0.08em] ${isList ? 'w-full sm:w-auto' : 'w-full'}`}
-              aria-label={`Add ${displayName} to cart`}
-            >
-              Add to cart
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(productPath(product.slug))}
-              className={`max-w-full px-3 tracking-[0.08em] ${isList ? 'w-full sm:w-auto' : 'w-full'}`}
-              aria-label={
-                cta === 'SELECT_OPTIONS' ? `Select options for ${displayName}` : `View ${displayName}`
-              }
-            >
-              {cta === 'SELECT_OPTIONS' ? 'Select options' : 'View details'}
-            </Button>
-          )}
+          <div
+            className={`flex min-w-0 ${
+              isList ? 'w-full flex-row items-center gap-2 sm:w-auto' : 'w-full flex-col gap-2'
+            }`}
+          >
+            {cta === 'ADD_TO_CART' ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleQuickAdd}
+                isLoading={isAdding}
+                className={`max-w-full px-3 tracking-[0.08em] ${isList ? 'flex-1 sm:flex-none sm:w-auto' : 'w-full'}`}
+                aria-label={`Add ${displayName} to cart`}
+              >
+                Add to cart
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={() => navigate(productPath(product.slug))}
+                className={`max-w-full px-3 tracking-[0.08em] ${isList ? 'flex-1 sm:flex-none sm:w-auto' : 'w-full'}`}
+                aria-label={
+                  cta === 'SELECT_OPTIONS' ? `Select options for ${displayName}` : `View ${displayName}`
+                }
+              >
+                {cta === 'SELECT_OPTIONS' ? 'Select options' : 'View details'}
+              </Button>
+            )}
+            <WhatsAppProductButton
+              layout={isList ? 'icon' : 'compact'}
+              productName={displayName}
+              productSlug={product.slug}
+              sku={product.sku}
+              variantLabel={cta === 'ADD_TO_CART' ? selectedVariant?.size : undefined}
+              variantSku={cta === 'ADD_TO_CART' ? selectedVariant?.sku : undefined}
+              className={isList ? undefined : 'w-full'}
+            />
+          </div>
         </div>
       </div>
     </article>

@@ -1,7 +1,15 @@
 import { TestResult } from './commerce-tests';
 import { applyMerchandisingOverlay } from './merchandising';
 import { neutralizeUnsafePublicCopy } from './public-copy-safety';
-import { STORE_CONTACT_EMAIL, STORE_WHATSAPP_DISPLAY, STORE_WHATSAPP_URL, withCanonicalStoreContactEmails } from './store-contact';
+import {
+  STORE_CONTACT_EMAIL,
+  STORE_WHATSAPP_DISPLAY,
+  STORE_WHATSAPP_URL,
+  buildProductWhatsAppMessage,
+  buildProductWhatsAppUrl,
+  withCanonicalStoreContactEmails,
+} from './store-contact';
+import { getProductWhatsAppHref } from './whatsapp-product';
 import {
   getBankSettlementInstructions,
   getCryptoSettlementInstructions,
@@ -161,6 +169,46 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: '+44 7927 039397 via wa.me/447927039397',
         actual: `${STORE_WHATSAPP_DISPLAY} ${STORE_WHATSAPP_URL}`,
+      };
+    }),
+    run('Product WhatsApp enquiry names the clicked compound and its catalogue URL', () => {
+      const href = getProductWhatsAppHref({
+        name: 'AICAR (Acadesine / AMPK Activator Standard)',
+        slug: 'aicar-acadesine-ampk-activator-standard',
+        sku: 'RPUK-AICAR',
+        variantLabel: '50mg',
+      });
+      const decoded = decodeURIComponent(href);
+      const passed =
+        href.startsWith('https://wa.me/447927039397?text=') &&
+        decoded.includes('enquire about AICAR (Acadesine / AMPK Activator Standard)') &&
+        decoded.includes('Product: AICAR (Acadesine / AMPK Activator Standard)') &&
+        decoded.includes('Option: 50mg') &&
+        decoded.includes('SKU: RPUK-AICAR') &&
+        decoded.includes('/product/aicar');
+      return {
+        passed,
+        expected: 'wa.me enquiry prefilled with AICAR name, option, SKU, and canonical product URL',
+        actual: decoded,
+      };
+    }),
+    run('Product WhatsApp message keeps the exact display name including special characters', () => {
+      const message = buildProductWhatsAppMessage({
+        productName: 'NAD+',
+        productUrl: 'https://researchpeptidess.uk/product/nad',
+      });
+      const href = buildProductWhatsAppUrl({
+        productName: 'NAD+',
+        productUrl: 'https://researchpeptidess.uk/product/nad',
+      });
+      const passed =
+        message.includes('enquire about NAD+') &&
+        message.includes('Product: NAD+') &&
+        decodeURIComponent(href).includes('NAD+');
+      return {
+        passed,
+        expected: 'NAD+ retained in message body and decoded WhatsApp URL',
+        actual: message,
       };
     }),
     run('Sample bank and crypto destinations are not treated as live settlement details', () => {

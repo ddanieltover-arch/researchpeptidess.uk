@@ -5,6 +5,38 @@ export const STORE_WHATSAPP_DISPLAY = '+44 7927 039397';
 export const STORE_WHATSAPP_E164 = '447927039397';
 export const STORE_WHATSAPP_URL = `https://wa.me/${STORE_WHATSAPP_E164}`;
 
+export function buildWhatsAppUrl(message?: string): string {
+  const text = typeof message === 'string' ? message.trim() : '';
+  if (!text) return STORE_WHATSAPP_URL;
+  return `${STORE_WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+}
+
+export interface ProductWhatsAppContext {
+  productName: string;
+  productUrl?: string;
+  variantLabel?: string;
+  sku?: string;
+}
+
+export function buildProductWhatsAppMessage(context: ProductWhatsAppContext): string {
+  const productName = context.productName.trim();
+  const lines = [`Hello, I would like to enquire about ${productName}.`, '', `Product: ${productName}`];
+  if (context.variantLabel?.trim()) {
+    lines.push(`Option: ${context.variantLabel.trim()}`);
+  }
+  if (context.sku?.trim()) {
+    lines.push(`SKU: ${context.sku.trim()}`);
+  }
+  if (context.productUrl?.trim()) {
+    lines.push(context.productUrl.trim());
+  }
+  return lines.join('\n');
+}
+
+export function buildProductWhatsAppUrl(context: ProductWhatsAppContext): string {
+  return buildWhatsAppUrl(buildProductWhatsAppMessage(context));
+}
+
 const LEGACY_STORE_INBOXES = new Set([
   'lab@researchpeptidess.uk',
   'support@researchpeptidess.uk',

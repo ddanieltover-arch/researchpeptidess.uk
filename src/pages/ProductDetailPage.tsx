@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { Button } from '../components/ui/Button';
+import { WhatsAppProductButton } from '../components/ui/WhatsAppProductButton';
 import { Badge } from '../components/ui/Badge';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { categoryPath, productPath, ROUTES } from '../lib/routing';
@@ -385,6 +386,15 @@ export const ProductDetailPage: React.FC = () => {
                 </Button>
               </div>
             </div>
+
+            <WhatsAppProductButton
+              layout="full"
+              productName={displayName}
+              productSlug={product.slug}
+              sku={product.sku}
+              variantLabel={selectedVariant.size}
+              variantSku={selectedVariant.sku}
+            />
 
             {/* Guarantees */}
             <ProductShippingPanel
