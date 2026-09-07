@@ -203,6 +203,38 @@ export function runEmailTests(): TestResult[] {
         actual: missing.length === 0 ? `rendered ${ORDER_TYPES.length}` : missing.join(', '),
       };
     }),
+    run('Order emails include full checkout and shipping details', () => {
+      const customer = renderOrderEmail('ORDER_RECEIVED', 'customer', order, payment);
+      const admin = renderOrderEmail('ORDER_RECEIVED', 'admin', order, payment);
+      const required = [
+        'Customer name',
+        'Customer email',
+        'Phone',
+        'Delivery phone',
+        'Delivery email',
+        'Ship to',
+        '1 Laboratory Road',
+        'Cambridge',
+        'CB2 1TN',
+        '01223 000000',
+        'lab@example.ac.uk',
+        'Research consent',
+        'Shipping method',
+        'UK Tracked',
+        'Subtotal',
+        'Amount due',
+      ];
+      const missingCustomer = required.filter((token) => !customer.html.includes(token));
+      const missingAdmin = required.filter((token) => !admin.html.includes(token));
+      const passed = missingCustomer.length === 0 && missingAdmin.length === 0;
+      return {
+        passed,
+        expected: 'customer + admin copies include filled checkout fields',
+        actual: passed
+          ? 'all fields present'
+          : `customer missing=${missingCustomer.join('|')} admin missing=${missingAdmin.join('|')}`,
+      };
+    }),
     run('Unsafe tracking URLs are rejected', () => {
       const safe = isSafeEmailHref('https://researchpeptidess.uk/account');
       const unsafe = isSafeEmailHref('javascript:alert(1)');

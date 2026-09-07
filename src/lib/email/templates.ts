@@ -150,17 +150,67 @@ function settlementBlock(order: Order, payment?: Payment): string {
 }
 
 function orderSummary(order: Order, payment?: Payment): string {
+  const address = order.shippingAddress;
+  const phone = address?.phone || '';
+  const addressEmail = address?.email || order.customerEmail;
+  const paymentReference =
+    order.paymentProofReference ||
+    payment?.transactionHash ||
+    payment?.reference ||
+    '';
+  const evidenceNotes = payment?.evidenceNotes || payment?.notes || '';
+
   return (
     renderKvTable([
       { label: 'Order', value: escapeHtml(order.orderNumber) },
       { label: 'Placed', value: escapeHtml(formatEmailDate(order.createdAt)) },
       { label: 'Status', value: escapeHtml(statusLabel(order.status)) },
-      { label: 'Settlement', value: escapeHtml(paymentMethodLabel(order.paymentMethod)) },
+      { label: 'Settlement method', value: escapeHtml(paymentMethodLabel(order.paymentMethod)) },
       { label: 'Payment status', value: escapeHtml(statusLabel(order.paymentStatus || payment?.status || '')) },
-      { label: 'Customer', value: `${escapeHtml(order.customerName)} &lt;${escapeHtml(order.customerEmail)}&gt;` },
+      { label: 'Payment reference', value: escapeHtml(paymentReference) },
+      { label: 'Evidence notes', value: escapeHtml(evidenceNotes) },
+      { label: 'Customer name', value: escapeHtml(order.customerName) },
+      { label: 'Customer email', value: escapeHtml(order.customerEmail || addressEmail) },
+      { label: 'Phone', value: escapeHtml(phone) },
+      {
+        label: 'Research consent',
+        value: escapeHtml(order.researchConsentSigned ? 'Signed — in-vitro research use only' : 'Not recorded'),
+      },
+      {
+        label: 'Shipping method',
+        value: escapeHtml(
+          [order.shippingMethodName, order.shippingCarrier, order.shippingZone].filter(Boolean).join(' · ') ||
+            'Tracked dispatch'
+        ),
+      },
+      { label: 'Tracking', value: escapeHtml(order.trackingNumber || '') },
+      { label: 'Courier', value: escapeHtml(order.courier || '') },
     ]) +
     renderOrderItems(order) +
-    renderAddress(order)
+    renderAddress(order) +
+    (order.billingAddress && order.billingAddress.addressLine1
+      ? renderKvTable([
+          {
+            label: 'Bill to',
+            value: [
+              order.billingAddress.fullName,
+              order.billingAddress.institution,
+              order.billingAddress.department,
+              order.billingAddress.addressLine1,
+              order.billingAddress.addressLine2,
+              [order.billingAddress.city, order.billingAddress.county, order.billingAddress.postcode]
+                .filter(Boolean)
+                .join(', '),
+              order.billingAddress.countryName || order.billingAddress.country,
+              order.billingAddress.phone,
+              order.billingAddress.email,
+            ]
+              .filter(Boolean)
+              .map((line) => escapeHtml(String(line)))
+              .join('<br />'),
+          },
+        ])
+      : '')
   );
 }
 
@@ -197,8 +247,11 @@ export function renderContactEmail(audience: EmailAudience, input: ContactEmailI
       intro: 'Your enquiry has been stored for the operations team. We will reply to this email address. This message does not confirm a response time or an order.',
       bodyHtml:
         renderKvTable([
+          { label: 'Name', value: escapeHtml(input.name) },
+          { label: 'Email', value: escapeHtml(input.email) },
           { label: 'Subject', value: escapeHtml(input.subject || 'Operations enquiry') },
           { label: 'Reference', value: escapeHtml(input.id) },
+          { label: 'Submitted', value: escapeHtml(formatEmailDate(input.createdAt)) },
         ]) + renderMessagePanel('Your message', input.message),
       cta: { label: 'Browse the catalogue', href: sitePath('/shop') },
       secondaryCta: { label: 'WhatsApp desk', href: 'https://wa.me/447927039397' },

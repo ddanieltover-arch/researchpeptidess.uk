@@ -104,14 +104,40 @@ function settlementBlock(order: MailOrder, payment?: MailPayment): string {
 }
 
 function orderSummary(order: MailOrder, payment?: MailPayment): string {
+  const address = order.shippingAddress;
+  const paymentReference =
+    order.paymentProofReference || payment?.transactionHash || payment?.reference || '';
+  const evidenceNotes = payment?.evidenceNotes || payment?.notes || '';
+
   return (
     renderKvTable([
       { label: 'Order', value: escapeHtml(order.orderNumber) },
       { label: 'Placed', value: escapeHtml(formatEmailDate(order.createdAt)) },
       { label: 'Status', value: escapeHtml(statusLabel(order.status || '')) },
-      { label: 'Settlement', value: escapeHtml(paymentMethodLabel(order.paymentMethod || payment?.method)) },
+      { label: 'Settlement method', value: escapeHtml(paymentMethodLabel(order.paymentMethod || payment?.method)) },
       { label: 'Payment status', value: escapeHtml(statusLabel(order.paymentStatus || payment?.status || '')) },
-      { label: 'Customer', value: `${escapeHtml(order.customerName)} &lt;${escapeHtml(order.customerEmail)}&gt;` },
+      { label: 'Payment reference', value: escapeHtml(paymentReference) },
+      { label: 'Evidence notes', value: escapeHtml(evidenceNotes) },
+      { label: 'Customer name', value: escapeHtml(order.customerName) },
+      { label: 'Customer email', value: escapeHtml(order.customerEmail || address?.email || '') },
+      { label: 'Phone', value: escapeHtml(address?.phone || '') },
+      {
+        label: 'Research consent',
+        value: escapeHtml(
+          order.researchConsentSigned === false
+            ? 'Not recorded'
+            : 'Signed — in-vitro research use only'
+        ),
+      },
+      {
+        label: 'Shipping method',
+        value: escapeHtml(
+          [order.shippingMethodName, order.shippingCarrier, order.shippingZone].filter(Boolean).join(' · ') ||
+            'Tracked dispatch'
+        ),
+      },
+      { label: 'Tracking', value: escapeHtml(order.trackingNumber || '') },
+      { label: 'Courier', value: escapeHtml(order.courier || '') },
     ]) +
     renderOrderItems(order) +
     renderAddress(order)

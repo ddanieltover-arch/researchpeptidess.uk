@@ -150,33 +150,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     `;
 
     try {
-      await dispatchOrderEventEmails(
-        'PAYMENT_SUBMITTED',
-        {
-          id: String(safeOrder.id),
-          orderNumber: String(safeOrder.orderNumber || ''),
-          customerEmail: String(safeOrder.customerEmail || ''),
-          customerName: String(safeOrder.customerName || ''),
-          currency: String(safeOrder.currency || 'GBP'),
-          total: Number(safeOrder.total || 0),
-          paymentMethod: String(safeOrder.paymentMethod || 'BANK_TRANSFER'),
-          status: String(safeOrder.status || ''),
-          paymentStatus: String(safeOrder.paymentStatus || ''),
-          paymentProofReference:
-            typeof safeOrder.paymentProofReference === 'string' ? safeOrder.paymentProofReference : undefined,
-          items: Array.isArray(safeOrder.items) ? (safeOrder.items as never) : [],
-          shippingAddress: (safeOrder.shippingAddress || {}) as never,
-        },
-        {
-          id: String(safePayment.id),
-          method: String(safePayment.method || 'BANK_TRANSFER'),
-          amount: Number(safePayment.amount || 0),
-          currency: String(safePayment.currency || 'GBP'),
-          status: String(safePayment.status || ''),
-          transactionHash:
-            typeof safePayment.transactionHash === 'string' ? safePayment.transactionHash : undefined,
-        }
-      );
+      await dispatchOrderEventEmails('PAYMENT_SUBMITTED', safeOrder, safePayment);
     } catch (error) {
       console.error(
         JSON.stringify({

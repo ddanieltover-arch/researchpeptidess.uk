@@ -331,37 +331,12 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     try {
       await dispatchOrderCreatedEmails(
         {
-          id: String(trustedOrder.id),
-          orderNumber: String(trustedOrder.orderNumber || ''),
-          customerEmail: String(trustedOrder.customerEmail || ''),
-          customerName: String(trustedOrder.customerName || ''),
-          currency: String(trustedOrder.currency || 'GBP'),
-          subtotal: Number(trustedOrder.subtotal || 0),
-          tierDiscountAmount: Number(trustedOrder.tierDiscountAmount || 0),
-          couponCode: typeof trustedOrder.couponCode === 'string' ? trustedOrder.couponCode : undefined,
-          couponDiscountAmount: Number(trustedOrder.couponDiscountAmount || 0),
-          cryptoDiscountAmount: Number(trustedOrder.cryptoDiscountAmount || 0),
-          shippingFee: Number(trustedOrder.shippingFee || 0),
-          total: Number(trustedOrder.total || 0),
-          paymentMethod: String(trustedOrder.paymentMethod || 'BANK_TRANSFER'),
-          status: String(trustedOrder.status || ''),
-          paymentStatus: String(trustedOrder.paymentStatus || ''),
-          paymentProofReference:
-            typeof trustedOrder.paymentProofReference === 'string' ? trustedOrder.paymentProofReference : undefined,
-          items: items as never,
-          shippingAddress: (trustedOrder.shippingAddress || {}) as never,
-          createdAt: new Date().toISOString(),
+          ...trustedOrder,
+          items,
+          createdAt:
+            typeof trustedOrder.createdAt === 'string' ? trustedOrder.createdAt : new Date().toISOString(),
         },
-        {
-          id: String(trustedPayment.id),
-          method: String(trustedPayment.method || 'BANK_TRANSFER'),
-          amount: Number(trustedPayment.amount || 0),
-          currency: String(trustedPayment.currency || 'GBP'),
-          status: String(trustedPayment.status || ''),
-          reference: typeof trustedPayment.reference === 'string' ? trustedPayment.reference : undefined,
-          transactionHash:
-            typeof trustedPayment.transactionHash === 'string' ? trustedPayment.transactionHash : undefined,
-        },
+        trustedPayment,
         ref
       );
     } catch (error) {

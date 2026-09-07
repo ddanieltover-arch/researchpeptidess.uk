@@ -118,11 +118,12 @@ export function renderMessagePanel(label: string, message: string): string {
 
 function itemRow(item: OrderItem, currency: Order['currency'], index: number): string {
   const bg = index % 2 === 0 ? colors.card : colors.page;
+  const unit = Number.isFinite(Number(item.unitPrice)) ? formatEmailMoney(item.unitPrice, currency) : '';
   return `
     <tr>
       <td style="padding:12px 14px; background-color:${bg}; border-bottom:1px solid ${colors.line}; font-family:Arial, Helvetica, sans-serif; color:${colors.text};">
         <p style="margin:0 0 2px 0; font-size:14px; font-weight:700;">${escapeHtml(item.productName)}</p>
-        <p style="margin:0; font-size:12px; color:${colors.muted};">${escapeHtml(item.variantName || item.size)} · ${escapeHtml(item.sku || item.variantSku || '—')}</p>
+        <p style="margin:0; font-size:12px; color:${colors.muted};">${escapeHtml(item.variantName || item.size)} · ${escapeHtml(item.sku || item.variantSku || '—')}${unit ? ` · ${escapeHtml(unit)} each` : ''}</p>
       </td>
       <td align="center" style="padding:12px 10px; background-color:${bg}; border-bottom:1px solid ${colors.line}; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:${colors.text}; white-space:nowrap;">
         ${escapeHtml(String(item.quantity))}
@@ -204,14 +205,17 @@ export function renderAddress(order: Order): string {
     address.addressLine2,
     [address.city, address.county, address.postcode].filter(Boolean).join(', '),
     address.countryName || address.country,
-    address.phone,
   ]
     .filter(Boolean)
-    .map((line) => escapeHtml(line))
+    .map((line) => escapeHtml(String(line)))
     .join('<br />');
 
   return renderKvTable([
     { label: 'Ship to', value: lines },
+    { label: 'Delivery phone', value: escapeHtml(address.phone || '') },
+    { label: 'Delivery email', value: escapeHtml(address.email || order.customerEmail || '') },
+    { label: 'Institution', value: escapeHtml(address.institution || '') },
+    { label: 'Department', value: escapeHtml(address.department || '') },
     { label: 'Carrier', value: escapeHtml(order.shippingCarrier || order.shippingMethodName || 'Tracked dispatch') },
   ]);
 }

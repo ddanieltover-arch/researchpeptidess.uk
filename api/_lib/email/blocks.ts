@@ -27,8 +27,10 @@ export interface MailOrder {
   couponDiscountAmount?: number;
   cryptoDiscountAmount?: number;
   shippingFee?: number;
+  shippingMethodId?: string;
   shippingMethodName?: string;
   shippingCarrier?: string;
+  shippingZone?: string;
   total: number;
   paymentMethod?: string;
   status?: string;
@@ -38,6 +40,7 @@ export interface MailOrder {
   trackingUrl?: string;
   courier?: string;
   cancellationReason?: string;
+  researchConsentSigned?: boolean;
   createdAt?: string;
   items?: MailOrderItem[];
   shippingAddress?: {
@@ -52,6 +55,21 @@ export interface MailOrder {
     country?: string;
     countryName?: string;
     phone?: string;
+    email?: string;
+  };
+  billingAddress?: {
+    fullName?: string;
+    institution?: string;
+    department?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    county?: string;
+    postcode?: string;
+    country?: string;
+    countryName?: string;
+    phone?: string;
+    email?: string;
   };
 }
 
@@ -61,6 +79,8 @@ export interface MailPayment {
   status?: string;
   reference?: string;
   transactionHash?: string;
+  evidenceNotes?: string;
+  notes?: string;
   rejectionReason?: string;
   amount?: number;
   currency?: string;
@@ -181,11 +201,15 @@ export function renderOrderItems(order: MailOrder): string {
   const rows = items
     .map((item, index) => {
       const bg = index % 2 === 0 ? colors.card : colors.page;
+      const unit =
+        typeof item.unitPrice === 'number' && Number.isFinite(item.unitPrice)
+          ? ` · ${escapeHtml(formatEmailMoney(item.unitPrice, currency))} each`
+          : '';
       return `
     <tr>
       <td style="padding:12px 14px; background-color:${bg}; border-bottom:1px solid ${colors.line}; font-family:Arial, Helvetica, sans-serif; color:${colors.text};">
         <p style="margin:0 0 2px 0; font-size:14px; font-weight:700;">${escapeHtml(item.productName)}</p>
-        <p style="margin:0; font-size:12px; color:${colors.muted};">${escapeHtml(item.variantName || item.size || '')} · ${escapeHtml(item.sku || item.variantSku || '—')}</p>
+        <p style="margin:0; font-size:12px; color:${colors.muted};">${escapeHtml(item.variantName || item.size || '')} · ${escapeHtml(item.sku || item.variantSku || '—')}${unit}</p>
       </td>
       <td align="center" style="padding:12px 10px; background-color:${bg}; border-bottom:1px solid ${colors.line}; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:${colors.text}; white-space:nowrap;">
         ${escapeHtml(String(item.quantity))}
@@ -197,6 +221,51 @@ export function renderOrderItems(order: MailOrder): string {
     })
     .join('');
 
+  const totals: Array<{ label: string; value: string; emphasize?: boolean }> = [
+    { label: 'Subtotal', value: formatEmailMoney(Number(order.subtotal || 0), currency) },
+  ];
+  if (Number(order.tierDiscountAmount || 0) > 0) {
+    totals.push({
+      label: 'Bulk tier saving',
+      value: `−${formatEmailMoney(Number(order.tierDiscountAmount), currency)}`,
+    });
+  }
+  if (Number(order.couponDiscountAmount || 0) > 0) {
+    totals.push({
+      label: order.couponCode ? `Coupon ${order.couponCode}` : 'Coupon',
+      value: `−${formatEmailMoney(Number(order.couponDiscountAmount), currency)}`,
+    });
+  }
+  if (Number(order.cryptoDiscountAmount || 0) > 0) {
+    totals.push({
+      label: 'Crypto settlement discount',
+      value: `−${formatEmailMoney(Number(order.cryptoDiscountAmount), currency)}`,
+    });
+  }
+  totals.push({
+    label: Number(order.shippingFee || 0) === 0 ? 'Shipping' : `Shipping · ${order.shippingMethodName || 'Tracked'}`,
+    value: Number(order.shippingFee || 0) === 0 ? 'Included' : formatEmailMoney(Number(order.shippingFee), currency),
+  });
+  totals.push({
+    label: 'Amount due',
+    value: formatEmailMoney(order.total, currency),
+    emphasize: true,
+  });
+
+  const totalRows = totals
+    .map(
+      (row) => `
+        <tr>
+          <td align="right" style="padding:6px 10px 6px 14px; font-family:Arial, Helvetica, sans-serif; font-size:${row.emphasize ? '14px' : '13px'}; font-weight:${row.emphasize ? '800' : '600'}; color:${row.emphasize ? colors.navy : colors.muted};">
+            ${escapeHtml(row.label)}
+          </td>
+          <td align="right" style="padding:6px 14px; font-family:Arial, Helvetica, sans-serif; font-size:${row.emphasize ? '16px' : '13px'}; font-weight:${row.emphasize ? '800' : '700'}; color:${row.emphasize ? colors.primary : colors.text}; white-space:nowrap;">
+            ${escapeHtml(row.value)}
+          </td>
+        </tr>`
+    )
+    .join('');
+
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 22px 0; border:1px solid ${colors.line}; border-radius:12px; overflow:hidden;">
       <tr>
@@ -206,8 +275,10 @@ export function renderOrderItems(order: MailOrder): string {
       </tr>
       ${rows || `<tr><td colspan="3" style="padding:16px; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:${colors.muted};">No line items were recorded.</td></tr>`}
       <tr>
-        <td colspan="3" align="right" style="padding:14px; background-color:${colors.card}; font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:800; color:${colors.primary};">
-          Amount due: ${escapeHtml(formatEmailMoney(order.total, currency))}
+        <td colspan="3" style="padding:12px 0 8px 0; background-color:${colors.card};">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            ${totalRows}
+          </table>
         </td>
       </tr>
     </table>`;
@@ -224,16 +295,45 @@ export function renderAddress(order: MailOrder): string {
     address.addressLine2,
     [address.city, address.county, address.postcode].filter(Boolean).join(', '),
     address.countryName || address.country,
-    address.phone,
   ]
     .filter(Boolean)
     .map((line) => escapeHtml(String(line)))
     .join('<br />');
 
-  return renderKvTable([
-    { label: 'Ship to', value: lines },
-    { label: 'Carrier', value: escapeHtml(order.shippingCarrier || order.shippingMethodName || 'Tracked dispatch') },
-  ]);
+  const billing = order.billingAddress;
+  const billingHtml =
+    billing && billing.addressLine1
+      ? renderKvTable([
+          {
+            label: 'Bill to',
+            value: [
+              billing.fullName,
+              billing.institution,
+              billing.department,
+              billing.addressLine1,
+              billing.addressLine2,
+              [billing.city, billing.county, billing.postcode].filter(Boolean).join(', '),
+              billing.countryName || billing.country,
+              billing.phone,
+              billing.email,
+            ]
+              .filter(Boolean)
+              .map((line) => escapeHtml(String(line)))
+              .join('<br />'),
+          },
+        ])
+      : '';
+
+  return (
+    renderKvTable([
+      { label: 'Ship to', value: lines },
+      { label: 'Delivery phone', value: escapeHtml(address.phone || '') },
+      { label: 'Delivery email', value: escapeHtml(address.email || order.customerEmail || '') },
+      { label: 'Institution', value: escapeHtml(address.institution || '') },
+      { label: 'Department', value: escapeHtml(address.department || '') },
+      { label: 'Carrier', value: escapeHtml(order.shippingCarrier || order.shippingMethodName || 'Tracked dispatch') },
+    ]) + billingHtml
+  );
 }
 
 export { nl2br };
