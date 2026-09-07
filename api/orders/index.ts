@@ -1,7 +1,9 @@
 /**
- * Self-contained /api/orders handler for Vercel.
- * No imports from src/ or sibling helpers — those crash this runtime.
+ * Dedicated /api/orders handler for Vercel.
+ * Uses api/_lib only (compiled with the function). Do not import from src/.
  */
+
+import { dispatchOrderCreatedEmails } from '../_lib/email/dispatch';
 
 export const config = { runtime: 'nodejs' };
 
@@ -327,7 +329,41 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
 
     try {
-      await dispatchOrderEmails(trustedOrder, trustedPayment, ref);
+      await dispatchOrderCreatedEmails(
+        {
+          id: String(trustedOrder.id),
+          orderNumber: String(trustedOrder.orderNumber || ''),
+          customerEmail: String(trustedOrder.customerEmail || ''),
+          customerName: String(trustedOrder.customerName || ''),
+          currency: String(trustedOrder.currency || 'GBP'),
+          subtotal: Number(trustedOrder.subtotal || 0),
+          tierDiscountAmount: Number(trustedOrder.tierDiscountAmount || 0),
+          couponCode: typeof trustedOrder.couponCode === 'string' ? trustedOrder.couponCode : undefined,
+          couponDiscountAmount: Number(trustedOrder.couponDiscountAmount || 0),
+          cryptoDiscountAmount: Number(trustedOrder.cryptoDiscountAmount || 0),
+          shippingFee: Number(trustedOrder.shippingFee || 0),
+          total: Number(trustedOrder.total || 0),
+          paymentMethod: String(trustedOrder.paymentMethod || 'BANK_TRANSFER'),
+          status: String(trustedOrder.status || ''),
+          paymentStatus: String(trustedOrder.paymentStatus || ''),
+          paymentProofReference:
+            typeof trustedOrder.paymentProofReference === 'string' ? trustedOrder.paymentProofReference : undefined,
+          items: items as never,
+          shippingAddress: (trustedOrder.shippingAddress || {}) as never,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: String(trustedPayment.id),
+          method: String(trustedPayment.method || 'BANK_TRANSFER'),
+          amount: Number(trustedPayment.amount || 0),
+          currency: String(trustedPayment.currency || 'GBP'),
+          status: String(trustedPayment.status || ''),
+          reference: typeof trustedPayment.reference === 'string' ? trustedPayment.reference : undefined,
+          transactionHash:
+            typeof trustedPayment.transactionHash === 'string' ? trustedPayment.transactionHash : undefined,
+        },
+        ref
+      );
     } catch (error) {
       console.error(
         JSON.stringify({
@@ -345,176 +381,4 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     const detail = (error instanceof Error ? error.message : 'order_failed').slice(0, 160);
     send(res, 500, { error: 'The order could not be stored. Reference: ' + ref, reference: ref, detail }, ref);
   }
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function money(amount: unknown, currency: unknown): string {
-  const value = Number(amount || 0);
-  const code = String(currency || 'GBP');
-  try {
-    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: code }).format(value);
-  } catch {
-    return `${code} ${value.toFixed(2)}`;
-  }
-}
-
-function buildOrderEmail(params: {
-  audience: 'customer' | 'admin';
-  kind: 'ORDER_RECEIVED' | 'PAYMENT_INSTRUCTIONS' | 'PAYMENT_SUBMITTED';
-  order: Record<string, unknown>;
-  payment: Record<string, unknown>;
-}): { subject: string; html: string; text: string } {
-  const orderNumber = String(params.order.orderNumber || params.order.id || '');
-  const customerName = String(params.order.customerName || 'Customer');
-  const customerEmail = String(params.order.customerEmail || '');
-  const total = money(params.order.total, params.order.currency);
-  const method = String(params.order.paymentMethod || params.payment.method || 'BANK_TRANSFER');
-  const methodLabel = method === 'CRYPTOCURRENCY' || method === 'CRYPTO' ? 'Cryptocurrency' : 'UK bank transfer';
-  const items = Array.isArray(params.order.items) ? (params.order.items as Array<Record<string, unknown>>) : [];
-  const itemLines = items
-    .map((item) => {
-      const name = escapeHtml(String(item.productName || 'Item'));
-      const variant = escapeHtml(String(item.variantName || ''));
-      const qty = Number(item.quantity || 0);
-      const line = money(item.totalPrice, params.order.currency);
-      return `<li>${name}${variant ? ` (${variant})` : ''} × ${qty} — ${escapeHtml(line)}</li>`;
-    })
-    .join('');
-
-  const isAdmin = params.audience === 'admin';
-  let subject = '';
-  let intro = '';
-  if (params.kind === 'ORDER_RECEIVED') {
-    subject = isAdmin ? `New order ${orderNumber}` : `Order ${orderNumber} received`;
-    intro = isAdmin
-      ? `A new laboratory order was placed by ${escapeHtml(customerName)} (${escapeHtml(customerEmail)}).`
-      : `Thank you ${escapeHtml(customerName)}. We have received order <strong>${escapeHtml(orderNumber)}</strong>.`;
-  } else if (params.kind === 'PAYMENT_SUBMITTED') {
-    subject = isAdmin ? `Payment submitted for ${orderNumber}` : `Payment received for order ${orderNumber}`;
-    intro = isAdmin
-      ? `Payment evidence was submitted for order ${escapeHtml(orderNumber)}.`
-      : `We have recorded your payment submission for order <strong>${escapeHtml(orderNumber)}</strong>.`;
-  } else {
-    subject = isAdmin ? `Payment instructions for ${orderNumber}` : `Payment instructions for order ${orderNumber}`;
-    intro = isAdmin
-      ? `Payment instructions were issued for order ${escapeHtml(orderNumber)}.`
-      : `Please settle <strong>${escapeHtml(total)}</strong> for order <strong>${escapeHtml(orderNumber)}</strong> by ${escapeHtml(methodLabel)}. Use your order number as the payment reference.`;
-  }
-
-  const html = `<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;color:#102A43;line-height:1.5">
-  <div style="max-width:640px;margin:0 auto;padding:24px">
-    <h1 style="font-size:20px;margin:0 0 12px">Research Peptides UK</h1>
-    <p>${intro}</p>
-    <p><strong>Total:</strong> ${escapeHtml(total)}<br/><strong>Method:</strong> ${escapeHtml(methodLabel)}<br/><strong>Reference:</strong> ${escapeHtml(orderNumber)}</p>
-    ${itemLines ? `<p><strong>Items</strong></p><ul>${itemLines}</ul>` : ''}
-    <p style="color:#627D98;font-size:12px">Strictly in-vitro laboratory supply. Not for human or veterinary use.</p>
-  </div></body></html>`;
-
-  const text = [
-    'Research Peptides UK',
-    intro.replace(/<[^>]+>/g, ''),
-    `Total: ${total}`,
-    `Method: ${methodLabel}`,
-    `Reference: ${orderNumber}`,
-  ].join('\n');
-
-  return { subject, html, text };
-}
-
-async function sendResendEmail(params: {
-  to: string;
-  subject: string;
-  html: string;
-  text: string;
-  replyTo?: string;
-  kind: string;
-  audience: string;
-}): Promise<void> {
-  const apiKey = (process.env.RESEND_API_KEY || '').trim();
-  if (!apiKey || /sample|your-|re_sample|xxxxxxxx/i.test(apiKey)) {
-    console.log(JSON.stringify({ level: 'info', operation: 'email_simulated', to: params.to, subject: params.subject }));
-    return;
-  }
-  const from =
-    (process.env.EMAIL_FROM_ADDRESS || '').trim() || 'Research Peptides UK <info@researchpeptidess.uk>';
-  const replyTo =
-    params.replyTo ||
-    (process.env.EMAIL_REPLY_TO || '').trim() ||
-    (process.env.EMAIL_SUPPORT_ADDRESS || '').trim() ||
-    'info@researchpeptidess.uk';
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [params.to],
-        subject: params.subject,
-        html: params.html,
-        text: params.text,
-        reply_to: replyTo,
-        tags: [
-          { name: 'kind', value: params.kind.slice(0, 40) },
-          { name: 'audience', value: params.audience.slice(0, 40) },
-        ],
-      }),
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { message?: string };
-      throw new Error(payload.message || `Resend HTTP ${response.status}`);
-    }
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function dispatchOrderEmails(
-  order: Record<string, unknown>,
-  payment: Record<string, unknown>,
-  reference: string
-): Promise<void> {
-  const customerEmail = String(order.customerEmail || '').trim().toLowerCase();
-  if (!customerEmail.includes('@')) return;
-  const adminEmail = ((process.env.ADMIN_EMAIL || '').trim() || 'info@researchpeptidess.uk').toLowerCase();
-  const kinds: Array<'ORDER_RECEIVED' | 'PAYMENT_INSTRUCTIONS' | 'PAYMENT_SUBMITTED'> =
-    order.status === 'PAYMENT_SUBMITTED' || Boolean(order.paymentProofReference)
-      ? ['ORDER_RECEIVED', 'PAYMENT_SUBMITTED']
-      : ['ORDER_RECEIVED', 'PAYMENT_INSTRUCTIONS'];
-
-  for (const kind of kinds) {
-    const customer = buildOrderEmail({ audience: 'customer', kind, order, payment });
-    const admin = buildOrderEmail({ audience: 'admin', kind, order, payment });
-    await sendResendEmail({
-      to: customerEmail,
-      subject: customer.subject,
-      html: customer.html,
-      text: customer.text,
-      kind: `order_${kind.toLowerCase()}`,
-      audience: 'customer',
-    });
-    await sendResendEmail({
-      to: adminEmail,
-      subject: admin.subject,
-      html: admin.html,
-      text: admin.text,
-      replyTo: customerEmail,
-      kind: `order_${kind.toLowerCase()}`,
-      audience: 'admin',
-    });
-  }
-  console.log(JSON.stringify({ level: 'info', operation: 'order_emails_dispatched', reference, kinds }));
 }

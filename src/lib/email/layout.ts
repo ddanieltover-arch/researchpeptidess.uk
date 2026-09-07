@@ -1,5 +1,5 @@
 import { EMAIL_BRAND, EmailAudience, RenderedEmail, isSafeEmailHref, sitePath } from './brand';
-import { renderButton } from './blocks';
+import { renderButtonRow } from './blocks';
 import { escapeAttribute, escapeHtml, htmlToText } from './escape';
 
 const { colors } = EMAIL_BRAND;
@@ -12,6 +12,7 @@ export interface EmailLayoutInput {
   intro: string;
   bodyHtml: string;
   cta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
   footerNote?: string;
   text?: string;
 }
@@ -30,7 +31,7 @@ function markHtml(audience: EmailAudience): string {
 }
 
 export function wrapTransactionalEmail(input: EmailLayoutInput): Omit<RenderedEmail, 'subject'> {
-  const ctaHtml = input.cta ? renderButton(input.cta.label, input.cta.href) : '';
+  const ctaHtml = input.cta ? renderButtonRow(input.cta, input.secondaryCta) : '';
   const year = new Date().getFullYear();
   const accountHref = sitePath('/account');
   const shopHref = sitePath('/shop');
@@ -152,6 +153,7 @@ export function wrapTransactionalEmail(input: EmailLayoutInput): Omit<RenderedEm
         input.intro,
         htmlToText(input.bodyHtml),
         input.cta ? `${input.cta.label}: ${input.cta.href}` : '',
+        input.secondaryCta ? `${input.secondaryCta.label}: ${input.secondaryCta.href}` : '',
         EMAIL_BRAND.legalLine,
         EMAIL_BRAND.supportEmail,
       ]
@@ -164,6 +166,6 @@ function getHostLabel(): string {
   try {
     return new URL(sitePath('/')).host;
   } catch {
-    return 'researchpeptidess.uk';
+    return 'www.researchpeptidess.uk';
   }
 }

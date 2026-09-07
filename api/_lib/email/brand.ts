@@ -1,4 +1,4 @@
-import { STORE_CONTACT_EMAIL } from '../store-contact';
+export const STORE_CONTACT_EMAIL = 'info@researchpeptidess.uk';
 
 export const EMAIL_BRAND = {
   name: 'Research Peptides UK',
@@ -45,7 +45,7 @@ export function getPublicSiteUrl(): string {
       if (fromEnv) return fromEnv.replace(/\/$/, '');
     }
   } catch {
-    /* Client bundles may not expose process.env. */
+    /* ignore */
   }
   return EMAIL_BRAND.siteUrl;
 }
@@ -56,17 +56,18 @@ export function sitePath(path: string): string {
   return `${base}${suffix}`;
 }
 
-export function formatEmailMoney(amount: number, currency: 'GBP' | 'EUR' = 'GBP'): string {
+export function formatEmailMoney(amount: number, currency: string = 'GBP'): string {
   const numeric = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+  const code = currency === 'EUR' ? 'EUR' : 'GBP';
   try {
-    return new Intl.NumberFormat(currency === 'EUR' ? 'en-GB' : 'en-GB', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency,
+      currency: code,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(numeric);
   } catch {
-    const symbol = currency === 'EUR' ? '€' : '£';
+    const symbol = code === 'EUR' ? '€' : '£';
     return `${symbol}${numeric.toFixed(2)}`;
   }
 }

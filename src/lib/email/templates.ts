@@ -50,7 +50,7 @@ function topicLabels(topics: string[]): string {
 
 function paymentMethodLabel(method?: string): string {
   if (method === 'BANK_TRANSFER') return 'UK Faster Payments / bank transfer';
-  if (method === 'CRYPTO') return 'Cryptocurrency';
+  if (method === 'CRYPTOCURRENCY' || method === 'CRYPTO') return 'Cryptocurrency';
   return method || 'Settlement';
 }
 
@@ -201,6 +201,7 @@ export function renderContactEmail(audience: EmailAudience, input: ContactEmailI
           { label: 'Reference', value: escapeHtml(input.id) },
         ]) + renderMessagePanel('Your message', input.message),
       cta: { label: 'Browse the catalogue', href: sitePath('/shop') },
+      secondaryCta: { label: 'WhatsApp desk', href: 'https://wa.me/447927039397' },
       footerNote: `If you did not send this, ignore the email or write to ${EMAIL_BRAND.supportEmail}.`,
     })
   );
@@ -278,6 +279,7 @@ export function renderAccountEmail(audience: EmailAudience, input: AccountEmailI
         { label: 'Institution', value: escapeHtml(input.institution || 'Not provided') },
       ]),
       cta: { label: 'Open your account', href: sitePath('/account') },
+      secondaryCta: { label: 'Browse catalogue', href: sitePath('/shop') },
       footerNote: 'We will never ask for your password by email.',
     })
   );
@@ -287,7 +289,17 @@ function customerOrderCopy(
   type: NotificationType,
   order: Order,
   payment?: Payment
-): { eyebrow: string; title: string; intro: string; extra: string; ctaLabel: string; ctaHref: string; footer?: string } {
+): {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  extra: string;
+  ctaLabel: string;
+  ctaHref: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  footer?: string;
+} {
   const ref = order.orderNumber;
   const due = formatEmailMoney(order.total, order.currency);
   const account = sitePath('/account');
@@ -301,6 +313,8 @@ function customerOrderCopy(
         extra: renderCallout('What happens next', 'Complete settlement using the instructions in the following email, then submit your payment reference from your account.', 'info'),
         ctaLabel: 'View order in account',
         ctaHref: account,
+        secondaryCtaLabel: 'Browse catalogue',
+        secondaryCtaHref: sitePath('/shop'),
       };
     case 'PAYMENT_INSTRUCTIONS':
       return {
@@ -310,6 +324,8 @@ function customerOrderCopy(
         extra: settlementBlock(order, payment),
         ctaLabel: 'Submit payment evidence',
         ctaHref: account,
+        secondaryCtaLabel: 'Contact operations',
+        secondaryCtaHref: `mailto:${STORE_CONTACT_EMAIL}?subject=${encodeURIComponent(`Payment help · ${ref}`)}`,
       };
     case 'PAYMENT_SUBMITTED':
       return {
@@ -361,6 +377,8 @@ function customerOrderCopy(
         extra: trackingBlock(order),
         ctaLabel: order.trackingNumber ? 'Track consignment' : 'View order',
         ctaHref: order.trackingNumber ? trackingHref(order) : account,
+        secondaryCtaLabel: 'Open account',
+        secondaryCtaHref: account,
       };
     case 'ORDER_DELIVERED':
       return {
@@ -532,6 +550,10 @@ export function renderOrderEmail(
       intro: copy.intro,
       bodyHtml: copy.extra + orderSummary(order, payment),
       cta: { label: copy.ctaLabel, href: copy.ctaHref },
+      secondaryCta:
+        copy.secondaryCtaLabel && copy.secondaryCtaHref
+          ? { label: copy.secondaryCtaLabel, href: copy.secondaryCtaHref }
+          : undefined,
       footerNote: copy.footer,
     })
   );
