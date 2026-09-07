@@ -1,11 +1,22 @@
 /**
- * Lightweight health/ready responses. Keep this module free of catalogue imports.
+ * Lightweight health/ready responses. Keep this module free of Drizzle and catalogue imports.
  */
 
 import type { ServerResponse } from 'node:http';
-import { pingDatabase } from '../db/index';
 import { buildEnvDiagnostic, storageStatus } from './env-status';
 import { sendJson } from './http';
+import { getNeonSqlOrNull } from './neon-sql';
+
+async function pingDatabase(): Promise<'healthy' | 'unconfigured' | 'unavailable'> {
+  const sql = getNeonSqlOrNull();
+  if (!sql) return 'unconfigured';
+  try {
+    await sql`SELECT 1`;
+    return 'healthy';
+  } catch {
+    return 'unavailable';
+  }
+}
 
 export async function writeHealthResponse(res: ServerResponse, correlationId: string): Promise<void> {
   try {

@@ -3,6 +3,7 @@ import { join, resolve } from 'node:path';
 import { TestResult } from './commerce-tests';
 
 const PERSIST_FILES = ['contact.ts', 'newsletter.ts', 'commerce.ts', 'settings.ts', 'shipping.ts', 'merchandising.ts'];
+const AUTH_FILES = ['admin-auth.ts', 'customer-auth.ts', 'health-handlers.ts'];
 const HOBBY_FUNCTION_LIMIT = 12;
 
 function listApiFunctionFiles(dir: string): string[] {
@@ -26,6 +27,12 @@ export function runPersistSqlSourceTests(): TestResult[] {
     return /drizzle-orm|from ['"]\.\.\/\.\.\/db\//.test(source);
   });
 
+  const authStart = performance.now();
+  const authHits = AUTH_FILES.filter((file) => {
+    const source = readFileSync(resolve(process.cwd(), 'src/server', file), 'utf8');
+    return /drizzle-orm|from ['"]\.\.\/db\//.test(source);
+  });
+
   const functionStart = performance.now();
   const apiFiles = listApiFunctionFiles(resolve(process.cwd(), 'api'));
   const includeStart = performance.now();
@@ -39,6 +46,14 @@ export function runPersistSqlSourceTests(): TestResult[] {
       expected: 'No drizzle-orm or src/db imports in persist modules',
       actual: hits.length ? hits.join(', ') : 'clean',
       durationMs: Math.round((performance.now() - persistStart) * 100) / 100,
+    },
+    {
+      category: 'PERSISTENCE',
+      name: 'Auth and health handlers talk to Neon over SQL, not Drizzle',
+      passed: authHits.length === 0,
+      expected: 'No drizzle-orm or src/db imports in admin/customer auth or health handlers',
+      actual: authHits.length ? authHits.join(', ') : 'clean',
+      durationMs: Math.round((performance.now() - authStart) * 100) / 100,
     },
     {
       category: 'PERSISTENCE',
