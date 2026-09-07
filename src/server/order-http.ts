@@ -226,3 +226,42 @@ export async function handleOrderLifecycleUpdate(req: IncomingMessage, res: Serv
 }
 
 export const handleAdminOrderUpdate = handleOrderLifecycleUpdate;
+
+export async function handleAdminOrderDelete(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const correlationId = readCorrelationId(req);
+  res.setHeader('x-correlation-id', correlationId);
+  if (req.method !== 'DELETE') {
+    sendPublicError(res, 405, correlationId, 'Method not allowed.');
+    return;
+  }
+  const admin = readAdminSessionFromCookieHeader(req.headers.cookie);
+  if (!admin) {
+    sendPublicError(res, 401, correlationId, 'Administrator authentication is required.');
+    return;
+  }
+  const body = await readJsonBody(req as NodeRequest);
+  const orderId =
+    (typeof body.orderId === 'string' && body.orderId) ||
+    (typeof body.id === 'string' && body.id) ||
+    '';
+  if (!orderId) {
+    sendPublicError(res, 400, correlationId, 'Order id is required.');
+    return;
+  }
+  try {
+    const { deleteOrderRecord } = await import('./persist/commerce');
+    const deleted = await deleteOrderRecord(orderId);
+    if (!deleted) {
+      sendPublicError(res, 404, correlationId, 'Order not found.');
+      return;
+    }
+    sendJson(res, 200, { ok: true, deleted: true, orderId }, { 'x-correlation-id': correlationId });
+  } catch (error) {
+    const classified = classifyPersistError(error);
+    logServerError({ correlationId, route: '/api/admin/orders', operation: 'order_delete', error });
+    sendPublicError(res, 500, correlationId, 'Order could not be deleted. Reference: ' + correlationId, {
+      stage: classified.stage,
+      classification: classified.classification,
+    });
+  }
+}

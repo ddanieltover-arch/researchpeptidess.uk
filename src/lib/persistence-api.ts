@@ -148,11 +148,29 @@ export async function persistAdminOrderRequest(
   eventType?: string
 ): Promise<{ ok: boolean; reference?: string }> {
   try {
-    const response = await fetch('/api/orders/lifecycle', {
-      method: 'POST',
+    const response = await fetch('/api/admin/orders', {
+      method: 'PUT',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ order, payment, eventType }),
+    });
+    const body = await readJson(response);
+    return {
+      ok: response.ok,
+      reference: typeof body.reference === 'string' ? body.reference : undefined,
+    };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export async function deleteAdminOrderRequest(orderId: string): Promise<{ ok: boolean; reference?: string }> {
+  try {
+    const response = await fetch('/api/admin/orders', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ orderId }),
     });
     const body = await readJson(response);
     return {

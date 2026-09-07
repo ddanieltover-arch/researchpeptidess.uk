@@ -372,15 +372,65 @@ export async function persistTrustedOrderUpdate(order: Order, payment?: Payment)
   await sql`
     UPDATE orders
     SET
-      payload_json = ${JSON.stringify(order)},
-      app_status = ${order.status},
-      payment_status = ${order.paymentStatus},
+      order_number = ${order.orderNumber},
+      customer_email = ${order.customerEmail},
+      customer_name = ${order.customerName},
+      subtotal_pence = ${Math.round(Number(order.subtotal || 0) * 100)},
+      tier_discount_pence = ${Math.round(Number(order.tierDiscountAmount || 0) * 100)},
+      coupon_code = ${order.couponCode ?? null},
+      coupon_discount_pence = ${Math.round(Number(order.couponDiscountAmount || 0) * 100)},
+      crypto_discount_pence = ${Math.round(Number(order.cryptoDiscountAmount || 0) * 100)},
+      shipping_method_id = ${order.shippingMethodId ?? null},
+      shipping_pence = ${Math.round(Number(order.shippingFee || 0) * 100)},
+      total_pence = ${Math.round(Number(order.total || 0) * 100)},
+      currency = ${order.currency || 'GBP'},
+      payment_method = ${order.paymentMethod},
       status = ${toDbOrderStatus(order.status)},
       payment_proof_reference = ${order.paymentProofReference ?? null},
       tracking_number = ${order.trackingNumber ?? null},
+      research_consent_signed = ${Boolean(order.researchConsentSigned)},
+      shipping_address_json = ${JSON.stringify(order.shippingAddress || {})},
+      payload_json = ${JSON.stringify(order)},
+      app_status = ${order.status},
+      payment_status = ${order.paymentStatus},
       updated_at = ${now}
     WHERE id = ${order.id}
   `;
+
+  if (Array.isArray(order.items)) {
+    await sql`DELETE FROM order_items WHERE order_id = ${order.id}`;
+    for (const item of order.items) {
+      await sql`
+        INSERT INTO order_items (
+          id, order_id, product_id, variant_id, sku, product_name, variant_name, quantity, unit_price_pence, total_price_pence
+        ) VALUES (
+          ${item.id},
+          ${order.id},
+          ${item.productId},
+          ${item.variantId},
+          ${item.sku || item.variantSku},
+          ${item.productName},
+          ${item.variantName || item.size},
+          ${item.quantity},
+          ${Math.round(Number(item.unitPrice || 0) * 100)},
+          ${Math.round(Number(item.totalPrice || 0) * 100)}
+        )
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+  }
+}
+
+export async function deleteOrderRecord(orderId: string): Promise<boolean> {
+  const sql = requireNeonSql();
+  const existing = (await sql`SELECT id FROM orders WHERE id = ${orderId} LIMIT 1`) as Array<{ id?: string }>;
+  if (!existing[0]?.id) return false;
+  await sql`DELETE FROM inventory_events WHERE order_id = ${orderId}`;
+  await sql`DELETE FROM order_payments WHERE order_id = ${orderId}`;
+  await sql`DELETE FROM order_items WHERE order_id = ${orderId}`;
+  await sql`DELETE FROM audit_logs WHERE entity_type = ${'ORDER'} AND entity_id = ${orderId}`;
+  await sql`DELETE FROM orders WHERE id = ${orderId}`;
+  return true;
 }
 
 export async function persistInventoryEvent(event: InventoryTransaction): Promise<void> {

@@ -23,6 +23,8 @@ import {
   Send,
   AlertCircle,
   Package,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 
 export const OrderOperationsManager: React.FC = () => {
@@ -32,6 +34,8 @@ export const OrderOperationsManager: React.FC = () => {
     updateOrderStatus,
     cancelOrder,
     processRefund,
+    saveOrderEdits,
+    deleteOrder,
     currency,
     currentUser,
     addToast,
@@ -60,6 +64,118 @@ export const OrderOperationsManager: React.FC = () => {
   const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
   const [overrideTargetStatus, setOverrideTargetStatus] = useState<OrderStatus>('PROCESSING');
   const [overrideJustification, setOverrideJustification] = useState('');
+
+  // Edit / Delete
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [editForm, setEditForm] = useState({
+    customerName: '',
+    customerEmail: '',
+    phone: '',
+    institution: '',
+    department: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    county: '',
+    postcode: '',
+    country: '',
+    countryName: '',
+    status: 'PENDING_PAYMENT' as OrderStatus,
+    paymentStatus: '',
+    paymentProofReference: '',
+    trackingNumber: '',
+    shippingCarrier: '',
+    courier: '',
+    shippingMethodName: '',
+  });
+
+  const openEditModal = (order: Order) => {
+    const address = order.shippingAddress || ({} as Order['shippingAddress']);
+    setEditForm({
+      customerName: order.customerName || '',
+      customerEmail: order.customerEmail || '',
+      phone: address.phone || '',
+      institution: address.institution || '',
+      department: address.department || '',
+      addressLine1: address.addressLine1 || '',
+      addressLine2: address.addressLine2 || '',
+      city: address.city || '',
+      county: address.county || '',
+      postcode: address.postcode || '',
+      country: address.country || '',
+      countryName: address.countryName || '',
+      status: order.status,
+      paymentStatus: order.paymentStatus || '',
+      paymentProofReference: order.paymentProofReference || '',
+      trackingNumber: order.trackingNumber || '',
+      shippingCarrier: order.shippingCarrier || '',
+      courier: order.courier || '',
+      shippingMethodName: order.shippingMethodName || '',
+    });
+    setSelectedOrder(order);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdits = async () => {
+    if (!selectedOrder) return;
+    if (!editForm.customerName.trim() || !editForm.customerEmail.includes('@')) {
+      addToast('error', 'Invalid Details', 'Customer name and a valid email are required.');
+      return;
+    }
+    if (!editForm.addressLine1.trim() || !editForm.city.trim() || !editForm.postcode.trim()) {
+      addToast('error', 'Invalid Address', 'Address line 1, city, and postcode are required.');
+      return;
+    }
+    setIsSavingEdit(true);
+    const updated: Order = {
+      ...selectedOrder,
+      customerName: editForm.customerName.trim(),
+      customerEmail: editForm.customerEmail.trim().toLowerCase(),
+      status: editForm.status,
+      paymentStatus: editForm.paymentStatus as Order['paymentStatus'],
+      paymentProofReference: editForm.paymentProofReference.trim() || undefined,
+      trackingNumber: editForm.trackingNumber.trim() || undefined,
+      shippingCarrier: editForm.shippingCarrier.trim() || selectedOrder.shippingCarrier,
+      courier: editForm.courier.trim() || undefined,
+      shippingMethodName: editForm.shippingMethodName.trim() || selectedOrder.shippingMethodName,
+      shippingAddress: {
+        ...selectedOrder.shippingAddress,
+        fullName: editForm.customerName.trim(),
+        email: editForm.customerEmail.trim().toLowerCase(),
+        phone: editForm.phone.trim(),
+        institution: editForm.institution.trim() || undefined,
+        department: editForm.department.trim() || undefined,
+        addressLine1: editForm.addressLine1.trim(),
+        addressLine2: editForm.addressLine2.trim() || undefined,
+        city: editForm.city.trim(),
+        county: editForm.county.trim() || undefined,
+        postcode: editForm.postcode.trim(),
+        country: editForm.country.trim() || selectedOrder.shippingAddress.country,
+        countryName: editForm.countryName.trim() || selectedOrder.shippingAddress.countryName,
+      },
+    };
+    const ok = await saveOrderEdits(updated);
+    setIsSavingEdit(false);
+    if (ok) {
+      setSelectedOrder(updated);
+      setIsEditModalOpen(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedOrder) return;
+    setIsDeleting(true);
+    const orderId = selectedOrder.id;
+    const ok = await deleteOrder(orderId);
+    setIsDeleting(false);
+    if (ok) {
+      setIsDeleteModalOpen(false);
+      setSelectedOrder(null);
+    }
+  };
 
   const filteredOrders = orders.filter((order) => {
     if (statusFilter !== 'ALL' && order.status !== statusFilter) return false;
@@ -289,6 +405,27 @@ export const OrderOperationsManager: React.FC = () => {
                           <Eye className="h-3 w-3 mr-1" />
                           Inspect & Manage
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditModal(ord)}
+                          className="text-[10px] h-7 px-2"
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedOrder(ord);
+                            setIsDeleteModalOpen(true);
+                          }}
+                          className="text-[10px] h-7 px-2 text-rose-700 border-rose-200 hover:bg-rose-50"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
 
                         {(ord.status === 'PAYMENT_VERIFIED' || ord.status === 'PROCESSING') && (
                           <Button
@@ -316,7 +453,13 @@ export const OrderOperationsManager: React.FC = () => {
       </div>
 
       {/* Comprehensive Order Detail & Operations Modal */}
-      {selectedOrder && !isDispatchModalOpen && !isCancelModalOpen && !isRefundModalOpen && !isOverrideModalOpen && (
+      {selectedOrder &&
+        !isDispatchModalOpen &&
+        !isCancelModalOpen &&
+        !isRefundModalOpen &&
+        !isOverrideModalOpen &&
+        !isEditModalOpen &&
+        !isDeleteModalOpen && (
         <Modal
           isOpen={Boolean(selectedOrder)}
           onClose={() => setSelectedOrder(null)}
@@ -398,6 +541,26 @@ export const OrderOperationsManager: React.FC = () => {
                     Process Refund
                   </Button>
                 )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openEditModal(selectedOrder)}
+                  className="text-xs font-mono h-8"
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1" />
+                  Edit Details
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="text-xs font-mono h-8 text-rose-700 hover:bg-rose-50 border-rose-200"
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  Delete
+                </Button>
 
                 <Button
                   variant="outline"
@@ -754,6 +917,209 @@ export const OrderOperationsManager: React.FC = () => {
               </Button>
               <Button variant="gold" onClick={handleOverrideConfirm} className="bg-slate-900 text-amber-400">
                 Apply Override
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Order Modal */}
+      {isEditModalOpen && selectedOrder && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title={`Edit Order #${selectedOrder.orderNumber}`}
+          maxWidth="2xl"
+        >
+          <div className="space-y-4 text-xs font-mono max-h-[80vh] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Customer name *</label>
+                <Input
+                  value={editForm.customerName}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, customerName: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Customer email *</label>
+                <Input
+                  type="email"
+                  value={editForm.customerEmail}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, customerEmail: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Phone</label>
+                <Input
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Institution</label>
+                <Input
+                  value={editForm.institution}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, institution: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Department</label>
+                <Input
+                  value={editForm.department}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, department: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Order status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value as OrderStatus }))}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-md p-2 text-xs"
+                >
+                  <option value="PENDING_PAYMENT">PENDING_PAYMENT</option>
+                  <option value="PAYMENT_SUBMITTED">PAYMENT_SUBMITTED</option>
+                  <option value="PAYMENT_VERIFIED">PAYMENT_VERIFIED</option>
+                  <option value="PROCESSING">PROCESSING</option>
+                  <option value="SHIPPED">SHIPPED</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="REFUNDED">REFUNDED</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="font-bold text-slate-900 block mb-1">Address line 1 *</label>
+                <Input
+                  value={editForm.addressLine1}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, addressLine1: e.target.value }))}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="font-bold text-slate-900 block mb-1">Address line 2</label>
+                <Input
+                  value={editForm.addressLine2}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, addressLine2: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">City *</label>
+                <Input
+                  value={editForm.city}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, city: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">County</label>
+                <Input
+                  value={editForm.county}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, county: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Postcode *</label>
+                <Input
+                  value={editForm.postcode}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, postcode: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Country</label>
+                <Input
+                  value={editForm.countryName || editForm.country}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, countryName: e.target.value, country: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Payment status</label>
+                <Input
+                  value={editForm.paymentStatus}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, paymentStatus: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Payment proof reference</label>
+                <Input
+                  value={editForm.paymentProofReference}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, paymentProofReference: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Tracking number</label>
+                <Input
+                  value={editForm.trackingNumber}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, trackingNumber: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Carrier</label>
+                <Input
+                  value={editForm.shippingCarrier}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, shippingCarrier: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Courier</label>
+                <Input
+                  value={editForm.courier}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, courier: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="font-bold text-slate-900 block mb-1">Shipping method</label>
+                <Input
+                  value={editForm.shippingMethodName}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, shippingMethodName: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <Button variant="outline" onClick={() => setIsEditModalOpen(false)} disabled={isSavingEdit}>
+                Cancel
+              </Button>
+              <Button
+                variant="gold"
+                onClick={() => void handleSaveEdits()}
+                disabled={isSavingEdit}
+                className="bg-slate-900 text-amber-300"
+              >
+                {isSavingEdit ? 'Saving…' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Order Modal */}
+      {isDeleteModalOpen && selectedOrder && (
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title={`Delete Order #${selectedOrder.orderNumber}`}
+        >
+          <div className="space-y-4 text-xs font-mono">
+            <div className="p-3 bg-rose-50 rounded-lg border border-rose-200 text-rose-950 font-sans">
+              <p className="font-bold flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4" />
+                Permanent deletion
+              </p>
+              <p className="text-xs text-rose-800 mt-1">
+                This removes order #{selectedOrder.orderNumber} for {selectedOrder.customerName}, including payment
+                records and inventory events linked to it. This cannot be undone.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-stone-200">
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeleting}>
+                Keep Order
+              </Button>
+              <Button
+                variant="gold"
+                onClick={() => void handleDeleteConfirm()}
+                disabled={isDeleting}
+                className="bg-rose-700 hover:bg-rose-800 text-white"
+              >
+                {isDeleting ? 'Deleting…' : 'Delete Permanently'}
               </Button>
             </div>
           </div>

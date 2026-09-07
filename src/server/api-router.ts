@@ -24,6 +24,7 @@ import { dispatchContactEmails, dispatchNewsletterEmails } from './email/dispatc
 import { writeHealthResponse, writeReadyResponse } from './health-handlers';
 import {
   handleAdminOrderUpdate,
+  handleAdminOrderDelete,
   handleCreateOrder,
   handleInventoryEvent,
   handleOrderLifecycleUpdate,
@@ -119,6 +120,10 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
     }
     if (path === '/api/admin/orders' && (req.method === 'PUT' || req.method === 'POST')) {
       await handleAdminOrderUpdate(req, res);
+      return true;
+    }
+    if (path === '/api/admin/orders' && req.method === 'DELETE') {
+      await handleAdminOrderDelete(req, res);
       return true;
     }
     if (path === '/api/account/orders' && req.method === 'GET') {

@@ -46,6 +46,7 @@ import {
   persistPaymentRequest,
   persistShippingRequest,
   persistStoreSettingsRequest,
+  deleteAdminOrderRequest,
 } from '../lib/persistence-api';
 import { MerchandisingRecord } from '../lib/merchandising-persistence';
 import { INITIAL_CMS_PAGES, DEFAULT_STORE_SETTINGS } from '../lib/cms-data';
@@ -225,6 +226,8 @@ interface StoreContextType {
   rejectPayment: (orderId: string, reason: string, notes?: string) => boolean;
   processRefund: (orderId: string, amount: number, reason: string) => boolean;
   cancelOrder: (orderId: string, reason?: string) => boolean;
+  saveOrderEdits: (order: Order) => Promise<boolean>;
+  deleteOrder: (orderId: string) => Promise<boolean>;
 
   // Automated Test Suite Runner
   testSuiteReport: TestSuiteReport | null;
@@ -1894,6 +1897,73 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return updateOrderStatus(orderId, 'CANCELLED', { note: reason || 'Customer or Administrative Cancellation' });
   };
 
+  const saveOrderEdits = async (order: Order): Promise<boolean> => {
+    if (!hasPermission(currentUser.role, 'ADMIN')) {
+      addToast('error', 'Permission Denied', 'Administrative authority required to edit orders.');
+      return false;
+    }
+    const nowIso = new Date().toISOString();
+    const historyEvent: OrderHistoryEvent = {
+      id: `h-${Date.now()}`,
+      orderId: order.id,
+      timestamp: nowIso,
+      fromStatus: orders.find((o) => o.id === order.id)?.status || order.status,
+      toStatus: order.status,
+      actor: currentUser.name || currentUser.email,
+      actorRole: currentUser.role,
+      note: 'Order details edited by administrator.',
+    };
+    const updatedOrder: Order = {
+      ...order,
+      history: [...(order.history || []), historyEvent],
+      updatedAt: nowIso,
+    };
+    const payment = payments.find((p) => p.orderId === order.id || p.id === order.paymentId);
+    const result = await persistAdminOrderRequest(updatedOrder, payment);
+    if (!result.ok) {
+      addToast(
+        'error',
+        'Order not saved',
+        result.reference ? `Could not save edits. Reference: ${result.reference}` : 'Could not save order edits.'
+      );
+      return false;
+    }
+    setOrders((prev) => prev.map((o) => (o.id === order.id ? updatedOrder : o)));
+    logAuditEvent('ORDER_UPDATED', 'ORDER', order.id, {
+      orderNumber: order.orderNumber,
+      customerEmail: order.customerEmail,
+    });
+    addToast('success', 'Order Updated', `Order #${order.orderNumber} details were saved.`);
+    return true;
+  };
+
+  const deleteOrder = async (orderId: string): Promise<boolean> => {
+    if (!hasPermission(currentUser.role, 'ADMIN')) {
+      addToast('error', 'Permission Denied', 'Administrative authority required to delete orders.');
+      return false;
+    }
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) {
+      addToast('error', 'Not Found', 'That order is not loaded in this session.');
+      return false;
+    }
+    const result = await deleteAdminOrderRequest(orderId);
+    if (!result.ok) {
+      addToast(
+        'error',
+        'Delete failed',
+        result.reference ? `Order could not be deleted. Reference: ${result.reference}` : 'Order could not be deleted.'
+      );
+      return false;
+    }
+    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    setPayments((prev) => prev.filter((p) => p.orderId !== orderId && p.id !== order.paymentId));
+    setInventoryTransactions((prev) => prev.filter((event) => event.orderId !== orderId));
+    logAuditEvent('ORDER_DELETED', 'ORDER', orderId, { orderNumber: order.orderNumber });
+    addToast('success', 'Order Deleted', `Order #${order.orderNumber} was permanently removed.`);
+    return true;
+  };
+
   const processRefund = (orderId: string, amount: number, reason: string): boolean => {
     if (!hasPermission(currentUser.role, 'ADMIN')) {
       addToast('error', 'Permission Denied', 'Administrative authority required for refund processing.');
@@ -2100,6 +2170,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         rejectPayment,
         processRefund,
         cancelOrder,
+        saveOrderEdits,
+        deleteOrder,
         testSuiteReport,
         runCommerceTestSuite,
         auditLogs,
