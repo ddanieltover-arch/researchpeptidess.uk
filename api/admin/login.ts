@@ -19,8 +19,12 @@ export default async function handler(
   try {
     const { handleAdminLogin } = await import('../../src/server/admin-http');
     await handleAdminLogin(req as never, res as never);
-  } catch {
+  } catch (error) {
     if (res.headersSent) return;
-    send(res, 503, { error: 'Authentication service unavailable.' });
+    const detail = (error instanceof Error ? error.message : 'load_failed')
+      .replace(/postgres(?:ql)?:\/\/\S+/gi, '[redacted]')
+      .replace(/postgresql:\/\/\S+/gi, '[redacted]')
+      .slice(0, 160);
+    send(res, 503, { error: 'Authentication service unavailable.', detail });
   }
 }

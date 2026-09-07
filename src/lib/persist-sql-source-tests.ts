@@ -28,6 +28,9 @@ export function runPersistSqlSourceTests(): TestResult[] {
 
   const functionStart = performance.now();
   const apiFiles = listApiFunctionFiles(resolve(process.cwd(), 'api'));
+  const includeStart = performance.now();
+  const vercelJson = readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8');
+  const includesSrc = /"includeFiles"\s*:\s*"src\/\*\*"/.test(vercelJson);
   return [
     {
       category: 'PERSISTENCE',
@@ -44,6 +47,14 @@ export function runPersistSqlSourceTests(): TestResult[] {
       expected: `<= ${HOBBY_FUNCTION_LIMIT} files in api/`,
       actual: String(apiFiles.length),
       durationMs: Math.round((performance.now() - functionStart) * 100) / 100,
+    },
+    {
+      category: 'PERSISTENCE',
+      name: 'Vercel functions include src/** so dynamic server imports can resolve',
+      passed: includesSrc,
+      expected: 'vercel.json functions includeFiles src/**',
+      actual: includesSrc ? 'configured' : 'missing includeFiles',
+      durationMs: Math.round((performance.now() - includeStart) * 100) / 100,
     },
   ];
 }
