@@ -1,9 +1,7 @@
 /**
- * Dedicated /api/orders handler for Vercel.
- * Uses api/_lib only (compiled with the function). Do not import from src/.
+ * Self-contained /api/orders handler for Vercel.
+ * No imports from src/ or sibling helpers — those crash this runtime.
  */
-
-import { dispatchOrderCreatedEmails } from '../_lib/email/dispatch';
 
 export const config = { runtime: 'nodejs' };
 
@@ -329,7 +327,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     }
 
     try {
-      await dispatchOrderCreatedEmails(
+      await dispatchOrderEmails(
         {
           ...trustedOrder,
           items,
@@ -356,4 +354,387 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     const detail = (error instanceof Error ? error.message : 'order_failed').slice(0, 160);
     send(res, 500, { error: 'The order could not be stored. Reference: ' + ref, reference: ref, detail }, ref);
   }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function money(amount: unknown, currency: unknown): string {
+  const n = Number(amount || 0);
+  const code = currency === 'EUR' ? 'EUR' : 'GBP';
+  try {
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: code }).format(n);
+  } catch {
+    return `${code === 'EUR' ? '€' : '£'}${n.toFixed(2)}`;
+  }
+}
+
+function env(name: string): string {
+  return (process.env[name] || '').trim();
+}
+
+function kvRows(rows: Array<[string, string]>): string {
+  return rows
+    .filter(([, value]) => Boolean(value && String(value).trim()))
+    .map(
+      ([label, value], index) =>
+        `<tr><td style="padding:8px 0;border-top:${index ? '1px solid #E2E8F0' : '0'};font:700 11px Arial;color:#64748B;text-transform:uppercase;width:38%;vertical-align:top">${escapeHtml(label)}</td><td style="padding:8px 0;border-top:${index ? '1px solid #E2E8F0' : '0'};font:14px/1.5 Arial;color:#0F172A">${value}</td></tr>`
+    )
+    .join('');
+}
+
+function addressBlock(order: Record<string, unknown>): string {
+  const address =
+    order.shippingAddress && typeof order.shippingAddress === 'object'
+      ? (order.shippingAddress as Record<string, unknown>)
+      : {};
+  const lines = [
+    address.fullName,
+    address.institution,
+    address.department,
+    address.addressLine1,
+    address.addressLine2,
+    [address.city, address.county, address.postcode].filter(Boolean).join(', '),
+    address.countryName || address.country,
+  ]
+    .filter(Boolean)
+    .map((line) => escapeHtml(String(line)))
+    .join('<br/>');
+  return kvRows([
+    ['Ship to', lines],
+    ['Delivery phone', escapeHtml(String(address.phone || ''))],
+    ['Delivery email', escapeHtml(String(address.email || order.customerEmail || ''))],
+    ['Institution', escapeHtml(String(address.institution || ''))],
+    ['Department', escapeHtml(String(address.department || ''))],
+    [
+      'Carrier',
+      escapeHtml(String(order.shippingCarrier || order.shippingMethodName || 'Tracked dispatch')),
+    ],
+  ]);
+}
+
+function itemsBlock(order: Record<string, unknown>): string {
+  const currency = order.currency;
+  const items = Array.isArray(order.items) ? (order.items as Array<Record<string, unknown>>) : [];
+  const rows = items
+    .map((item, index) => {
+      const bg = index % 2 === 0 ? '#FFFFFF' : '#F4F7FB';
+      const unit = Number.isFinite(Number(item.unitPrice))
+        ? ` · ${escapeHtml(money(item.unitPrice, currency))} each`
+        : '';
+      return `<tr><td style="padding:12px 14px;background:${bg};border-bottom:1px solid #E2E8F0"><p style="margin:0 0 2px;font:700 14px Arial;color:#0F172A">${escapeHtml(String(item.productName || 'Item'))}</p><p style="margin:0;font:12px Arial;color:#64748B">${escapeHtml(String(item.variantName || item.size || ''))} · ${escapeHtml(String(item.sku || item.variantSku || '—'))}${unit}</p></td><td align="center" style="padding:12px 10px;background:${bg};border-bottom:1px solid #E2E8F0;font:13px Arial;color:#0F172A">${escapeHtml(String(item.quantity || 0))}</td><td align="right" style="padding:12px 14px;background:${bg};border-bottom:1px solid #E2E8F0;font:700 13px Arial;color:#0F172A">${escapeHtml(money(item.totalPrice, currency))}</td></tr>`;
+    })
+    .join('');
+  const totals: Array<[string, string, boolean?]> = [['Subtotal', money(order.subtotal, currency)]];
+  if (Number(order.tierDiscountAmount || 0) > 0) {
+    totals.push(['Bulk tier saving', `−${money(order.tierDiscountAmount, currency)}`]);
+  }
+  if (Number(order.couponDiscountAmount || 0) > 0) {
+    totals.push([
+      order.couponCode ? `Coupon ${String(order.couponCode)}` : 'Coupon',
+      `−${money(order.couponDiscountAmount, currency)}`,
+    ]);
+  }
+  if (Number(order.cryptoDiscountAmount || 0) > 0) {
+    totals.push(['Crypto settlement discount', `−${money(order.cryptoDiscountAmount, currency)}`]);
+  }
+  totals.push([
+    Number(order.shippingFee || 0) === 0
+      ? 'Shipping'
+      : `Shipping · ${String(order.shippingMethodName || 'Tracked')}`,
+    Number(order.shippingFee || 0) === 0 ? 'Included' : money(order.shippingFee, currency),
+  ]);
+  totals.push(['Amount due', money(order.total, currency), true]);
+  const totalRows = totals
+    .map(
+      ([label, value, emphasize]) =>
+        `<tr><td align="right" style="padding:6px 10px 6px 14px;font:${emphasize ? '800 14px' : '600 13px'} Arial;color:${emphasize ? '#0B132B' : '#64748B'}">${escapeHtml(label)}</td><td align="right" style="padding:6px 14px;font:${emphasize ? '800 16px' : '700 13px'} Arial;color:${emphasize ? '#4353FF' : '#0F172A'}">${escapeHtml(value)}</td></tr>`
+    )
+    .join('');
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden"><tr><td style="padding:10px 14px;background:#0B132B;font:800 11px Arial;letter-spacing:.12em;text-transform:uppercase;color:#E2E8F0">Compound</td><td align="center" style="padding:10px;background:#0B132B;font:800 11px Arial;letter-spacing:.12em;text-transform:uppercase;color:#E2E8F0">Qty</td><td align="right" style="padding:10px 14px;background:#0B132B;font:800 11px Arial;letter-spacing:.12em;text-transform:uppercase;color:#E2E8F0">Line total</td></tr>${rows || `<tr><td colspan="3" style="padding:16px;font:13px Arial;color:#64748B">No line items recorded.</td></tr>`}<tr><td colspan="3" style="padding:12px 0 8px;background:#fff"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${totalRows}</table></td></tr></table>`;
+}
+
+function settlementBlock(order: Record<string, unknown>, payment: Record<string, unknown>): string {
+  const due = money(order.total, order.currency);
+  const reference = String(payment.reference || order.orderNumber || '');
+  const method = String(order.paymentMethod || payment.method || 'BANK_TRANSFER');
+  if (method === 'CRYPTOCURRENCY' || method === 'CRYPTO') {
+    const wallet = env('CRYPTO_BTC_WALLET_ADDRESS');
+    if (!wallet || /sample|your-wallet/i.test(wallet)) {
+      return `<p style="margin:0 0 16px;padding:14px 16px;background:#FFFBEB;border-left:4px solid #B45309;border-radius:8px;font:14px Arial;color:#0F172A">Cryptocurrency wallet is not published yet. Email info@researchpeptidess.uk with order <strong>${escapeHtml(String(order.orderNumber || ''))}</strong> before sending funds.</p>`;
+    }
+    return `<p style="margin:0 0 12px;padding:14px 16px;background:#F0F9FF;border-left:4px solid #4353FF;border-radius:8px;font:14px Arial;color:#0F172A">Send the GBP-equivalent of <strong>${escapeHtml(due)}</strong> on BTC. Use order <strong>${escapeHtml(reference)}</strong> as your reference.</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${kvRows([
+      ['Network', 'BTC'],
+      ['Wallet', `<span style="word-break:break-all">${escapeHtml(wallet)}</span>`],
+      ['Amount due', escapeHtml(due)],
+      ['Order reference', escapeHtml(reference)],
+    ])}</table>`;
+  }
+  const sortCode = env('BANK_TRANSFER_SORT_CODE');
+  const accountNumber = env('BANK_TRANSFER_ACCOUNT_NUMBER');
+  const accountName = env('BANK_TRANSFER_ACCOUNT_NAME') || 'Research Peptides UK';
+  const bankName = env('BANK_TRANSFER_BANK_NAME') || 'UK Faster Payments';
+  if (!sortCode || !accountNumber || /20-00-00|12345678/i.test(`${sortCode}${accountNumber}`)) {
+    return `<p style="margin:0 0 16px;padding:14px 16px;background:#FFFBEB;border-left:4px solid #B45309;border-radius:8px;font:14px Arial;color:#0F172A">Bank details are not published yet. Email info@researchpeptidess.uk with order <strong>${escapeHtml(String(order.orderNumber || ''))}</strong> before transferring <strong>${escapeHtml(due)}</strong>.</p>`;
+  }
+  return `<p style="margin:0 0 12px;padding:14px 16px;background:#F0F9FF;border-left:4px solid #4353FF;border-radius:8px;font:14px Arial;color:#0F172A">Please remit <strong>${escapeHtml(due)}</strong> using payment reference <strong>${escapeHtml(reference)}</strong>.</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${kvRows([
+    ['Account name', escapeHtml(accountName)],
+    ['Bank', escapeHtml(bankName)],
+    ['Sort code', escapeHtml(sortCode)],
+    ['Account number', escapeHtml(accountNumber)],
+    ['Reference', escapeHtml(reference)],
+    ['Amount', escapeHtml(due)],
+  ])}</table>`;
+}
+
+function wrapEmail(params: {
+  audience: 'customer' | 'admin';
+  eyebrow: string;
+  title: string;
+  intro: string;
+  bodyHtml: string;
+  ctaLabel: string;
+  ctaHref: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+}): { html: string; text: string } {
+  const headerBg = params.audience === 'admin' ? '#111827' : '#0B132B';
+  const mark =
+    params.audience === 'admin'
+      ? `<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:#FEF3C7;color:#92400E;font:800 10px Arial;letter-spacing:.12em;text-transform:uppercase">Operations</span>`
+      : `<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:#F0F9FF;color:#4353FF;font:800 10px Arial;letter-spacing:.12em;text-transform:uppercase">Laboratory catalogue</span>`;
+  const secondary = params.secondaryLabel && params.secondaryHref
+    ? `<td style="padding:0"><a href="${escapeHtml(params.secondaryHref)}" style="display:inline-block;padding:12px 22px;border:2px solid #4353FF;border-radius:10px;font:700 13px Arial;text-decoration:none;color:#4353FF;text-transform:uppercase">${escapeHtml(params.secondaryLabel)}</a></td>`
+    : '';
+  const html = `<!DOCTYPE html><html lang="en"><body style="margin:0;padding:0;background:#F4F7FB"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7FB"><tr><td align="center" style="padding:28px 12px 40px"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 18px 40px rgba(15,23,42,.08)"><tr><td style="background:${headerBg};padding:28px 32px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="56" valign="middle"><div style="width:48px;height:48px;border-radius:24px;background:#4353FF;color:#fff;font:800 16px Arial;text-align:center;line-height:48px">RP</div></td><td valign="middle" style="padding-left:14px"><p style="margin:0 0 4px;font:800 16px Arial;letter-spacing:.08em;text-transform:uppercase;color:#fff">Research Peptides <span style="color:#7DD3FC">UK</span></p><p style="margin:0;font:12px Arial;color:#94A3B8">High-purity analytical &amp; in-vitro research biochemicals</p></td><td align="right" valign="middle">${mark}</td></tr></table></td></tr><tr><td style="padding:0;line-height:0;font-size:0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="40%" height="4" style="background:#4353FF">&nbsp;</td><td width="30%" height="4" style="background:#3B46E0">&nbsp;</td><td width="30%" height="4" style="background:#0EA5E9">&nbsp;</td></tr></table></td></tr><tr><td style="padding:32px"><p style="margin:0 0 10px;font:800 11px Arial;letter-spacing:.16em;text-transform:uppercase;color:${params.audience === 'admin' ? '#92400E' : '#4353FF'}">${escapeHtml(params.eyebrow)}</p><h1 style="margin:0 0 14px;font:800 26px/1.25 Arial;letter-spacing:-.03em;color:#0B132B">${escapeHtml(params.title)}</h1><p style="margin:0 0 22px;font:15px/1.7 Arial;color:#64748B">${escapeHtml(params.intro)}</p>${params.bodyHtml}<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px"><tr><td style="padding:0 10px 0 0"><a href="${escapeHtml(params.ctaHref)}" style="display:inline-block;padding:14px 28px;border-radius:10px;background:#4353FF;font:700 14px Arial;text-decoration:none;color:#fff;text-transform:uppercase">${escapeHtml(params.ctaLabel)}</a></td>${secondary}</tr></table><div style="margin-top:24px;padding:16px 18px;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:12px"><p style="margin:0;font:12px/1.6 Arial;color:#0B132B">For in-vitro laboratory research use only. Not for human or veterinary use.</p></div><p style="margin:20px 0 0;font:12px Arial;color:#64748B">Questions? Write to info@researchpeptidess.uk</p></td></tr></table></td></tr></table></body></html>`;
+  const text = [
+    params.title,
+    params.intro,
+    params.bodyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+    `${params.ctaLabel}: ${params.ctaHref}`,
+    'For in-vitro laboratory research use only.',
+  ].join('\n\n');
+  return { html, text };
+}
+
+function buildOrderEmail(params: {
+  audience: 'customer' | 'admin';
+  kind: 'ORDER_RECEIVED' | 'PAYMENT_INSTRUCTIONS' | 'PAYMENT_SUBMITTED';
+  order: Record<string, unknown>;
+  payment: Record<string, unknown>;
+}): { subject: string; html: string; text: string } {
+  const orderNumber = String(params.order.orderNumber || params.order.id || '');
+  const customerName = String(params.order.customerName || 'there');
+  const customerEmail = String(params.order.customerEmail || '');
+  const address =
+    params.order.shippingAddress && typeof params.order.shippingAddress === 'object'
+      ? (params.order.shippingAddress as Record<string, unknown>)
+      : {};
+  const total = money(params.order.total, params.order.currency);
+  const method = String(params.order.paymentMethod || params.payment.method || 'BANK_TRANSFER');
+  const methodLabel =
+    method === 'CRYPTOCURRENCY' || method === 'CRYPTO'
+      ? 'Cryptocurrency'
+      : 'UK Faster Payments / bank transfer';
+  const proof = String(
+    params.order.paymentProofReference || params.payment.transactionHash || params.payment.reference || ''
+  );
+  const evidenceNotes = String(params.payment.evidenceNotes || params.payment.notes || '');
+  const site = 'https://www.researchpeptidess.uk';
+  const summary =
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${kvRows([
+      ['Order', escapeHtml(orderNumber)],
+      ['Status', escapeHtml(String(params.order.status || '').replace(/_/g, ' ').toLowerCase())],
+      ['Settlement method', escapeHtml(methodLabel)],
+      ['Payment status', escapeHtml(String(params.order.paymentStatus || params.payment.status || '').replace(/_/g, ' ').toLowerCase())],
+      ['Payment reference', escapeHtml(proof)],
+      ['Evidence notes', escapeHtml(evidenceNotes)],
+      ['Customer name', escapeHtml(String(params.order.customerName || ''))],
+      ['Customer email', escapeHtml(customerEmail)],
+      ['Phone', escapeHtml(String(address.phone || ''))],
+      [
+        'Research consent',
+        params.order.researchConsentSigned === false
+          ? 'Not recorded'
+          : 'Signed — in-vitro research use only',
+      ],
+      [
+        'Shipping method',
+        escapeHtml(
+          [params.order.shippingMethodName, params.order.shippingCarrier, params.order.shippingZone]
+            .filter(Boolean)
+            .join(' · ') || 'Tracked dispatch'
+        ),
+      ],
+    ])}</table>` +
+    itemsBlock(params.order) +
+    addressBlock(params.order);
+
+  if (params.audience === 'admin') {
+    const titles = {
+      ORDER_RECEIVED: `New order ${orderNumber}`,
+      PAYMENT_INSTRUCTIONS: `Payment instructions sent for ${orderNumber}`,
+      PAYMENT_SUBMITTED: `Payment evidence queued · ${orderNumber}`,
+    } as const;
+    const intros = {
+      ORDER_RECEIVED: `${customerName} placed a ${total} order. Items are reserved pending settlement verification.`,
+      PAYMENT_INSTRUCTIONS: `The customer was sent ${methodLabel} instructions for ${total}.`,
+      PAYMENT_SUBMITTED: 'A customer submitted payment evidence. Reconcile it in the admin verification queue.',
+    } as const;
+    const extra =
+      params.kind === 'PAYMENT_SUBMITTED'
+        ? `<p style="margin:0 0 16px;padding:14px 16px;background:#FEF3C7;border-left:4px solid #92400E;border-radius:8px;font:14px Arial">Submitted reference: <strong>${escapeHtml(proof || 'See admin record')}</strong></p>`
+        : '';
+    const layout = wrapEmail({
+      audience: 'admin',
+      eyebrow: 'Operations alert',
+      title: titles[params.kind],
+      intro: intros[params.kind],
+      bodyHtml: extra + summary,
+      ctaLabel: 'Open admin orders',
+      ctaHref: `${site}/admin`,
+      secondaryLabel: 'Catalogue',
+      secondaryHref: `${site}/shop`,
+    });
+    return { subject: `[RP-UK] ${titles[params.kind]}`, ...layout };
+  }
+
+  if (params.kind === 'PAYMENT_INSTRUCTIONS') {
+    const layout = wrapEmail({
+      audience: 'customer',
+      eyebrow: 'Settlement instructions',
+      title: `How to pay ${total}`,
+      intro: `Use the destination details below for order ${orderNumber}. Always include the payment reference so finance can match your transfer.`,
+      bodyHtml: settlementBlock(params.order, params.payment) + summary,
+      ctaLabel: 'Submit payment evidence',
+      ctaHref: `${site}/account`,
+      secondaryLabel: 'Contact operations',
+      secondaryHref: `mailto:info@researchpeptidess.uk?subject=${encodeURIComponent(`Payment help · ${orderNumber}`)}`,
+    });
+    return { subject: `Payment instructions · ${orderNumber} | Research Peptides UK`, ...layout };
+  }
+
+  if (params.kind === 'PAYMENT_SUBMITTED') {
+    const layout = wrapEmail({
+      audience: 'customer',
+      eyebrow: 'Payment evidence',
+      title: 'Your settlement reference is in review',
+      intro: `We received payment evidence for ${orderNumber}. Finance will reconcile it manually.`,
+      bodyHtml:
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${kvRows([
+          ['Reference submitted', escapeHtml(proof || 'Recorded')],
+        ])}</table>` + summary,
+      ctaLabel: 'Open your account',
+      ctaHref: `${site}/account`,
+    });
+    return { subject: `Payment evidence received · ${orderNumber} | Research Peptides UK`, ...layout };
+  }
+
+  const layout = wrapEmail({
+    audience: 'customer',
+    eyebrow: 'Order confirmation',
+    title: `Order ${orderNumber} is registered`,
+    intro: `Hello ${customerName}. We have recorded your research catalogue order. Items are reserved pending settlement — this is not dispatch confirmation.`,
+    bodyHtml:
+      `<p style="margin:0 0 16px;padding:14px 16px;background:#F0F9FF;border-left:4px solid #4353FF;border-radius:8px;font:14px Arial;color:#0F172A">Complete settlement using the instructions in the following email, then submit your payment reference from your account.</p>` +
+      summary,
+    ctaLabel: 'View order in account',
+    ctaHref: `${site}/account`,
+    secondaryLabel: 'Browse catalogue',
+    secondaryHref: `${site}/shop`,
+  });
+  return { subject: `Order confirmed · ${orderNumber} | Research Peptides UK`, ...layout };
+}
+
+async function sendResendEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  kind: string;
+  audience: string;
+}): Promise<void> {
+  const apiKey = env('RESEND_API_KEY');
+  if (!apiKey || /sample|your-|re_sample|xxxxxxxx/i.test(apiKey)) {
+    console.log(
+      JSON.stringify({ level: 'info', operation: 'email_simulated', to: params.to, subject: params.subject })
+    );
+    return;
+  }
+  const from = env('EMAIL_FROM_ADDRESS') || 'Research Peptides UK <info@researchpeptidess.uk>';
+  const replyTo =
+    params.replyTo || env('EMAIL_REPLY_TO') || env('EMAIL_SUPPORT_ADDRESS') || 'info@researchpeptidess.uk';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from,
+        to: [params.to],
+        subject: params.subject,
+        html: params.html,
+        text: params.text,
+        reply_to: replyTo,
+        tags: [
+          { name: 'kind', value: params.kind.slice(0, 40) },
+          { name: 'audience', value: params.audience.slice(0, 40) },
+        ],
+      }),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new Error(payload.message || `Resend HTTP ${response.status}`);
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function dispatchOrderEmails(
+  order: Record<string, unknown>,
+  payment: Record<string, unknown>,
+  reference: string
+): Promise<void> {
+  const customerEmail = String(order.customerEmail || '').trim().toLowerCase();
+  if (!customerEmail.includes('@')) return;
+  const adminEmail = (env('ADMIN_EMAIL') || 'info@researchpeptidess.uk').toLowerCase();
+  const kinds: Array<'ORDER_RECEIVED' | 'PAYMENT_INSTRUCTIONS' | 'PAYMENT_SUBMITTED'> =
+    order.status === 'PAYMENT_SUBMITTED' || Boolean(order.paymentProofReference)
+      ? ['ORDER_RECEIVED', 'PAYMENT_SUBMITTED']
+      : ['ORDER_RECEIVED', 'PAYMENT_INSTRUCTIONS'];
+
+  for (const kind of kinds) {
+    const customer = buildOrderEmail({ audience: 'customer', kind, order, payment });
+    const admin = buildOrderEmail({ audience: 'admin', kind, order, payment });
+    await sendResendEmail({
+      to: customerEmail,
+      subject: customer.subject,
+      html: customer.html,
+      text: customer.text,
+      kind: `order_${kind.toLowerCase()}`,
+      audience: 'customer',
+    });
+    await sendResendEmail({
+      to: adminEmail,
+      subject: admin.subject,
+      html: admin.html,
+      text: admin.text,
+      replyTo: customerEmail,
+      kind: `order_${kind.toLowerCase()}`,
+      audience: 'admin',
+    });
+  }
+  console.log(JSON.stringify({ level: 'info', operation: 'order_emails_dispatched', reference, kinds }));
 }

@@ -1,8 +1,7 @@
 /**
- * Dedicated /api/orders/payment handler for Vercel.
+ * Self-contained /api/orders/payment handler for Vercel.
+ * No imports from src/ or sibling helpers — those crash this runtime.
  */
-
-import { dispatchOrderEventEmails } from '../_lib/email/dispatch';
 
 export const config = { runtime: 'nodejs' };
 
@@ -41,7 +40,13 @@ async function readBody(req: Req): Promise<Record<string, unknown>> {
 }
 
 function resolveDatabaseUrl(): string | null {
-  for (const key of ['DATABASE_URL', 'POSTGRES_URL', 'POSTGRES_PRISMA_URL', 'DATABASE_URL_UNPOOLED', 'POSTGRES_URL_NON_POOLING']) {
+  for (const key of [
+    'DATABASE_URL',
+    'POSTGRES_URL',
+    'POSTGRES_PRISMA_URL',
+    'DATABASE_URL_UNPOOLED',
+    'POSTGRES_URL_NON_POOLING',
+  ]) {
     const value = (process.env[key] || '').trim();
     if (!value || value.includes('sample-project') || value.includes('user:password@')) continue;
     try {
@@ -79,11 +84,135 @@ function toDbStatus(status: string): string {
   }
 }
 
-function normalizeProof(raw?: string): string | undefined {
-  const value = (raw || '').trim();
-  if (!value) return undefined;
-  if (value.toUpperCase() === 'FPS-TRANSFER-PENDING' || value.toUpperCase() === 'CRYPTO-TX-PENDING') return undefined;
-  return value;
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function money(amount: unknown, currency: unknown): string {
+  const n = Number(amount || 0);
+  const code = currency === 'EUR' ? 'EUR' : 'GBP';
+  try {
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: code }).format(n);
+  } catch {
+    return `${code === 'EUR' ? '€' : '£'}${n.toFixed(2)}`;
+  }
+}
+
+function env(name: string): string {
+  return (process.env[name] || '').trim();
+}
+
+function kvRows(rows: Array<[string, string]>): string {
+  return rows
+    .filter(([, value]) => Boolean(value && String(value).trim()))
+    .map(
+      ([label, value], index) =>
+        `<tr><td style="padding:8px 0;border-top:${index ? '1px solid #E2E8F0' : '0'};font:700 11px Arial;color:#64748B;text-transform:uppercase;width:38%;vertical-align:top">${escapeHtml(label)}</td><td style="padding:8px 0;border-top:${index ? '1px solid #E2E8F0' : '0'};font:14px/1.5 Arial;color:#0F172A">${value}</td></tr>`
+    )
+    .join('');
+}
+
+async function sendResendEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  kind: string;
+  audience: string;
+}): Promise<void> {
+  const apiKey = env('RESEND_API_KEY');
+  if (!apiKey || /sample|your-|re_sample|xxxxxxxx/i.test(apiKey)) {
+    console.log(
+      JSON.stringify({ level: 'info', operation: 'email_simulated', to: params.to, subject: params.subject })
+    );
+    return;
+  }
+  const from = env('EMAIL_FROM_ADDRESS') || 'Research Peptides UK <info@researchpeptidess.uk>';
+  const replyTo =
+    params.replyTo || env('EMAIL_REPLY_TO') || env('EMAIL_SUPPORT_ADDRESS') || 'info@researchpeptidess.uk';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from,
+        to: [params.to],
+        subject: params.subject,
+        html: params.html,
+        text: params.text,
+        reply_to: replyTo,
+        tags: [
+          { name: 'kind', value: params.kind.slice(0, 40) },
+          { name: 'audience', value: params.audience.slice(0, 40) },
+        ],
+      }),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new Error(payload.message || `Resend HTTP ${response.status}`);
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function dispatchPaymentSubmittedEmails(
+  order: Record<string, unknown>,
+  payment: Record<string, unknown>
+): Promise<void> {
+  const customerEmail = String(order.customerEmail || '').trim().toLowerCase();
+  if (!customerEmail.includes('@')) return;
+  const adminEmail = (env('ADMIN_EMAIL') || 'info@researchpeptidess.uk').toLowerCase();
+  const orderNumber = String(order.orderNumber || order.id || '');
+  const proof = String(order.paymentProofReference || payment.transactionHash || payment.reference || 'Recorded');
+  const total = money(order.total, order.currency);
+  const site = 'https://www.researchpeptidess.uk';
+  const address =
+    order.shippingAddress && typeof order.shippingAddress === 'object'
+      ? (order.shippingAddress as Record<string, unknown>)
+      : {};
+  const summary = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${kvRows([
+    ['Order', escapeHtml(orderNumber)],
+    ['Customer name', escapeHtml(String(order.customerName || ''))],
+    ['Customer email', escapeHtml(customerEmail)],
+    ['Phone', escapeHtml(String(address.phone || ''))],
+    ['Amount', escapeHtml(total)],
+    ['Reference submitted', escapeHtml(proof)],
+    ['Ship to', escapeHtml(String(address.addressLine1 || ''))],
+    ['City', escapeHtml([address.city, address.postcode].filter(Boolean).join(', '))],
+  ])}</table>`;
+
+  const customerHtml = `<!DOCTYPE html><html><body style="margin:0;background:#F4F7FB;font-family:Arial,sans-serif"><table role="presentation" width="100%"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="600" style="width:100%;max-width:600px;background:#fff;border-radius:18px;overflow:hidden"><tr><td style="background:#0B132B;padding:24px 32px;color:#fff"><strong>Research Peptides UK</strong></td></tr><tr><td style="padding:28px 32px"><p style="margin:0 0 8px;font:800 11px Arial;letter-spacing:.16em;text-transform:uppercase;color:#4353FF">Payment evidence</p><h1 style="margin:0 0 12px;font:800 24px Arial;color:#0B132B">Your settlement reference is in review</h1><p style="color:#64748B">We received payment evidence for ${escapeHtml(orderNumber)}. Finance will reconcile it manually.</p>${summary}<p style="margin:24px 0 0"><a href="${site}/account" style="display:inline-block;padding:14px 28px;border-radius:10px;background:#4353FF;color:#fff;text-decoration:none;font:700 14px Arial;text-transform:uppercase">Open your account</a></p></td></tr></table></td></tr></table></body></html>`;
+  const adminHtml = `<!DOCTYPE html><html><body style="margin:0;background:#F4F7FB;font-family:Arial,sans-serif"><table role="presentation" width="100%"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="600" style="width:100%;max-width:600px;background:#fff;border-radius:18px;overflow:hidden"><tr><td style="background:#111827;padding:24px 32px;color:#fff"><strong>Research Peptides UK · Operations</strong></td></tr><tr><td style="padding:28px 32px"><p style="margin:0 0 8px;font:800 11px Arial;letter-spacing:.16em;text-transform:uppercase;color:#92400E">Verification queue</p><h1 style="margin:0 0 12px;font:800 24px Arial;color:#0B132B">Payment evidence queued · ${escapeHtml(orderNumber)}</h1><p style="color:#64748B">Reconcile the submitted reference in admin.</p>${summary}<p style="margin:24px 0 0"><a href="${site}/admin" style="display:inline-block;padding:14px 28px;border-radius:10px;background:#4353FF;color:#fff;text-decoration:none;font:700 14px Arial;text-transform:uppercase">Open admin orders</a></p></td></tr></table></td></tr></table></body></html>`;
+
+  await sendResendEmail({
+    to: customerEmail,
+    subject: `Payment evidence received · ${orderNumber} | Research Peptides UK`,
+    html: customerHtml,
+    text: `Payment evidence received for ${orderNumber}. Reference: ${proof}`,
+    kind: 'order_payment_submitted',
+    audience: 'customer',
+  });
+  await sendResendEmail({
+    to: adminEmail,
+    subject: `[RP-UK] Payment evidence queued · ${orderNumber}`,
+    html: adminHtml,
+    text: `Payment evidence queued for ${orderNumber}. Reference: ${proof}`,
+    replyTo: customerEmail,
+    kind: 'order_payment_submitted',
+    audience: 'admin',
+  });
 }
 
 export default async function handler(req: Req, res: Res): Promise<void> {
@@ -93,6 +222,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
       send(res, 405, { error: 'Method not allowed.', reference: ref }, ref);
       return;
     }
+
     const body = await readBody(req);
     const order = body.order as Record<string, unknown> | undefined;
     const payment = body.payment as Record<string, unknown> | undefined;
@@ -109,22 +239,9 @@ export default async function handler(req: Req, res: Res): Promise<void> {
 
     const { neon } = await import('@neondatabase/serverless');
     const sql = neon(connectionString, { fetchOptions: { cache: 'no-store' } });
-
-    const proof = normalizeProof(
-      (typeof order.paymentProofReference === 'string' ? order.paymentProofReference : undefined) ||
-        (typeof payment.transactionHash === 'string' ? payment.transactionHash : undefined)
-    );
-    const safeOrder = {
-      ...order,
-      paymentProofReference: proof,
-      paymentStatus: order.paymentStatus === 'VERIFIED' ? 'SUBMITTED' : order.paymentStatus,
-      status: order.status === 'PAYMENT_VERIFIED' ? 'PAYMENT_SUBMITTED' : order.status,
-    };
-    const safePayment = {
-      ...payment,
-      status: payment.status === 'VERIFIED' ? 'SUBMITTED' : payment.status,
-    };
     const now = new Date();
+    const safeOrder = { ...order };
+    const safePayment = { ...payment };
 
     await sql`
       UPDATE order_payments
@@ -150,7 +267,7 @@ export default async function handler(req: Req, res: Res): Promise<void> {
     `;
 
     try {
-      await dispatchOrderEventEmails('PAYMENT_SUBMITTED', safeOrder, safePayment);
+      await dispatchPaymentSubmittedEmails(safeOrder, safePayment);
     } catch (error) {
       console.error(
         JSON.stringify({
