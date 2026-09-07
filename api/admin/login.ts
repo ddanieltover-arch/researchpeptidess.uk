@@ -1,3 +1,6 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { handleAdminLogin } from '../../src/server/admin-http';
+
 export const config = { runtime: 'nodejs' };
 
 function send(
@@ -12,13 +15,9 @@ function send(
   res.end(JSON.stringify(body));
 }
 
-export default async function handler(
-  req: { method?: string; headers?: unknown; url?: string; body?: unknown },
-  res: { statusCode: number; setHeader: (k: string, v: string) => void; end: (b: string) => void; headersSent?: boolean }
-): Promise<void> {
+export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
-    const { handleAdminLogin } = await import('../../src/server/admin-http');
-    await handleAdminLogin(req as never, res as never);
+    await handleAdminLogin(req as never, res);
   } catch (error) {
     if (res.headersSent) return;
     const detail = (error instanceof Error ? error.message : 'load_failed')

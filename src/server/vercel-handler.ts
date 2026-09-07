@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { handleApiRequest } from './api-router';
 
 function send(
   res: ServerResponse,
@@ -26,7 +27,6 @@ export async function dispatchVercelApi(
   fallbackMessage: string
 ): Promise<void> {
   try {
-    const { handleApiRequest } = await import('./api-router');
     const handled = await handleApiRequest(req, res);
     if (!handled && !res.headersSent) {
       send(res, 404, { error: 'Not found.' });
