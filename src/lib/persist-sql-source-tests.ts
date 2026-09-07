@@ -10,6 +10,7 @@ function listApiFunctionFiles(dir: string): string[] {
   const entries = readdirSync(dir);
   const files: string[] = [];
   for (const entry of entries) {
+    if (entry.startsWith('_') || entry.startsWith('.') || entry.startsWith('-')) continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       files.push(...listApiFunctionFiles(full));
