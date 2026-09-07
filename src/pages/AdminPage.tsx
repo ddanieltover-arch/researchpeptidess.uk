@@ -128,7 +128,7 @@ export const AdminPage: React.FC = () => {
     | 'observability'
     | 'merchandising';
 
-  const [activeTab, setActiveTab] = useState<AdminTab>('products');
+  const [activeTab, setActiveTab] = useState<AdminTab>('orders_operations');
 
   // Product List Filters & Selection
   const [productSearch, setProductSearch] = useState('');
@@ -515,14 +515,14 @@ export const AdminPage: React.FC = () => {
       {/* Navigation Sub-Tabs */}
       <div className="flex border-b border-stone-200 gap-1 overflow-x-auto pb-0.5">
         {[
+          { id: 'orders_operations', label: `Orders (${orderList.length})`, icon: Truck, badge: pendingOrders.length > 0 ? `${pendingOrders.length}` : undefined },
+          { id: 'payments_verification', label: `Payments Queue (${paymentList.length})`, icon: CreditCard, badge: pendingPayments.length > 0 ? `${pendingPayments.length}` : undefined },
           { id: 'products', label: `Products (${productList.length})`, icon: Package },
           { id: 'import_export', label: 'CSV / Data Pipeline', icon: Upload },
           { id: 'categories', label: `Categories (${categoryList.length})`, icon: Layers },
           { id: 'batches_docs', label: `Batches & COAs (${batches.length})`, icon: FileCheck2 },
           { id: 'pricing_promotions', label: 'Pricing & Coupons', icon: Tag },
           { id: 'merchandising', label: 'Merchandising', icon: Sparkles },
-          { id: 'orders_operations', label: `Orders (${orderList.length})`, icon: Truck, badge: pendingOrders.length > 0 ? `${pendingOrders.length}` : undefined },
-          { id: 'payments_verification', label: `Payments Queue (${paymentList.length})`, icon: CreditCard, badge: pendingPayments.length > 0 ? `${pendingPayments.length}` : undefined },
           { id: 'inventory_ledger', label: `Inventory & Stock`, icon: Box },
           { id: 'cms_pages', label: 'CMS & Policies', icon: FileText },
           { id: 'store_settings', label: 'Store Settings', icon: Settings },
