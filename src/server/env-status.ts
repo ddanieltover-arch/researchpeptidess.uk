@@ -70,9 +70,8 @@ export function buildEnvDiagnostic(): Record<string, EnvPresence | 'PRESENT' | '
 }
 
 export function isEmailProviderConnected(): boolean {
-  const provider = inspectEnvVariable('EMAIL_PROVIDER');
-  const key = inspectEnvVariable('RESEND_API_KEY');
-  return provider === 'PRESENT' && key === 'PRESENT';
+  // Resend key alone is enough; provider defaults to "resend" in email config.
+  return inspectEnvVariable('RESEND_API_KEY') === 'PRESENT';
 }
 
 export function storageStatus(): 'healthy' | 'unconfigured' {
