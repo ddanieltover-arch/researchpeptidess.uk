@@ -1,0 +1,16 @@
+{
+  "workspace": "",
+  "reviewer": "",
+  "areas": {
+    "classification": {"pass": null, "notes": ""},
+    "technical": {"pass": null, "notes": ""},
+    "search": {"pass": null, "notes": ""},
+    "content": {"pass": null, "notes": ""},
+    "competitors": {"pass": null, "notes": ""},
+    "geo_aio": {"pass": null, "notes": ""},
+    "prioritization": {"pass": null, "notes": ""},
+    "implementation": {"pass": null, "notes": ""},
+    "reporting": {"pass": null, "notes": ""},
+    "efficiency": {"pass": null, "notes": ""}
+  }
+}

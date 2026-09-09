@@ -1,0 +1,26 @@
+{
+  "search_data_status": "insufficient",
+  "available": [
+    "technical-evidence",
+    "on-page-evidence",
+    "repository-evidence",
+    "entity-evidence"
+  ],
+  "unavailable": [
+    "search-demand",
+    "current-rankings",
+    "competitors",
+    "ctr",
+    "conversions",
+    "ai-search-observations"
+  ],
+  "required_data": [
+    "gsc",
+    "ga4",
+    "serpapi"
+  ],
+  "notes": [
+    "Technical findings are stored separately from business opportunities.",
+    "Missing search metrics were not estimated or coerced to zero."
+  ]
+}

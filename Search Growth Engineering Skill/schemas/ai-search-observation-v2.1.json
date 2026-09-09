@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["query", "engine"],
+  "properties": {
+    "query": {"type": "string"},
+    "engine": {
+      "type": "string",
+      "enum": ["chatgpt-search", "google-ai-mode", "google-ai-overviews", "perplexity", "gemini", "claude-search"]
+    },
+    "citations": {"type": "array"},
+    "entities": {"type": "array"},
+    "answer_summary": {"type": "string"},
+    "observed_at": {"type": "string"},
+    "evidence_source": {"type": "string"}
+  }
+}

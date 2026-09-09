@@ -52,7 +52,16 @@ export const WhatsAppFloatingButton: React.FC = () => {
   }
 
   return (
-    <div className="fixed right-4 z-40 flex items-center gap-2 bottom-[calc(var(--mobile-bottom-nav-height)+1rem)] lg:bottom-6">
+    <div className="fixed left-4 z-40 flex items-center gap-2 bottom-[calc(var(--mobile-bottom-nav-height)+1rem)] lg:bottom-6">
+      <a
+        href={whatsappHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={whatsappLabel}
+        className={`${fabClass} bg-[#25D366] text-white shadow-emerald-900/20 hover:bg-[#1EBE5D] focus-visible:ring-[#25D366]/60`}
+      >
+        <WhatsAppIcon className="h-6 w-6 text-white" />
+      </a>
       {showBackToTop ? (
         <button
           type="button"
@@ -63,15 +72,6 @@ export const WhatsAppFloatingButton: React.FC = () => {
           <ArrowUp className="h-5 w-5" strokeWidth={2.4} />
         </button>
       ) : null}
-      <a
-        href={whatsappHref}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={whatsappLabel}
-        className={`${fabClass} bg-[#25D366] text-white shadow-emerald-900/20 hover:bg-[#1EBE5D] focus-visible:ring-[#25D366]/60`}
-      >
-        <WhatsAppIcon className="h-6 w-6 text-white" />
-      </a>
     </div>
   );
 };

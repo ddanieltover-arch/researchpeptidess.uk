@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchGrowthExecutionPlan",
+  "type": "object",
+  "required": ["schema_version", "mode", "requires_approval", "operations", "acceptance_criteria"],
+  "properties": {
+    "schema_version": {"const": "1.4"},
+    "mode": {"enum": ["dry-run", "apply"]},
+    "requires_approval": {"type": "boolean"},
+    "approved": {"type": "boolean"},
+    "root": {"type": "string"},
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string"},
+          "file": {"type": "string"},
+          "find": {"type": "string"},
+          "replace": {"type": "string"},
+          "expected_count": {"type": "integer", "minimum": 1},
+          "approved": {"type": "boolean"},
+          "risk": {"enum": ["low", "medium", "high"]}
+        }
+      }
+    },
+    "acceptance_criteria": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["task", "context", "result"],
+  "properties": {
+    "task": {"type": "string"},
+    "context": {"type": "object"},
+    "result": {"type": "object"},
+    "agent": {"type": ["string", "null"]},
+    "task_id": {"type": "string"},
+    "context_id": {"type": "string"}
+  }
+}

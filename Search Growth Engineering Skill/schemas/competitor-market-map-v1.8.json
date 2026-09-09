@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Competitor Market Map v1.8",
+  "type": "object",
+  "properties": {
+    "target_domain": {"type":"string"},
+    "target_presence": {"type":"object"},
+    "competitors": {"type":"array", "items":{"type":"object"}},
+    "competitor_count": {"type":"integer"},
+    "market_domains": {"type":"array", "items":{"type":"string"}}
+  },
+  "required": ["target_domain","competitors","competitor_count"]
+}

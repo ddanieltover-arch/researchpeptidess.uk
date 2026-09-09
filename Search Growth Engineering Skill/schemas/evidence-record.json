@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://search-growth-engine.local/schemas/evidence-record.json",
+  "type":"object",
+  "required":["status","source","observed_at"],
+  "properties":{
+    "status":{"enum":["verified","inferred","hypothesis"]},
+    "source":{"type":"string"},
+    "observed_at":{"type":"string"},
+    "scope":{"type":"string"},
+    "value":{},
+    "notes":{"type":"string"}
+  },
+  "additionalProperties":true
+}

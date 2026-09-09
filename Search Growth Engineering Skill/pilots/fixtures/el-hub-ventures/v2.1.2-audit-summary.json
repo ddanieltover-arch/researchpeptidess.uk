@@ -1,0 +1,46 @@
+{
+  "sgos_version": "2.1.2",
+  "mode": "audit",
+  "project_types": [
+    "b2b-service",
+    "local-business",
+    "professional-services"
+  ],
+  "business_model": "professional-services",
+  "frameworks": [
+    "Next.js",
+    "React"
+  ],
+  "activated_modules": [
+    "content",
+    "geo-aio",
+    "local-seo",
+    "on-page-seo",
+    "semantic-entity",
+    "technical-seo"
+  ],
+  "module_gates_active": {
+    "technical-seo": true,
+    "on-page-seo": true,
+    "content": true,
+    "semantic-entity": true,
+    "geo-aio": true,
+    "local-seo": true,
+    "ecommerce": false,
+    "marketplace": false,
+    "aso": false,
+    "saas": false,
+    "programmatic-seo": false,
+    "sem": false,
+    "mobile-app": false
+  },
+  "search_data_status": "insufficient",
+  "finding_count": 5,
+  "finding_types": [
+    "CRAWLABLE_DOCUMENT",
+    "REDIRECT_ALIAS",
+    "THIN_TEXT"
+  ],
+  "crawl_pages": 36,
+  "entity_count": 23
+}

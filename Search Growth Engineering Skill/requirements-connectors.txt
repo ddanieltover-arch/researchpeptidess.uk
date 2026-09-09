@@ -1,0 +1,2 @@
+# Optional Google authentication for service-account based GSC/GA4 access.
+google-auth>=2.40,<3

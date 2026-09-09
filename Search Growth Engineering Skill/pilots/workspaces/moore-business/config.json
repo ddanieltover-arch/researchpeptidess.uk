@@ -1,0 +1,13 @@
+{
+  "client_id": "moore-business",
+  "display_name": "Moore Business",
+  "project_type": "automotive",
+  "traits": ["bilingual", "inventory", "services"],
+  "target_url": "",
+  "target_domain": "",
+  "connectors": ["gsc", "ga4", "serpapi"],
+  "notes": [
+    "Set target_url and language/hreflang evidence from the project.",
+    "Inventory pages must be audited for indexation and canonicals; do not fabricate stock counts."
+  ]
+}

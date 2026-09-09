@@ -1,0 +1,187 @@
+{
+  "sgos_version": "2.1.2",
+  "mode": "strategy",
+  "generated_at": "2026-08-22T14:04:19.540914+00:00",
+  "project_types": [
+    "b2b-service",
+    "local-business",
+    "professional-services"
+  ],
+  "business_model": "professional-services",
+  "frameworks": [
+    "Next.js",
+    "React"
+  ],
+  "activated_modules": [
+    "content",
+    "geo-aio",
+    "local-seo",
+    "on-page-seo",
+    "semantic-entity",
+    "technical-seo"
+  ],
+  "forbidden_modules_active": [],
+  "module_gates": {
+    "technical-seo": true,
+    "on-page-seo": true,
+    "content": true,
+    "semantic-entity": true,
+    "geo-aio": true,
+    "local-seo": true,
+    "ecommerce": false,
+    "marketplace": false,
+    "aso": false,
+    "saas": false,
+    "programmatic-seo": false,
+    "sem": false,
+    "mobile-app": false
+  },
+  "search_data_status": "insufficient",
+  "required_data": [
+    "gsc",
+    "ga4",
+    "serpapi"
+  ],
+  "provisional_strategy": "Discovery-constrained: recommend only observed technical blockers, document policy, entity clarity and required data connections. Do not claim market or ranking opportunities.",
+  "opportunity_count": 4,
+  "opportunity_types": [
+    "CRAWLABLE_DOCUMENT",
+    "required-data"
+  ],
+  "opportunities": [
+    {
+      "type": "required-data",
+      "title": "Connect Google Search Console",
+      "url": null,
+      "connector": "gsc",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect Google Analytics 4",
+      "url": null,
+      "connector": "ga4",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect an authorized SERP provider",
+      "url": null,
+      "connector": "serpapi",
+      "priority_score": 86.62
+    },
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+      "connector": null,
+      "priority_score": 62.5
+    }
+  ],
+  "known_opportunities": [
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf"
+    }
+  ],
+  "unknown_opportunities": [
+    {
+      "type": "unknown",
+      "title": "Search demand is unknown until GSC or keyword evidence is connected"
+    },
+    {
+      "type": "unknown",
+      "title": "Competitors are unknown until SERP or GSC evidence is connected"
+    },
+    {
+      "type": "unknown",
+      "title": "AI-search visibility is unknown; citation rate is null, not zero"
+    }
+  ],
+  "technical_findings_count": 5,
+  "technical_finding_types": [
+    "CRAWLABLE_DOCUMENT",
+    "REDIRECT_ALIAS",
+    "THIN_TEXT"
+  ],
+  "lint_in_opportunities": [],
+  "lint_in_roadmap_0_30": [],
+  "roadmap_0_30": [
+    {
+      "type": "required-data",
+      "title": "Connect Google Search Console"
+    },
+    {
+      "type": "required-data",
+      "title": "Connect Google Analytics 4"
+    },
+    {
+      "type": "required-data",
+      "title": "Connect an authorized SERP provider"
+    },
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable."
+    }
+  ],
+  "entity_count": 23,
+  "entity_types": [
+    "Article",
+    "Organization",
+    "Person"
+  ],
+  "entity_names": [
+    "AI & Data Solutions \u2014 EL-HUB VENTURES",
+    "AWS Cloud DevOps Consulting in the UK: Full Setup",
+    "Adebayo Ogunlesi",
+    "Cloud & DevOps \u2014 EL-HUB VENTURES",
+    "Custom SaaS Developers USA: Guide to the Right Partner",
+    "Digital Transformation & Strategy \u2014 EL-HUB VENTURES",
+    "E-Commerce & SaaS \u2014 EL-HUB VENTURES",
+    "E-commerce Evolution: Canadian Web Development Strategies",
+    "EL-HUB VENTURES",
+    "Emmanuel Mensah",
+    "Maximizing Cloud ROI: UK DevOps Case Studies",
+    "Mobile App Development USA: Security Best Practices",
+    "Mobile App Development \u2014 EL-HUB VENTURES",
+    "Ngozi Kalu",
+    "React vs Flutter for MVP in 2026: Comparative Guide",
+    "SEO Services \u2014 EL-HUB VENTURES",
+    "Scaling Web Apps: Lessons from Top Nigeria Web Agencies",
+    "The Best Web Development Agency in Nigeria for 2026",
+    "Top Fintech Software Development Trends in Canada",
+    "Training & Consulting \u2014 EL-HUB VENTURES"
+  ],
+  "relationship_count": 0,
+  "collisions": [],
+  "exec_target_line": "Target: https://www.elhubventures.com",
+  "exec_has_priorities": true,
+  "exec_json_target": "https://www.elhubventures.com",
+  "limitations": {
+    "search_data_status": "insufficient",
+    "available": [
+      "technical-evidence",
+      "on-page-evidence",
+      "repository-evidence",
+      "entity-evidence"
+    ],
+    "unavailable": [
+      "search-demand",
+      "current-rankings",
+      "competitors",
+      "ctr",
+      "conversions",
+      "ai-search-observations"
+    ],
+    "required_data": [
+      "gsc",
+      "ga4",
+      "serpapi"
+    ],
+    "notes": [
+      "Technical findings are stored separately from business opportunities.",
+      "Missing search metrics were not estimated or coerced to zero."
+    ]
+  }
+}

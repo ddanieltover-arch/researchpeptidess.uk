@@ -1,0 +1,907 @@
+{
+  "version": "2.1.2",
+  "search_data_status": "insufficient",
+  "opportunities": [
+    {
+      "type": "required-data",
+      "title": "Connect Google Search Console",
+      "connector": "gsc",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Query, page, country and index coverage are unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect Google Analytics 4",
+      "connector": "ga4",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Landing-page and conversion evidence is unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect an authorized SERP provider",
+      "connector": "serpapi",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Live rankings and SERP competitors were not collected.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+      "message": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "evidence": {
+        "status": "verified",
+        "value": "content_type=application/pdf"
+      },
+      "confidence": 0.95,
+      "business_value": 0.55,
+      "technical_severity": 0.6,
+      "business_relevance": 0.55,
+      "search_significance": 0.3135,
+      "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "priority_score": 62.5
+    }
+  ],
+  "opportunity_count": 4,
+  "known_opportunities": [
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+      "message": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "evidence": {
+        "status": "verified",
+        "value": "content_type=application/pdf"
+      },
+      "confidence": 0.95,
+      "business_value": 0.55,
+      "technical_severity": 0.6,
+      "business_relevance": 0.55,
+      "search_significance": 0.3135,
+      "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "priority_score": 62.5
+    }
+  ],
+  "unknown_opportunities": [
+    {
+      "type": "unknown",
+      "title": "Search demand is unknown until GSC or keyword evidence is connected",
+      "evidence": "No query, ranking or impression rows were supplied."
+    },
+    {
+      "type": "unknown",
+      "title": "Competitors are unknown until SERP or GSC evidence is connected",
+      "evidence": "Market map was not estimated."
+    },
+    {
+      "type": "unknown",
+      "title": "AI-search visibility is unknown; citation rate is null, not zero",
+      "evidence": "No AI-search observations were supplied."
+    }
+  ],
+  "required_data": [
+    "gsc",
+    "ga4",
+    "serpapi"
+  ],
+  "technical_findings": [
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+      "message": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "evidence": {
+        "status": "verified",
+        "value": "content_type=application/pdf"
+      },
+      "confidence": 0.95,
+      "business_value": 0.55,
+      "technical_severity": 0.6,
+      "business_relevance": 0.55,
+      "search_significance": 0.3135
+    },
+    {
+      "type": "THIN_TEXT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/privacy",
+      "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+      "evidence": {
+        "status": "verified",
+        "value": "body_word_count=87"
+      },
+      "confidence": 0.8,
+      "business_value": 0.4,
+      "technical_severity": 0.6,
+      "business_relevance": 0.35,
+      "search_significance": 0.168
+    },
+    {
+      "type": "THIN_TEXT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/terms",
+      "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+      "evidence": {
+        "status": "verified",
+        "value": "body_word_count=94"
+      },
+      "confidence": 0.8,
+      "business_value": 0.4,
+      "technical_severity": 0.6,
+      "business_relevance": 0.35,
+      "search_significance": 0.168
+    },
+    {
+      "type": "REDIRECT_ALIAS",
+      "priority": "P3",
+      "url": "https://www.elhubventures.com/case-studies.html",
+      "message": "Request URL resolved to an already-crawled canonical resource. Duplicate HTML checks were skipped.",
+      "evidence": {
+        "status": "verified",
+        "value": "final_url=https://www.elhubventures.com/case-studies identity=https://www.elhubventures.com/case-studies"
+      },
+      "confidence": 0.9,
+      "business_value": 0.15,
+      "technical_severity": 0.35,
+      "business_relevance": 0.15,
+      "search_significance": 0.0473
+    },
+    {
+      "type": "REDIRECT_ALIAS",
+      "priority": "P3",
+      "url": "https://www.elhubventures.com/services/index.html",
+      "message": "Request URL resolved to an already-crawled canonical resource. Duplicate HTML checks were skipped.",
+      "evidence": {
+        "status": "verified",
+        "value": "final_url=https://www.elhubventures.com/services identity=https://www.elhubventures.com/services"
+      },
+      "confidence": 0.9,
+      "business_value": 0.15,
+      "technical_severity": 0.35,
+      "business_relevance": 0.15,
+      "search_significance": 0.0473
+    }
+  ],
+  "provisional_strategy": "Discovery-constrained: recommend only observed technical blockers, document policy, entity clarity and required data connections. Do not claim market or ranking opportunities.",
+  "limitations": {
+    "search_data_status": "insufficient",
+    "available": [
+      "technical-evidence",
+      "on-page-evidence",
+      "repository-evidence",
+      "entity-evidence"
+    ],
+    "unavailable": [
+      "search-demand",
+      "current-rankings",
+      "competitors",
+      "ctr",
+      "conversions",
+      "ai-search-observations"
+    ],
+    "required_data": [
+      "gsc",
+      "ga4",
+      "serpapi"
+    ],
+    "notes": [
+      "Technical findings are stored separately from business opportunities.",
+      "Missing search metrics were not estimated or coerced to zero."
+    ]
+  },
+  "keyword_url_map": {
+    "mappings": [],
+    "new_page_candidates": [],
+    "existing_page_candidates": []
+  },
+  "roadmap": {
+    "0-30_days": [
+      {
+        "title": "Connect Google Search Console",
+        "type": "required-data",
+        "priority_score": 86.62,
+        "recommended_action": "Connect Google Search Console"
+      },
+      {
+        "title": "Connect Google Analytics 4",
+        "type": "required-data",
+        "priority_score": 86.62,
+        "recommended_action": "Connect Google Analytics 4"
+      },
+      {
+        "title": "Connect an authorized SERP provider",
+        "type": "required-data",
+        "priority_score": 86.62,
+        "recommended_action": "Connect an authorized SERP provider"
+      },
+      {
+        "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+        "type": "CRAWLABLE_DOCUMENT",
+        "priority_score": 62.5,
+        "recommended_action": "PDF discovered and crawlable; assess whether this document should be publicly indexable."
+      }
+    ],
+    "31-60_days": [],
+    "61-90_days": []
+  },
+  "top_opportunities": [
+    {
+      "type": "required-data",
+      "title": "Connect Google Search Console",
+      "connector": "gsc",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Query, page, country and index coverage are unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect Google Analytics 4",
+      "connector": "ga4",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Landing-page and conversion evidence is unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect an authorized SERP provider",
+      "connector": "serpapi",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Live rankings and SERP competitors were not collected.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+      "message": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "evidence": {
+        "status": "verified",
+        "value": "content_type=application/pdf"
+      },
+      "confidence": 0.95,
+      "business_value": 0.55,
+      "technical_severity": 0.6,
+      "business_relevance": 0.55,
+      "search_significance": 0.3135,
+      "title": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "priority_score": 62.5
+    }
+  ],
+  "market_map": {
+    "target_domain": "elhubventures.com",
+    "target_presence": {
+      "organic_serp_occurrences": 0,
+      "top_3_count": 0,
+      "top_10_count": 0,
+      "ai_citations": 0
+    },
+    "competitors": [],
+    "competitor_count": 0,
+    "market_domains": []
+  },
+  "keyword_competitor_gaps": {
+    "target_domain": "elhubventures.com",
+    "true_content_gaps": [],
+    "ranking_gaps": [],
+    "competitive_wins": [],
+    "gap_count": 0,
+    "ranking_gap_count": 0
+  },
+  "ai_source_competitors": {
+    "target_domain": "elhubventures.com",
+    "top_ai_source_competitors": [],
+    "query_source_gaps": [],
+    "target_citation_count": 0
+  },
+  "content_intelligence": {
+    "version": "1.9.0",
+    "topic_map": {
+      "topics": [],
+      "topic_count": 0
+    },
+    "internal_link_graph": {
+      "nodes": 36,
+      "edges": 651,
+      "orphan_pages": [],
+      "hubs": [
+        {
+          "url": "https://www.elhubventures.com/resources",
+          "outbound_internal_links": 33,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com",
+          "outbound_internal_links": 22,
+          "inbound_internal_links": 1
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/scaling-web-apps-nigeria",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/mobile-app-development-security-usa",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 4
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/custom-saas-developers-usa",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/best-web-development-agency-nigeria",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/ecommerce-canadian-web-dev",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 4
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/tech-agency-cameroon-digital-strategy",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/fintech-software-development-canada",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/aws-cloud-devops-consulting-uk",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/maximizing-cloud-roi-uk",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 4
+        },
+        {
+          "url": "https://www.elhubventures.com/insights/react-vs-flutter-mvp-2026",
+          "outbound_internal_links": 21,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/resources/react-vs-flutter",
+          "outbound_internal_links": 19,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/resources/faq",
+          "outbound_internal_links": 19,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/resources/agency-vs-freelancer",
+          "outbound_internal_links": 19,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/resources/glossary",
+          "outbound_internal_links": 19,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/resources/statistics",
+          "outbound_internal_links": 19,
+          "inbound_internal_links": 2
+        },
+        {
+          "url": "https://www.elhubventures.com/services/mobile-app-development",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/ecommerce-saas",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/privacy",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/case-studies",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/web-development",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/contact",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/training-consulting",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/digital-strategy",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/seo-services",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/cloud-devops",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/ai-data-solutions",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/services/ui-ux-design",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/terms",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        },
+        {
+          "url": "https://www.elhubventures.com/about",
+          "outbound_internal_links": 18,
+          "inbound_internal_links": 33
+        }
+      ],
+      "inbound": {
+        "https://www.elhubventures.com": 1,
+        "https://www.elhubventures.com/": 33,
+        "https://www.elhubventures.com/about": 33,
+        "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf": 33,
+        "https://www.elhubventures.com/case-studies": 33,
+        "https://www.elhubventures.com/contact": 33,
+        "https://www.elhubventures.com/insights/ecommerce-canadian-web-dev": 4,
+        "https://www.elhubventures.com/insights/maximizing-cloud-roi-uk": 4,
+        "https://www.elhubventures.com/insights/mobile-app-development-security-usa": 4,
+        "https://www.elhubventures.com/privacy": 33,
+        "https://www.elhubventures.com/resources": 33,
+        "https://www.elhubventures.com/services": 33,
+        "https://www.elhubventures.com/services/ai-data-solutions": 33,
+        "https://www.elhubventures.com/services/cloud-devops": 33,
+        "https://www.elhubventures.com/services/digital-strategy": 33,
+        "https://www.elhubventures.com/services/ecommerce-saas": 33,
+        "https://www.elhubventures.com/services/mobile-app-development": 33,
+        "https://www.elhubventures.com/services/seo-services": 33,
+        "https://www.elhubventures.com/services/training-consulting": 33,
+        "https://www.elhubventures.com/services/ui-ux-design": 33,
+        "https://www.elhubventures.com/services/web-development": 33,
+        "https://www.elhubventures.com/terms": 33,
+        "https://www.elhubventures.com/insights/aws-cloud-devops-consulting-uk": 2,
+        "https://www.elhubventures.com/insights/best-web-development-agency-nigeria": 2,
+        "https://www.elhubventures.com/insights/custom-saas-developers-usa": 2,
+        "https://www.elhubventures.com/insights/fintech-software-development-canada": 2,
+        "https://www.elhubventures.com/insights/react-vs-flutter-mvp-2026": 2,
+        "https://www.elhubventures.com/insights/scaling-web-apps-nigeria": 2,
+        "https://www.elhubventures.com/insights/tech-agency-cameroon-digital-strategy": 2,
+        "https://www.elhubventures.com/resources/agency-vs-freelancer": 2,
+        "https://www.elhubventures.com/resources/faq": 2,
+        "https://www.elhubventures.com/resources/glossary": 2,
+        "https://www.elhubventures.com/resources/react-vs-flutter": 2,
+        "https://www.elhubventures.com/resources/statistics": 2,
+        "https://www.elhubventures.com/case-studies.html": 10,
+        "https://www.elhubventures.com/services/index.html": 10
+      },
+      "outbound": {
+        "https://www.elhubventures.com": 22,
+        "https://www.elhubventures.com/": 21,
+        "https://www.elhubventures.com/services/web-development": 18,
+        "https://www.elhubventures.com/services/mobile-app-development": 18,
+        "https://www.elhubventures.com/services/ecommerce-saas": 18,
+        "https://www.elhubventures.com/services/ai-data-solutions": 18,
+        "https://www.elhubventures.com/services/ui-ux-design": 18,
+        "https://www.elhubventures.com/services/seo-services": 18,
+        "https://www.elhubventures.com/services/digital-strategy": 18,
+        "https://www.elhubventures.com/services/training-consulting": 18,
+        "https://www.elhubventures.com/services/cloud-devops": 18,
+        "https://www.elhubventures.com/services": 18,
+        "https://www.elhubventures.com/case-studies": 18,
+        "https://www.elhubventures.com/resources": 33,
+        "https://www.elhubventures.com/about": 18,
+        "https://www.elhubventures.com/contact": 18,
+        "https://www.elhubventures.com/insights/ecommerce-canadian-web-dev": 21,
+        "https://www.elhubventures.com/insights/maximizing-cloud-roi-uk": 21,
+        "https://www.elhubventures.com/insights/mobile-app-development-security-usa": 21,
+        "https://www.elhubventures.com/privacy": 18,
+        "https://www.elhubventures.com/terms": 18,
+        "https://www.elhubventures.com/resources/glossary": 19,
+        "https://www.elhubventures.com/resources/faq": 19,
+        "https://www.elhubventures.com/resources/react-vs-flutter": 19,
+        "https://www.elhubventures.com/resources/statistics": 19,
+        "https://www.elhubventures.com/resources/agency-vs-freelancer": 19,
+        "https://www.elhubventures.com/insights/scaling-web-apps-nigeria": 21,
+        "https://www.elhubventures.com/insights/react-vs-flutter-mvp-2026": 21,
+        "https://www.elhubventures.com/insights/tech-agency-cameroon-digital-strategy": 21,
+        "https://www.elhubventures.com/insights/fintech-software-development-canada": 21,
+        "https://www.elhubventures.com/insights/aws-cloud-devops-consulting-uk": 21,
+        "https://www.elhubventures.com/insights/custom-saas-developers-usa": 21,
+        "https://www.elhubventures.com/insights/best-web-development-agency-nigeria": 21,
+        "https://www.elhubventures.com/services/index.html": 0,
+        "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf": 0,
+        "https://www.elhubventures.com/case-studies.html": 0
+      }
+    },
+    "content_gaps": [],
+    "content_decay": [],
+    "information_gain": [
+      {
+        "url": "https://www.elhubventures.com",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/web-development",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/mobile-app-development",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/ecommerce-saas",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/ai-data-solutions",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/ui-ux-design",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/seo-services",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/digital-strategy",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/training-consulting",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/cloud-devops",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/case-studies",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/resources",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/about",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/contact",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/ecommerce-canadian-web-dev",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/maximizing-cloud-roi-uk",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/mobile-app-development-security-usa",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/privacy",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/terms",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/resources/glossary",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/resources/faq",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/resources/react-vs-flutter",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/resources/statistics",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/resources/agency-vs-freelancer",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/scaling-web-apps-nigeria",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/react-vs-flutter-mvp-2026",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/tech-agency-cameroon-digital-strategy",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/fintech-software-development-canada",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/aws-cloud-devops-consulting-uk",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/custom-saas-developers-usa",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/insights/best-web-development-agency-nigeria",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/case-studies.html",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      },
+      {
+        "url": "https://www.elhubventures.com/services/index.html",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      }
+    ],
+    "opportunities": [],
+    "opportunity_count": 0,
+    "content_briefs": []
+  }
+}

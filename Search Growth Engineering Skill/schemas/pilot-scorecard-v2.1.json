@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["workspace", "areas"],
+  "properties": {
+    "workspace": {"type": "string"},
+    "reviewer": {"type": "string"},
+    "areas": {"type": "object"}
+  }
+}

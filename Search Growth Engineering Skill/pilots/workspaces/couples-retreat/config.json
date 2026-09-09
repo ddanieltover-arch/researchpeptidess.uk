@@ -1,0 +1,13 @@
+{
+  "client_id": "couples-retreat",
+  "display_name": "Couples Retreat",
+  "project_type": "hospitality",
+  "traits": ["local", "booking-oriented"],
+  "target_url": "",
+  "target_domain": "",
+  "connectors": ["gsc", "ga4", "gbp", "serpapi"],
+  "notes": [
+    "Set target_url from first-party knowledge before audit.",
+    "Booking economics without ad/analytics access are hypotheses."
+  ]
+}

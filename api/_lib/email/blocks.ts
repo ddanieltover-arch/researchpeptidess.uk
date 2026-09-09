@@ -109,8 +109,8 @@ export function renderButton(
     return `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0;">
       <tr>
-        <td align="center" style="border-radius:10px; border:2px solid ${colors.primary}; background-color:${colors.card};">
-          <a href="${escapeAttribute(safeHref)}" style="display:inline-block; padding:12px 24px; font-family:Arial, Helvetica, sans-serif; font-size:13px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; text-decoration:none; color:${colors.primary};">
+        <td align="center" style="border-radius:6px; border:1px solid ${colors.primary}; background-color:${colors.card};">
+          <a href="${escapeAttribute(safeHref)}" style="display:inline-block; padding:12px 22px; font-family:Arial, Helvetica, sans-serif; font-size:13px; font-weight:700; letter-spacing:0.02em; text-decoration:none; color:${colors.primary};">
             ${escapeHtml(label)}
           </a>
         </td>
@@ -120,8 +120,8 @@ export function renderButton(
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0;">
       <tr>
-        <td align="center" bgcolor="${colors.primary}" style="border-radius:10px; background-color:${colors.primary};">
-          <a href="${escapeAttribute(safeHref)}" style="display:inline-block; padding:14px 28px; font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; text-decoration:none; color:#ffffff;">
+        <td align="center" bgcolor="${colors.primary}" style="border-radius:6px; background-color:${colors.primary};">
+          <a href="${escapeAttribute(safeHref)}" style="display:inline-block; padding:13px 24px; font-family:Arial, Helvetica, sans-serif; font-size:13px; font-weight:700; letter-spacing:0.02em; text-decoration:none; color:#ffffff;">
             ${escapeHtml(label)}
           </a>
         </td>
@@ -134,10 +134,10 @@ export function renderButtonRow(
   secondary?: { label: string; href: string }
 ): string {
   if (!secondary) {
-    return `<div style="margin:24px 0 8px 0;">${renderButton(primary.label, primary.href, 'primary')}</div>`;
+    return `<div style="margin:28px 0 8px 0;">${renderButton(primary.label, primary.href, 'primary')}</div>`;
   }
   return `
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px 0;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 8px 0;">
       <tr>
         <td style="padding:0 10px 0 0;" valign="middle">${renderButton(primary.label, primary.href, 'primary')}</td>
         <td style="padding:0;" valign="middle">${renderButton(secondary.label, secondary.href, 'secondary')}</td>
@@ -159,10 +159,10 @@ export function renderCallout(
   }[tone];
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px 0;">
       <tr>
-        <td style="background-color:${palette.bg}; border:1px solid ${palette.border}; border-left:4px solid ${palette.title}; border-radius:10px; padding:16px 18px;">
-          <p style="margin:0 0 6px 0; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:${palette.title};">
+        <td style="background-color:${palette.bg}; border:1px solid ${palette.border}; border-left:3px solid ${palette.title}; border-radius:8px; padding:16px 18px;">
+          <p style="margin:0 0 6px 0; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:${palette.title};">
             ${escapeHtml(title)}
           </p>
           <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.6; color:${colors.text};">
@@ -179,10 +179,10 @@ export function renderKvTable(rows: Array<{ label: string; value: string }>): st
     .map(
       (row, index) => `
         <tr>
-          <td style="padding:10px 0; border-top:${index === 0 ? '0' : `1px solid ${colors.line}`}; font-family:Arial, Helvetica, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:${colors.muted}; width:38%; vertical-align:top;">
+          <td width="34%" style="padding:14px 18px; border-top:${index === 0 ? '0' : `1px solid ${colors.line}`}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:${colors.muted}; vertical-align:top;">
             ${escapeHtml(row.label)}
           </td>
-          <td style="padding:10px 0; border-top:${index === 0 ? '0' : `1px solid ${colors.line}`}; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.5; color:${colors.text};">
+          <td style="padding:14px 18px; border-top:${index === 0 ? '0' : `1px solid ${colors.line}`}; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.55; font-weight:600; color:${colors.text}; vertical-align:top;">
             ${row.value}
           </td>
         </tr>`
@@ -190,7 +190,7 @@ export function renderKvTable(rows: Array<{ label: string; value: string }>): st
     .join('');
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 20px 0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 24px 0; border:1px solid ${colors.line}; border-radius:8px; overflow:hidden; background-color:${colors.card};">
       ${body}
     </table>`;
 }
@@ -267,15 +267,15 @@ export function renderOrderItems(order: MailOrder): string {
     .join('');
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 22px 0; border:1px solid ${colors.line}; border-radius:12px; overflow:hidden;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 24px 0; border:1px solid ${colors.line}; border-radius:8px; overflow:hidden;">
       <tr>
-        <td style="padding:10px 14px; background-color:${colors.navy}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#E2E8F0;">Compound</td>
-        <td align="center" style="padding:10px; background-color:${colors.navy}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#E2E8F0;">Qty</td>
-        <td align="right" style="padding:10px 14px; background-color:${colors.navy}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:#E2E8F0;">Line total</td>
+        <td style="padding:12px 16px; background-color:${colors.navy}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#E2E8F0;">Compound</td>
+        <td align="center" style="padding:12px 10px; background-color:${colors.navy}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#E2E8F0;">Qty</td>
+        <td align="right" style="padding:12px 16px; background-color:${colors.navy}; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#E2E8F0;">Line total</td>
       </tr>
       ${rows || `<tr><td colspan="3" style="padding:16px; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:${colors.muted};">No line items were recorded.</td></tr>`}
       <tr>
-        <td colspan="3" style="padding:12px 0 8px 0; background-color:${colors.card};">
+        <td colspan="3" style="padding:14px 0 10px 0; background-color:${colors.card};">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             ${totalRows}
           </table>

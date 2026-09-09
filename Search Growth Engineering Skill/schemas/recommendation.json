@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchGrowthRecommendation",
+  "type": "object",
+  "required": ["id", "title", "priority", "reason", "action"],
+  "properties": {
+    "id": {"type": "string"},
+    "title": {"type": "string"},
+    "priority": {"enum": ["P0", "P1", "P2", "P3"]},
+    "reason": {"type": "string"},
+    "action": {"type": "string"},
+    "evidenceType": {"enum": ["verified", "inferred", "hypothesis"]},
+    "files": {"type": "array", "items": {"type": "string"}},
+    "urls": {"type": "array", "items": {"type": "string"}},
+    "acceptanceCriteria": {"type": "array", "items": {"type": "string"}}
+  }
+}

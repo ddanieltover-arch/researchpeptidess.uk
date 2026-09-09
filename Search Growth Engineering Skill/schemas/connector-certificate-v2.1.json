@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["connector", "status", "last_sync", "records", "capabilities"],
+  "properties": {
+    "connector": {"type": "string"},
+    "status": {"enum": ["healthy", "unconfigured", "degraded", "unhealthy"]},
+    "last_sync": {"type": "string"},
+    "records": {"type": ["integer", "null"]},
+    "capabilities": {"type": "array", "items": {"type": "string"}}
+  }
+}

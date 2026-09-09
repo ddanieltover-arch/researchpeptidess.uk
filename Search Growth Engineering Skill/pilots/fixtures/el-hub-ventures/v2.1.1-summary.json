@@ -1,0 +1,97 @@
+{
+  "sgos_version": "2.1.1",
+  "mode": "strategy",
+  "generated_at": "2026-08-22T12:01:36.158781+00:00",
+  "project_types": [
+    "documentation",
+    "ecommerce",
+    "local-business",
+    "marketplace",
+    "mobile-app",
+    "saas"
+  ],
+  "frameworks": [
+    "Flutter",
+    "Next.js",
+    "React"
+  ],
+  "activated_modules": [
+    "aso",
+    "content",
+    "ecommerce",
+    "geo-aio",
+    "local-seo",
+    "marketplace",
+    "programmatic-seo",
+    "sem",
+    "semantic-entity",
+    "technical-seo"
+  ],
+  "strategy_version": "1.9.0",
+  "search_data_status": null,
+  "opportunity_count": 48,
+  "opportunity_types": [
+    "CANONICAL_CONCENTRATION",
+    "DUPLICATE_TITLE",
+    "H1_COUNT",
+    "MISSING_IMAGE_ALT",
+    "MISSING_META_DESCRIPTION",
+    "MISSING_TITLE",
+    "THIN_TEXT"
+  ],
+  "top_opportunities": [
+    {
+      "type": "MISSING_TITLE",
+      "title": "Page has no title element.",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf"
+    },
+    {
+      "type": "DUPLICATE_TITLE",
+      "title": "Multiple crawled pages share the same title.",
+      "url": "https://www.elhubventures.com"
+    },
+    {
+      "type": "DUPLICATE_TITLE",
+      "title": "Multiple crawled pages share the same title.",
+      "url": "https://www.elhubventures.com/"
+    },
+    {
+      "type": "DUPLICATE_TITLE",
+      "title": "Multiple crawled pages share the same title.",
+      "url": "https://www.elhubventures.com/services"
+    },
+    {
+      "type": "DUPLICATE_TITLE",
+      "title": "Multiple crawled pages share the same title.",
+      "url": "https://www.elhubventures.com/services/index.html"
+    },
+    {
+      "type": "DUPLICATE_TITLE",
+      "title": "Multiple crawled pages share the same title.",
+      "url": "https://www.elhubventures.com/case-studies"
+    },
+    {
+      "type": "DUPLICATE_TITLE",
+      "title": "Multiple crawled pages share the same title.",
+      "url": "https://www.elhubventures.com/case-studies.html"
+    },
+    {
+      "type": "MISSING_META_DESCRIPTION",
+      "title": "Page has no meta description.",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf"
+    }
+  ],
+  "roadmap_0_30_types": [
+    "MISSING_TITLE",
+    "DUPLICATE_TITLE",
+    "DUPLICATE_TITLE",
+    "DUPLICATE_TITLE",
+    "DUPLICATE_TITLE"
+  ],
+  "has_required_data": false,
+  "has_missing_title": true,
+  "has_missing_alt": true,
+  "technical_findings_count": 0,
+  "known_opportunities_count": 0,
+  "unknown_opportunities_count": 0
+}

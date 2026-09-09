@@ -117,7 +117,7 @@ export const RecentPurchaseNotification: React.FC = () => {
   return (
     <aside
       aria-label="Recent purchase"
-      className="pointer-events-none fixed left-3 z-40 w-[min(calc(100vw-1.5rem),16.5rem)] bottom-[calc(var(--mobile-bottom-nav-height)+0.75rem)] lg:left-4 lg:bottom-4 lg:w-[min(calc(100vw-2rem),22rem)]"
+      className="pointer-events-none fixed left-3 z-40 w-[min(calc(100vw-1.5rem),16.5rem)] bottom-[calc(var(--mobile-bottom-nav-height)+4.5rem)] lg:left-4 lg:bottom-24 lg:w-[min(calc(100vw-2rem),22rem)]"
     >
       <div className="pointer-events-auto relative overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.12)] animate-purchase-notice-in lg:rounded-xl lg:shadow-[0_10px_30px_rgba(15,23,42,0.12)]">
         <AppLink

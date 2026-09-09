@@ -1,0 +1,14 @@
+{
+  "max_pages": 50,
+  "crawl_delay": 0.15,
+  "run_external_connectors": false,
+  "dry_run": true,
+  "apply": false,
+  "write_artifacts": true,
+  "run_validation": false,
+  "validation_commands": [
+    "npm run lint",
+    "npm test",
+    "npm run build"
+  ]
+}

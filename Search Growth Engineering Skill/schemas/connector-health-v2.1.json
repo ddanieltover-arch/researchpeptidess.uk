@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["connector_id", "status"],
+  "properties": {
+    "connector_id": {"type": "string"},
+    "status": {"enum": ["ok", "unconfigured", "disconnected", "error", "rate_limited", "skipped"]},
+    "connected": {"type": "boolean"},
+    "capabilities": {"type": "array"},
+    "checked_at": {"type": "string"},
+    "notes": {"type": "array"}
+  }
+}

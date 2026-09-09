@@ -1,0 +1,20 @@
+{
+  "metrics": {
+    "organic_clicks": null,
+    "organic_impressions": null,
+    "ctr": null,
+    "average_position": null,
+    "organic_sessions": null,
+    "leads_signups": null,
+    "conversions": null,
+    "revenue": null,
+    "indexed_pages": null,
+    "technical_errors": null,
+    "commercial_query_coverage": null,
+    "ai_search_observations": null
+  },
+  "notes": [
+    "Fill only observed first-party values.",
+    "Leave unused metrics null. Do not coerce missing rows to zero."
+  ]
+}

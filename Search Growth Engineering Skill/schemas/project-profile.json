@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchGrowthProjectProfile",
+  "type": "object",
+  "required": ["projectType", "businessModel", "technology", "activatedModules"],
+  "properties": {
+    "projectType": {"type": "array", "items": {"type": "string"}},
+    "businessModel": {"type": "array", "items": {"type": "string"}},
+    "audience": {"type": "array", "items": {"type": "string"}},
+    "geographies": {"type": "array", "items": {"type": "string"}},
+    "languages": {"type": "array", "items": {"type": "string"}},
+    "technology": {"type": "object", "additionalProperties": true},
+    "searchChannels": {"type": "array", "items": {"type": "string"}},
+    "activatedModules": {"type": "array", "items": {"type": "string"}},
+    "evidenceGaps": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,13 @@
+{
+  "client_id": "vees-airbnb",
+  "display_name": "VEES AIRBNB",
+  "project_type": "hospitality",
+  "traits": ["local", "transactional"],
+  "target_url": "",
+  "target_domain": "",
+  "connectors": ["gsc", "ga4", "gbp", "serpapi"],
+  "notes": [
+    "Set target_url from first-party knowledge before audit.",
+    "Do not invent occupancy, ranking or review metrics."
+  ]
+}

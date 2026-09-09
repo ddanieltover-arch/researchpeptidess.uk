@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["source", "collected_at", "confidence", "evidence_type"],
+  "properties": {
+    "source": {"type": "string"},
+    "collected_at": {"type": "string"},
+    "confidence": {"type": ["number", "null"]},
+    "evidence_type": {"enum": ["observed", "estimated", "inferred", "generated"]}
+  }
+}

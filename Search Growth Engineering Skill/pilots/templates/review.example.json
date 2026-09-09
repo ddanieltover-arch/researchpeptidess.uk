@@ -1,0 +1,22 @@
+{
+  "reviews": [
+    {
+      "id": "opp-1",
+      "title": "Replace with a real recommendation id from strategy.json",
+      "decision": "accept",
+      "reason": "Material, defensible, and safe to implement"
+    },
+    {
+      "id": "opp-2",
+      "title": "Replace with a real recommendation id from strategy.json",
+      "decision": "override",
+      "reason": "Strategist rejected: weak evidence or poor commercial fit"
+    },
+    {
+      "id": "opp-3",
+      "title": "Replace with a real recommendation id from strategy.json",
+      "decision": "defer",
+      "reason": "Valid but not in this implementation pass"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["reviewed", "overridden", "rate_pct"],
+  "properties": {
+    "reviewed": {"type": "integer", "minimum": 0},
+    "overridden": {"type": "integer", "minimum": 0},
+    "accepted": {"type": "integer"},
+    "deferred": {"type": "integer"},
+    "rate_pct": {"type": ["number", "null"]}
+  }
+}

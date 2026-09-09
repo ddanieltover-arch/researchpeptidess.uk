@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Competitor Evidence v1.8",
+  "type": "object",
+  "properties": {
+    "target_domain": {"type":"string"},
+    "serp_rows": {"type":"array", "items":{"type":"object"}},
+    "keyword_rows": {"type":"array", "items":{"type":"object"}},
+    "ai_observations": {"type":"array", "items":{"type":"object"}},
+    "paid_rows": {"type":"array", "items":{"type":"object"}}
+  }
+}

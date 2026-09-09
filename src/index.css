@@ -88,3 +88,24 @@
     animation: none;
   }
 }
+
+/* Chatway: keep launcher on the right, clear mobile bottom nav; hide on admin/cart */
+html.chatway-hidden .chatway--container,
+html.chatway-hidden .chatway--trigger-container,
+html.chatway-hidden .chatway--frame-container {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+.chatway--container,
+.chatway--trigger-container {
+  z-index: 40 !important;
+}
+
+@media (max-width: 1023px) {
+  .chatway--container,
+  .chatway--trigger-container {
+    bottom: calc(var(--mobile-bottom-nav-height) + 1rem) !important;
+  }
+}

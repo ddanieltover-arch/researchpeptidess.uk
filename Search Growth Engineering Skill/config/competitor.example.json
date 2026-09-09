@@ -1,0 +1,16 @@
+{
+  "target_domain": "example.com",
+  "evidence": {
+    "serp_file": "serp.json",
+    "keyword_file": "keywords.json",
+    "ai_file": "ai-search-observations.json",
+    "paid_file": "paid.json"
+  },
+  "monitoring": {
+    "track_new_competitors": true,
+    "track_disappeared_competitors": true,
+    "track_serp_presence": true,
+    "track_ai_source_presence": true,
+    "track_paid_presence": true
+  }
+}

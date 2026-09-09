@@ -1,0 +1,35 @@
+{
+  "workspace": "el-hub-ventures",
+  "target_url": "https://www.elhubventures.com",
+  "sgos_version": "2.1.2",
+  "role": "canonical-real-client-regression-fixture",
+  "notes": [
+    "Frozen after the v2.1.2 EL-HUB rerun. Do not treat this as a new engine.",
+    "Classification and module gates are asserted from repository discovery without a live crawl.",
+    "Strategy invariants below are from the 2026-08-22 live audit+strategy rerun with GSC/GA4/SERP unconfigured."
+  ],
+  "classification": {
+    "project_types": ["b2b-service", "local-business", "professional-services"],
+    "business_model": "professional-services",
+    "frameworks": ["Next.js", "React"],
+    "forbidden_types": ["ecommerce", "marketplace", "saas", "mobile-app", "documentation"]
+  },
+  "modules": {
+    "required_active": ["technical-seo", "on-page-seo", "content", "semantic-entity", "geo-aio", "local-seo"],
+    "forbidden_active": ["aso", "ecommerce", "marketplace", "programmatic-seo", "sem", "mobile-app"]
+  },
+  "strategy_invariants": {
+    "search_data_status": "insufficient",
+    "required_data": ["gsc", "ga4", "serpapi"],
+    "forbidden_opportunity_types": [
+      "MISSING_TITLE",
+      "MISSING_IMAGE_ALT",
+      "SITEWIDE_MISSING_IMAGE_ALT",
+      "DUPLICATE_TITLE",
+      "H1_COUNT",
+      "MISSING_META_DESCRIPTION"
+    ],
+    "required_opportunity_types": ["required-data"],
+    "technical_findings_are_separate": true
+  }
+}

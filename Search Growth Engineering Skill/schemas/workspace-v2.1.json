@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["client_id"],
+  "properties": {
+    "client_id": {"type": "string"},
+    "target_url": {"type": "string"},
+    "target_domain": {"type": "string"},
+    "connectors": {"type": "array", "items": {"type": "string"}},
+    "observe": {"type": "object"}
+  },
+  "not": {"required": ["secrets"]}
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Search Growth Engineering Content Intelligence v1.9",
+  "type": "object",
+  "required": ["version", "topic_map", "internal_link_graph", "content_gaps", "content_decay", "information_gain", "opportunities", "content_briefs"],
+  "properties": {
+    "version": {"const": "1.9.0"},
+    "topic_map": {"type": "object"},
+    "internal_link_graph": {"type": "object"},
+    "content_gaps": {"type": "array"},
+    "content_decay": {"type": "array"},
+    "information_gain": {"type": "array"},
+    "opportunities": {"type": "array"},
+    "content_briefs": {"type": "array"}
+  }
+}

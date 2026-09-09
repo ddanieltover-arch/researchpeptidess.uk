@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "snapshot_label": {"type": "string"},
+    "crawl_targets": {"type": "array", "items": {"type": "object", "required": ["url"], "properties": {"url": {"type": "string", "format": "uri"}, "max_pages": {"type": "integer", "minimum": 1}, "delay": {"type": "number", "minimum": 0}}}},
+    "metrics_file": {"type": "string"},
+    "baseline_id": {"type": ["string", "null"]},
+    "alert_webhook": {"type": "string", "format": "uri"},
+    "alert_thresholds": {"type": "object", "properties": {"performance_drop_pct": {"type": "number"}, "ctr_drop_pct": {"type": "number"}, "technical_error_rise_pct": {"type": "number"}}}
+  },
+  "additionalProperties": false
+}

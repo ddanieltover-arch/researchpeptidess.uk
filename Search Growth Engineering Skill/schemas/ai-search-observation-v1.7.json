@@ -1,0 +1,17 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "required":["engine","query"],
+  "properties":{
+    "engine":{"type":"string"},
+    "query":{"type":"string"},
+    "rank":{"type":["integer","null"]},
+    "cited":{"type":"boolean"},
+    "source_url":{"type":["string","null"]},
+    "source_domain":{"type":["string","null"]},
+    "answer_surface":{"type":["string","null"]},
+    "observed_at":{"type":["string","null"]},
+    "evidence_source":{"type":["string","null"]},
+    "notes":{"type":["string","null"]}
+  }
+}

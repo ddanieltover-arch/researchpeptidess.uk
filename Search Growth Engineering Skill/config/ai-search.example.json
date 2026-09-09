@@ -1,0 +1,9 @@
+{
+  "provider":"file",
+  "input":"ai-search-observations.json",
+  "target_domain":"example.com",
+  "required_entities":[
+    {"type":"Organization","name":"Example Company"},
+    {"type":"Service","name":"Example Service"}
+  ]
+}

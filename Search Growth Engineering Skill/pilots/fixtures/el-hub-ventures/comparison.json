@@ -1,0 +1,52 @@
+{
+  "workspace": "el-hub-ventures",
+  "compared": ["2.1.1", "2.1.2"],
+  "generated_at": "2026-08-22T14:04:19+00:00",
+  "decision": "five_checks_passed_no_v213_broader_pilots_unblocked",
+  "override_rate": {
+    "v2.1.1": null,
+    "v2.1.2": null,
+    "note": "Unreviewed rate stays null. Projected strategist override falls because PDF-title/alt-text/duplicate-slash lint is no longer the roadmap."
+  },
+  "checks": {
+    "classification": {
+      "v2.1.1": ["documentation", "ecommerce", "local-business", "marketplace", "mobile-app", "saas"],
+      "v2.1.2": ["b2b-service", "local-business", "professional-services"],
+      "pass": true
+    },
+    "module_activation": {
+      "v2.1.1_forbidden_active": ["aso", "ecommerce", "marketplace", "programmatic-seo", "sem"],
+      "v2.1.2_forbidden_active": [],
+      "pass": true
+    },
+    "search_data_state": {
+      "v2.1.1": null,
+      "v2.1.2": "insufficient",
+      "v2.1.2_required_data": ["gsc", "ga4", "serpapi"],
+      "v2.1.2_unknown_count": 3,
+      "pass": true
+    },
+    "technical_vs_strategy": {
+      "v2.1.1_opportunity_count": 48,
+      "v2.1.1_opportunity_types_are_audit_findings": true,
+      "v2.1.1_technical_findings_field": 0,
+      "v2.1.2_opportunity_count": 4,
+      "v2.1.2_technical_findings_count": 5,
+      "v2.1.2_opportunity_types": ["CRAWLABLE_DOCUMENT", "required-data"],
+      "pass": true
+    },
+    "roadmap_lint": {
+      "v2.1.1_top": "MISSING_TITLE on PDF",
+      "v2.1.1_alt_in_opportunities": true,
+      "v2.1.2_lint_in_opportunities": [],
+      "v2.1.2_lint_in_roadmap_0_30": [],
+      "v2.1.2_pdf_handling": "CRAWLABLE_DOCUMENT indexability review, not missing HTML title",
+      "pass": true
+    }
+  },
+  "known_limitations_not_blocking": [
+    "Entity graph is populated (23 nodes) but relationships and FAQ/Service/Location edges were not extracted from JSON-LD.",
+    "THIN_TEXT remains in the technical audit for /privacy and /terms; it is not promoted into strategy.",
+    "Override rate remains null until a strategist fills human-review.json."
+  ]
+}

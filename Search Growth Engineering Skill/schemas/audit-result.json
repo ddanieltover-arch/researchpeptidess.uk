@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SearchGrowthAuditResult",
+  "type": "object",
+  "required": ["summary", "findings"],
+  "properties": {
+    "summary": {"type": "string"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "severity", "evidenceType", "recommendation"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+          "evidenceType": {"enum": ["verified", "inferred", "hypothesis"]},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "affectedFiles": {"type": "array", "items": {"type": "string"}},
+          "affectedUrls": {"type": "array", "items": {"type": "string"}},
+          "recommendation": {"type": "string"},
+          "impact": {"type": "integer", "minimum": 1, "maximum": 5},
+          "businessValue": {"type": "integer", "minimum": 1, "maximum": 5},
+          "effort": {"type": "integer", "minimum": 1, "maximum": 5},
+          "confidence": {"type": "integer", "minimum": 1, "maximum": 5}
+        }
+      }
+    }
+  }
+}

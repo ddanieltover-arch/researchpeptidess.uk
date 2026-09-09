@@ -1,0 +1,96 @@
+{
+  "summary": {
+    "pages_crawled": 36,
+    "html_pages": 33,
+    "successful_pages": 36,
+    "errors": 0,
+    "finding_count": 5,
+    "finding_types": {
+      "CRAWLABLE_DOCUMENT": 1,
+      "THIN_TEXT": 2,
+      "REDIRECT_ALIAS": 2
+    },
+    "document_classes": {
+      "html": 33,
+      "pdf": 1,
+      "redirect-alias": 2
+    }
+  },
+  "findings": [
+    {
+      "type": "CRAWLABLE_DOCUMENT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/assets/docs/ElHub_Investment_Agreement.pdf",
+      "message": "PDF discovered and crawlable; assess whether this document should be publicly indexable.",
+      "evidence": {
+        "status": "verified",
+        "value": "content_type=application/pdf"
+      },
+      "confidence": 0.95,
+      "business_value": 0.55,
+      "technical_severity": 0.6,
+      "business_relevance": 0.55,
+      "search_significance": 0.3135
+    },
+    {
+      "type": "THIN_TEXT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/privacy",
+      "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+      "evidence": {
+        "status": "verified",
+        "value": "body_word_count=87"
+      },
+      "confidence": 0.8,
+      "business_value": 0.4,
+      "technical_severity": 0.6,
+      "business_relevance": 0.35,
+      "search_significance": 0.168
+    },
+    {
+      "type": "THIN_TEXT",
+      "priority": "P2",
+      "url": "https://www.elhubventures.com/terms",
+      "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+      "evidence": {
+        "status": "verified",
+        "value": "body_word_count=94"
+      },
+      "confidence": 0.8,
+      "business_value": 0.4,
+      "technical_severity": 0.6,
+      "business_relevance": 0.35,
+      "search_significance": 0.168
+    },
+    {
+      "type": "REDIRECT_ALIAS",
+      "priority": "P3",
+      "url": "https://www.elhubventures.com/case-studies.html",
+      "message": "Request URL resolved to an already-crawled canonical resource. Duplicate HTML checks were skipped.",
+      "evidence": {
+        "status": "verified",
+        "value": "final_url=https://www.elhubventures.com/case-studies identity=https://www.elhubventures.com/case-studies"
+      },
+      "confidence": 0.9,
+      "business_value": 0.15,
+      "technical_severity": 0.35,
+      "business_relevance": 0.15,
+      "search_significance": 0.0473
+    },
+    {
+      "type": "REDIRECT_ALIAS",
+      "priority": "P3",
+      "url": "https://www.elhubventures.com/services/index.html",
+      "message": "Request URL resolved to an already-crawled canonical resource. Duplicate HTML checks were skipped.",
+      "evidence": {
+        "status": "verified",
+        "value": "final_url=https://www.elhubventures.com/services identity=https://www.elhubventures.com/services"
+      },
+      "confidence": 0.9,
+      "business_value": 0.15,
+      "technical_severity": 0.35,
+      "business_relevance": 0.15,
+      "search_significance": 0.0473
+    }
+  ]
+}

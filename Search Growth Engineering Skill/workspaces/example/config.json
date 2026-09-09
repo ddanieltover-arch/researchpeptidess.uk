@@ -1,0 +1,10 @@
+{
+  "client_id": "example",
+  "target_url": "https://example.com",
+  "target_domain": "example.com",
+  "connectors": ["gsc", "ga4", "serpapi"],
+  "observe": {
+    "queries": ["example brand"],
+    "ai_observations_file": "intelligence/ai-search/observations.json"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "crawl": {"pages": [
+    {"url": "https://example.com/", "title": "Home", "word_count": 500},
+    {"url": "https://example.com/services", "title": "Services", "word_count": 700},
+    {"url": "https://example.com/seo", "title": "SEO Services", "word_count": 1100}
+  ]},
+  "keyword_clusters": [
+    {"cluster_id": "cluster-001", "keywords": ["seo agency", "seo company"], "representative": "seo agency", "intent": "commercial-investigation"},
+    {"cluster_id": "cluster-002", "keywords": ["how to improve seo"], "representative": "how to improve seo", "intent": "informational"},
+    {"cluster_id": "cluster-003", "keywords": ["seo services price"], "representative": "seo services price", "intent": "transactional"}
+  ],
+  "cannibalization": [
+    {"query": "seo agency", "pages": ["https://example.com/seo", "https://example.com/services"], "page_count": 2}
+  ],
+  "audit": {"findings": []},
+  "serp_analysis": {"domain_frequency": [["competitor.example", 4], ["another.example", 2]]}
+}

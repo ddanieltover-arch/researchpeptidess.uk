@@ -1,0 +1,13 @@
+{
+  "snapshot_label": "daily-monitor",
+  "crawl_targets": [
+    {
+      "url": "https://example.com",
+      "max_pages": 100,
+      "delay": 0.2
+    }
+  ],
+  "metrics_file": "./monitor-metrics.json",
+  "alert_webhook": "",
+  "baseline_id": null
+}

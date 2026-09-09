@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["query", "date", "results"],
+  "properties": {
+    "query": {"type": "string"},
+    "location": {"type": "string"},
+    "device": {"type": "string"},
+    "date": {"type": "string"},
+    "collected_at": {"type": "string"},
+    "source": {"type": "string"},
+    "results": {"type": "array", "maxItems": 100},
+    "features": {"type": "object"}
+  }
+}

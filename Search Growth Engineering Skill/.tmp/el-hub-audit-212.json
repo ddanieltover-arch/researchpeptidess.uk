@@ -1,0 +1,404 @@
+{
+  "version": "2.1.2",
+  "status": "completed",
+  "readiness": "real-client-pilots",
+  "release": "production-alpha",
+  "generated_at": "2026-08-22T14:02:29.914678+00:00",
+  "mode": "audit",
+  "workspace": {
+    "client_id": "el-hub-ventures",
+    "root": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures",
+    "config": {
+      "client_id": "el-hub-ventures",
+      "display_name": "EL-HUB VENTURES",
+      "project_type": "b2b-service",
+      "traits": [
+        "agency",
+        "local-hq",
+        "international-delivery"
+      ],
+      "target_url": "https://www.elhubventures.com",
+      "target_domain": "elhubventures.com",
+      "connectors": [],
+      "observe": {
+        "queries": [
+          "EL-HUB VENTURES",
+          "web development agency Nigeria",
+          "seo services Nigeria"
+        ]
+      },
+      "notes": [
+        "target_url observed from lib/site.ts SITE_URL and app/layout.tsx metadataBase.",
+        "Do not invent GSC, GA4, Ads, SERP, ranking or traffic metrics.",
+        "docs/seo_strategy.md contains historical GSC/GA4/GBP notes dated 2026-08-16; treat as documentary evidence, not a live connector sync."
+      ]
+    },
+    "paths": {
+      "memory": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\memory",
+      "alerts": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\alerts",
+      "connectors": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\connectors",
+      "baselines": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\baselines",
+      "reports": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports",
+      "roadmaps": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\roadmaps",
+      "intelligence": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\intelligence"
+    }
+  },
+  "pipeline": [
+    "connect",
+    "sync",
+    "observe",
+    "analyze",
+    "model",
+    "prioritize",
+    "execute",
+    "validate",
+    "monitor",
+    "learn"
+  ],
+  "stages": {
+    "connect": {
+      "status": "ok",
+      "connectors": {},
+      "notes": [
+        "No configured connectors. Sync skipped rather than fabricating metrics."
+      ]
+    },
+    "sync": {
+      "status": "skipped",
+      "connectors": {}
+    },
+    "observe": {
+      "status": "skipped"
+    },
+    "analyze": {
+      "status": "ok",
+      "project": {
+        "project_root": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website",
+        "project_types": [
+          "b2b-service",
+          "local-business",
+          "professional-services"
+        ],
+        "business_model": "professional-services",
+        "frameworks": [
+          "Next.js",
+          "React"
+        ],
+        "manifests": [
+          "package.json"
+        ],
+        "rendering_architecture": "framework-dependent; inspect routes/server/client boundaries",
+        "classification_layers": {
+          "project_technology": [
+            "Next.js",
+            "React"
+          ],
+          "business_offering": [
+            "web-development",
+            "mobile-app-development",
+            "seo",
+            "cloud-devops",
+            "ui-ux",
+            "ecommerce-build",
+            "saas-build"
+          ],
+          "content_topics": [],
+          "client_case_study_technology": [
+            "stripe",
+            "flutter",
+            "marketplace"
+          ],
+          "identity_files": [
+            "package.json",
+            "app/page.tsx",
+            "app/layout.tsx",
+            "lib/site.ts",
+            "lib/seo.ts",
+            "content/services.ts"
+          ],
+          "identity_text": "{\n  \"name\": \"el-hub-ventures-website\",\n  \"version\": \"2.0.0\",\n  \"private\": true,\n  \"description\": \"EL-HUB VENTURES marketing site\",\n  \"scripts\": {\n    \"dev\": \"next dev\",\n    \"build\": \"next build\",\n    \"start\": \"next start\",\n    \"seo:audit\": \"node scripts/seo-audit.js\",\n    \"seo:ping\": \"node scripts/ping-sitemap.mjs\"\n  },\n  \"keywords\": [],\n  \"author\": \"\",\n  \"license\": \"ISC\",\n  \"type\": \"module\",\n  \"engines\": {\n    \"node\": \">=20\"\n  },\n  \"dependencies\": {\n    \"@hookform/resolvers\": \"^5.7.1\",\n    \"marked\": \"^18.0.0\",\n    \"next\": \"^15.5.23\",\n    \"nodemailer\": \"^8.0.4\",\n    \"react\": \"^19.2.8\",\n    \"react-dom\": \"^19.2.8\",\n    \"react-hook-form\": \"^7.85.0\",\n    \"zod\": \"^4.4.3\"\n  },\n  \"devDependencies\": {\n    \"@tailwindcss/postcss\": \"^4.3.3\",\n    \"@types/node\": \"^22.15.0\",\n    \"@types/nodemailer\": \"^6.4.17\",\n    \"@types/react\": \"^19.2.18\",\n    \"@types/react-dom\": \"^19.2.4\",\n    \"postcss\": \"^8.5.26\",\n    \"tailwindcss\": \"^4.3.3\",\n    \"typescript\": \"^5.8.3\"\n  }\n}\n\nimport Image from \"next/image\";\nimport Link from \"next/link\";\nimport { CertificateButton } from \"@/components/layout/CertificateButton\";\nimport { ProtectedDocLink } from \"@/components/layout/ProtectedDocLink\";\nimport { JsonLd } from \"@/components/seo/JsonLd\";\nimport { Button } from \"@/components/ui/Button\";\nimport { Container } from \"@/components/ui/Container\";\nimport { CtaBand } from \"@/components/ui/CtaBand\";\nimport { FaqList } from \"@/components/ui/FaqList\";\nimport { InsightCard } from \"@/components/ui/InsightCard\";\nimport { Reveal } from \"@/components/ui/Reveal\";\nimport { SectionHeader } from \"@/components/ui/SectionHeader\";\nimport { ServiceCard } from \"@/components/ui/ServiceCard\";\nimport { getFeaturedServices } from \"@/content/services\";\nimport { getLatestPosts } from \"@/lib/posts\";\nimport {\n  HOME_CASE_STUDIES,\n  PARTNER_BADGES,\n  PORTFOLIO,\n  PROCESS_STEPS,\n  PROOF_STATS,\n  RESOURCE_HIGHLIGHTS,\n  SEO_PILLARS,\n  TEAM,\n  TESTIMONIALS,\n  TRUST_LOGOS,\n  TRUST_NOTES,\n  TRUST_QUOTES,\n  WHY_POINTS,\n  WHY_STATS,\n  ENGAGEMENT_MODELS,\n  FAQS,\n} from \"@/lib/site\";\nimport { faqJsonLd } from \"@/lib/seo\";\n\nexport const dynamic = \"force-dynamic\";\n\nexport default function HomePage() {\n  const services = getFeaturedServices();\n  const insights = getLatestPosts(3);\n\n  return (\n    <>\n      <section className=\"mesh-hero border-b border-rule pt-28 sm:pt-36\">\n        <Container className=\"max-w-4xl pb-16 text-center sm:pb-20\">\n          <p className=\"hero-enter mb-6 text-xs font-semibold uppercase tracking-[0.22em] text-gold\">\n            Nigeria · Canada · United Kingdom · Cameroon\n          </p>\n          <h1 className=\"hero-enter hero-enter-d1 font-display text-5xl leading-[1.08] text-ink sm:text-6xl lg:text-7xl\">\n            Code. Connect.\n            <span className=\"block text-gold\">Conquer.</span>\n          </h1>\n          <span className=\"hero-rule mx-auto mt-8 block h-px w-16 bg-gold\" aria-hidden=\"true\" />\n          <p className=\"hero-enter hero-enter-d2 mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-ink-muted sm:text-xl\">\n            EL-HUB VENTURES designs, ships, and scales production web and mobile products — then grows\n            them with technical SEO — for founders and operators building from Nigeria into global\n            markets.\n          </p>\n          <div className=\"hero-enter hero-enter-d3 mt-10 flex flex-wrap items-center justify-center gap-3\">\n            <Button href=\"/contact\">Start a project</Button>\n            <Button href=\"#portfolio\" variant=\"secondary\">\n              View our work\n            </Button>\n          </div>\n          <p className=\"hero-enter hero-enter-d3 mt-6 text-sm text-ink-muted\">\n            Registered in Nigeria. <CertificateButton label=\"View CAC certificate\" />\n          </p>\n        </Container>\n        <div className=\"border-t border-rule\">\n          <Container className=\"grid grid-cols-2 gap-8 py-10 sm:grid-cols-4\">\n            {PROOF_STATS.map((stat, index) => (\n              <Reveal key={stat.label} delay={index * 60} className=\"",
+          "app_routes": [
+            "globals.css",
+            "layout.tsx",
+            "not-found.tsx",
+            "page.tsx",
+            "robots.ts",
+            "sitemap.ts",
+            "about/page.tsx",
+            "case-studies/page.tsx",
+            "contact/page.tsx",
+            "privacy/page.tsx",
+            "resources/page.tsx",
+            "services/page.tsx",
+            "terms/page.tsx",
+            "services/[slug]/page.tsx",
+            "resources/agency-vs-freelancer/page.tsx",
+            "resources/faq/page.tsx",
+            "resources/glossary/page.tsx",
+            "resources/react-vs-flutter/page.tsx",
+            "resources/statistics/page.tsx",
+            "insights/[slug]/page.tsx",
+            "api/contact/route.ts"
+          ],
+          "nap_present": true,
+          "programmatic_templates": false,
+          "indexable_template_estimate": 2,
+          "app_store_urls": [],
+          "schema_types": [
+            "AggregateRating",
+            "Answer",
+            "BlogPosting",
+            "BreadcrumbList",
+            "Country",
+            "FAQPage",
+            "HowTo",
+            "HowToStep",
+            "ImageObject",
+            "ListItem",
+            "Organization",
+            "Person",
+            "PostalAddress",
+            "ProfessionalService",
+            "Question",
+            "WebPage",
+            "WebSite"
+          ]
+        },
+        "evidence": {
+          "verified_files": [
+            "package.json",
+            "app/page.tsx",
+            "app/layout.tsx",
+            "lib/site.ts",
+            "lib/seo.ts",
+            "content/services.ts"
+          ]
+        },
+        "activated_modules": [
+          "content",
+          "geo-aio",
+          "local-seo",
+          "on-page-seo",
+          "semantic-entity",
+          "technical-seo"
+        ],
+        "confidence": "high",
+        "notes": [
+          "Classification weights homepage, services, conversion routes and organization metadata above content topics and filenames.",
+          "Project technology, business offering, content topics and case-study stacks are recorded separately."
+        ],
+        "module_gates": {
+          "technical-seo": {
+            "active": true,
+            "reason": "Public web property; technical eligibility always in scope."
+          },
+          "on-page-seo": {
+            "active": true,
+            "reason": "HTML documents exist or are expected."
+          },
+          "content": {
+            "active": true,
+            "reason": "Content and intent mapping applies to public sites."
+          },
+          "semantic-entity": {
+            "active": true,
+            "reason": "Entity clarity applies to organizations and services."
+          },
+          "geo-aio": {
+            "active": true,
+            "reason": "Machine-understanding work is an extension of technical and entity foundations."
+          },
+          "local-seo": {
+            "active": true,
+            "reason": "NAP or LocalBusiness evidence present."
+          },
+          "ecommerce": {
+            "active": false,
+            "reason": "No first-party catalog/checkout architecture. Client-delivery ecommerce copy is not enough."
+          },
+          "marketplace": {
+            "active": false,
+            "reason": "No multi-seller inventory model on this property."
+          },
+          "aso": {
+            "active": false,
+            "reason": "No first-party app store listing."
+          },
+          "saas": {
+            "active": false,
+            "reason": "SaaS mentioned as a service offering is not SaaS-product SEO."
+          },
+          "programmatic-seo": {
+            "active": false,
+            "reason": "Page volume is not a programmatic SEO system."
+          },
+          "sem": {
+            "active": false,
+            "reason": "Google Ads is not connected and paid search was not authorized."
+          },
+          "mobile-app": {
+            "active": false,
+            "reason": "Building mobile apps for clients is not ASO."
+          }
+        }
+      }
+    },
+    "model": {
+      "status": "skipped"
+    },
+    "prioritize": {
+      "status": "skipped"
+    },
+    "execute": {
+      "status": "skipped"
+    },
+    "validate": {
+      "status": "skipped"
+    },
+    "monitor": {
+      "status": "skipped"
+    },
+    "learn": {
+      "status": "ok",
+      "memory": {
+        "latest_snapshot": null,
+        "recent_changes": [],
+        "active_experiments": [],
+        "recent_insights": [],
+        "recent_runs": [
+          {
+            "id": "run-69e10e750e5b",
+            "kind": "sgos",
+            "status": "ok",
+            "created_at": "2026-08-22T11:59:36.409658+00:00",
+            "details": {
+              "workspace": "el-hub-ventures",
+              "mode": "audit",
+              "sync": true,
+              "observe": false,
+              "strategy": false,
+              "monitor": false,
+              "apply": false,
+              "pipeline": [
+                "connect",
+                "sync",
+                "analyze"
+              ]
+            }
+          },
+          {
+            "id": "run-5c5c2b87e5a1",
+            "kind": "sgos",
+            "status": "ok",
+            "created_at": "2026-08-22T12:01:35.464881+00:00",
+            "details": {
+              "workspace": "el-hub-ventures",
+              "mode": "strategy",
+              "sync": true,
+              "observe": true,
+              "strategy": true,
+              "monitor": false,
+              "apply": false,
+              "pipeline": [
+                "connect",
+                "sync",
+                "observe",
+                "analyze",
+                "model",
+                "prioritize"
+              ]
+            }
+          }
+        ]
+      },
+      "run": {
+        "id": "run-d5138baf83cd",
+        "kind": "sgos",
+        "status": "ok",
+        "created_at": "2026-08-22T14:02:29.868551+00:00",
+        "details": {
+          "workspace": "el-hub-ventures",
+          "mode": "audit",
+          "sync": true,
+          "observe": false,
+          "strategy": false,
+          "monitor": false,
+          "apply": false,
+          "pipeline": [
+            "connect",
+            "analyze"
+          ]
+        }
+      }
+    }
+  },
+  "certificates": [],
+  "dry_run": true,
+  "artifacts": {
+    "last-sync.json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\connectors\\last-sync.json",
+    "engine/project-profile.json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\engine\\project-profile.json",
+    "engine/evidence.json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\engine\\evidence.json",
+    "engine/audit.json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\engine\\audit.json",
+    "engine/limitations.json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\engine\\limitations.json",
+    "report:executive:json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\executive.json",
+    "report:executive:markdown": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\executive.md",
+    "report:executive:html": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\executive.html",
+    "report:executive:pdf": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\executive.pdf",
+    "report:technical:json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\technical.json",
+    "report:technical:markdown": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\technical.md",
+    "report:technical:html": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\technical.html",
+    "report:technical:pdf": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\reports\\technical.pdf",
+    "orchestration-summary.json": "F:\\PROJECTS\\Home\\EL-HUB VENTURES\\El-Hub Ventures Website\\Search Growth Engineering Skill\\workspaces\\el-hub-ventures\\orchestration-summary.json"
+  },
+  "growth_memory": {
+    "latest_snapshot": null,
+    "recent_changes": [],
+    "active_experiments": [],
+    "recent_insights": [],
+    "recent_runs": [
+      {
+        "id": "run-69e10e750e5b",
+        "kind": "sgos",
+        "status": "ok",
+        "created_at": "2026-08-22T11:59:36.409658+00:00",
+        "details": {
+          "workspace": "el-hub-ventures",
+          "mode": "audit",
+          "sync": true,
+          "observe": false,
+          "strategy": false,
+          "monitor": false,
+          "apply": false,
+          "pipeline": [
+            "connect",
+            "sync",
+            "analyze"
+          ]
+        }
+      },
+      {
+        "id": "run-5c5c2b87e5a1",
+        "kind": "sgos",
+        "status": "ok",
+        "created_at": "2026-08-22T12:01:35.464881+00:00",
+        "details": {
+          "workspace": "el-hub-ventures",
+          "mode": "strategy",
+          "sync": true,
+          "observe": true,
+          "strategy": true,
+          "monitor": false,
+          "apply": false,
+          "pipeline": [
+            "connect",
+            "sync",
+            "observe",
+            "analyze",
+            "model",
+            "prioritize"
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "client_id": "research-peptides-uk",
+  "display_name": "Research Peptides UK",
+  "project_type": "ecommerce-or-catalogue",
+  "traits": ["highly-competitive", "commercial", "compliance-sensitive"],
+  "target_url": "",
+  "target_domain": "",
+  "connectors": ["gsc", "ga4", "serpapi"],
+  "notes": [
+    "Set target_url from first-party knowledge before audit.",
+    "Compliance-sensitive: no fabricated medical claims, fake entities, reviews or doorway pages.",
+    "Do not invent citation, ranking or revenue figures."
+  ]
+}

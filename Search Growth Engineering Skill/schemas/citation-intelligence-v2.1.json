@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["domain", "citation_rate", "top_sources"],
+  "properties": {
+    "domain": {"type": ["string", "null"]},
+    "citation_rate": {"type": ["number", "null"]},
+    "citation_frequency": {"type": ["integer", "null"]},
+    "top_sources": {"type": "array"},
+    "source_domains": {"type": "array"},
+    "source_urls": {"type": "array"},
+    "brand_mentions": {"type": "array"},
+    "entity_mentions": {"type": "array"}
+  }
+}
