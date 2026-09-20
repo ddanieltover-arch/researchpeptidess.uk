@@ -89,23 +89,19 @@
   }
 }
 
-/* Chatway: keep launcher on the right, clear mobile bottom nav; hide on admin/cart */
-html.chatway-hidden .chatway--container,
-html.chatway-hidden .chatway--trigger-container,
-html.chatway-hidden .chatway--frame-container {
+/* Tawk.to: hide on admin/cart; clear mobile bottom nav for the launcher */
+html.tawk-hidden iframe[title*='chat'],
+html.tawk-hidden div[id^='tawk'],
+html.tawk-hidden .widget-visible {
   display: none !important;
   pointer-events: none !important;
   visibility: hidden !important;
 }
 
-.chatway--container,
-.chatway--trigger-container {
-  z-index: 40 !important;
-}
-
 @media (max-width: 1023px) {
-  .chatway--container,
-  .chatway--trigger-container {
+  #tawkchat-minified-wrapper,
+  .tawk-button-container {
     bottom: calc(var(--mobile-bottom-nav-height) + 1rem) !important;
   }
 }
+

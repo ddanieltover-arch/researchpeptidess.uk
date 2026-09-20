@@ -210,7 +210,7 @@ export function validateFileUpload(file: {
  */
 export const PRODUCTION_SECURITY_HEADERS = {
   'Content-Security-Policy':
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://cdn.chatway.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https:; frame-src https://cdn.chatway.app https://chatway.app; frame-ancestors 'self';",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://embed.tawk.to https://cdn.jsdelivr.net https://*.tawk.to; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.tawk.to https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://*.tawk.to data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss://*.tawk.to; frame-src https://*.tawk.to https://tawk.to; frame-ancestors 'self';",
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
