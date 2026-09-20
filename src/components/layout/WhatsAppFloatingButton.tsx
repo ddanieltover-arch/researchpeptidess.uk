@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { formatProductDisplayName } from '../../lib/product-display';
@@ -9,6 +9,8 @@ import { WhatsAppIcon } from '../ui/WhatsAppIcon';
 
 const fabClass =
   'flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2';
+
+const SHOW_AFTER_PX = 400;
 
 function scrollToTop() {
   const reducedMotion =
@@ -34,6 +36,16 @@ export const WhatsAppFloatingButton: React.FC = () => {
   const whatsappLabel = pageProduct
     ? `Enquire about ${pageProductName} on WhatsApp (${STORE_WHATSAPP_DISPLAY}, messages only)`
     : `WhatsApp ${STORE_WHATSAPP_DISPLAY} (messages only)`;
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      setShowBackToTop(window.scrollY > SHOW_AFTER_PX);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [currentPath]);
 
   if (kind === 'admin' || kind === 'admin-login' || cartDrawerOpen) {
     return null;
@@ -50,14 +62,16 @@ export const WhatsAppFloatingButton: React.FC = () => {
       >
         <WhatsAppIcon className="h-6 w-6 text-white" />
       </a>
-      <button
-        type="button"
-        onClick={scrollToTop}
-        aria-label="Back to top"
-        className={`${fabClass} bg-[#0B132B] text-white shadow-slate-900/20 hover:bg-[#4353FF] focus-visible:ring-[#4353FF]/60`}
-      >
-        <ArrowUp className="h-5 w-5" strokeWidth={2.4} />
-      </button>
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="Back to top"
+          className={`${fabClass} bg-[#0B132B] text-white shadow-slate-900/20 hover:bg-[#4353FF] focus-visible:ring-[#4353FF]/60`}
+        >
+          <ArrowUp className="h-5 w-5" strokeWidth={2.4} />
+        </button>
+      ) : null}
     </div>
   );
 };
