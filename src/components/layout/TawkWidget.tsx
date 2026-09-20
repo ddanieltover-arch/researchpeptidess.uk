@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { parseAppPath } from '../../lib/routing';
-import { TAWK_EMBED_SRC } from '../../lib/tawk';
+import {
+  TAWK_EMBED_SRC,
+  TAWK_MOBILE_X_OFFSET,
+  TAWK_MOBILE_Y_OFFSET,
+} from '../../lib/tawk';
 
 const SCRIPT_ID = 'tawk-to-script';
 const HIDDEN_CLASS = 'tawk-hidden';
@@ -18,7 +22,7 @@ function setTawkVisibility(hidden: boolean) {
 
 /**
  * Loads Tawk.to live chat (bottom-right). Hidden on admin routes and when the cart drawer is open.
- * Position (right) is controlled in the Tawk dashboard; keep WhatsApp on the left.
+ * Mobile yOffset lifts the bubble above the bottom nav to align with WhatsApp on the left.
  */
 export const TawkWidget: React.FC = () => {
   const { currentPath, cartDrawerOpen } = useStore();
@@ -30,6 +34,22 @@ export const TawkWidget: React.FC = () => {
 
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = window.Tawk_LoadStart || new Date();
+
+    // Must be set before the embed script loads (Tawk ignores later changes).
+    window.Tawk_API.customStyle = {
+      visibility: {
+        desktop: {
+          position: 'br',
+          xOffset: 20,
+          yOffset: 24,
+        },
+        mobile: {
+          position: 'br',
+          xOffset: TAWK_MOBILE_X_OFFSET,
+          yOffset: TAWK_MOBILE_Y_OFFSET,
+        },
+      },
+    };
 
     let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
     if (!script) {

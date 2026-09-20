@@ -89,7 +89,7 @@
   }
 }
 
-/* Tawk.to: hide on admin/cart; clear mobile bottom nav for the launcher */
+/* Tawk.to: hide on admin/cart; on mobile lift bubble to match WhatsApp FAB */
 html.tawk-hidden iframe[title*='chat'],
 html.tawk-hidden div[id^='tawk'],
 html.tawk-hidden .widget-visible {
@@ -100,7 +100,10 @@ html.tawk-hidden .widget-visible {
 
 @media (max-width: 1023px) {
   #tawkchat-minified-wrapper,
-  .tawk-button-container {
+  #tawkchat-minified-box,
+  .tawk-button-container,
+  .tawk-min-container,
+  div.widget-visible {
     bottom: calc(var(--mobile-bottom-nav-height) + 1rem) !important;
   }
 }
