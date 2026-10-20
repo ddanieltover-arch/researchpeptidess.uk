@@ -22,6 +22,7 @@ export const SITE_INTERNAL_RESOURCE_LINKS: InternalResourceLink[] = [
   { href: '/shipping', label: 'Shipping & delivery', cluster: 'support' },
   { href: '/faq', label: 'FAQ — ordering & compliance', cluster: 'support' },
   { href: '/contact', label: 'Contact support', cluster: 'support' },
+  { href: '/insights', label: 'Lab Insights — research articles', cluster: 'support' },
 ];
 
 /** Official references only — not endorsements. */

@@ -180,23 +180,39 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
   };
 
   const renderFormattedText = (text: string) => {
-    // Check for unconfigured placeholders
-    const parts = text.split(/(\[.*?\])/g);
-    return parts.map((part, pIdx) => {
-      if (part.startsWith('[') && part.endsWith(']')) {
+    const segments = text.split(/(\[[^\]]+\]\([^)]+\))/g);
+    return segments.map((segment, pIdx) => {
+      const linkMatch = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(segment);
+      if (linkMatch) {
+        const [, label, href] = linkMatch;
+        const isInternal = href.startsWith('/');
+        if (isInternal) {
+          return (
+            <AppLink key={pIdx} href={href} className="font-semibold text-[#4353FF] hover:underline">
+              {label}
+            </AppLink>
+          );
+        }
+        return (
+          <a key={pIdx} href={href} rel="noopener noreferrer" className="font-semibold text-[#4353FF] hover:underline">
+            {label}
+          </a>
+        );
+      }
+
+      if (segment.startsWith('[') && segment.endsWith(']') && !segment.includes('](')) {
         return (
           <span
             key={pIdx}
             className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300"
             title="Business input placeholder to be configured in Store Settings"
           >
-            {part}
+            {segment}
           </span>
         );
       }
 
-      // Check bold
-      const boldParts = part.split(/(\*\*.*?\*\*)/g);
+      const boldParts = segment.split(/(\*\*.*?\*\*)/g);
       return boldParts.map((bPart, bIdx) => {
         if (bPart.startsWith('**') && bPart.endsWith('**')) {
           return (
@@ -210,6 +226,8 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
     });
   };
 
+  const isInsight = page.category === 'INSIGHTS';
+
   return (
     <div className="bg-stone-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       {/* Inject SEO tags for this page */}
@@ -221,9 +239,21 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           <AppLink href={ROUTES.home} className="hover:text-stone-900 transition-colors">
             HOME
           </AppLink>
-          <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
-          <span className="text-amber-700 font-semibold uppercase">{page.category}</span>
-          <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+          {isInsight ? (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+              <AppLink href={ROUTES.insights} className="hover:text-stone-900 transition-colors uppercase">
+                Insights
+              </AppLink>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+            </>
+          ) : (
+            <>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+              <span className="text-amber-700 font-semibold uppercase">{page.category}</span>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+            </>
+          )}
           <span className="text-stone-900 truncate max-w-xs">{page.title}</span>
         </nav>
 
@@ -232,7 +262,7 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           <div className="space-y-1.5 border-b border-stone-100 pb-6">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold uppercase bg-stone-100 text-stone-800 border border-stone-200">
               <FileCheck className="w-3.5 h-3.5 text-amber-600" />
-              {page.category} POLICY
+              {isInsight ? 'Lab insight' : `${page.category} POLICY`}
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
               {page.title}
@@ -245,6 +275,12 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-stone-500 pt-4 font-mono">
+            {page.publishedAt && (
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                Published {page.publishedAt}
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <Building className="w-3.5 h-3.5 text-stone-400" />
               Jurisdiction: England & Wales
@@ -289,7 +325,7 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           />
         )}
 
-        <CmsGeoCatalogueLinks slug={page.slug} />
+        {!isInsight && <CmsGeoCatalogueLinks slug={page.slug} />}
 
         {page.slug === 'contact' && (
           <>

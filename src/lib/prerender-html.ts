@@ -6,6 +6,7 @@ import { CMSPage, Product, ProductCategory } from '../types';
 import { isListedShopCategory } from './catalogue-collections';
 import { isPublicCatalogueProduct } from './merchandising';
 import { buildPrerenderResourceNav } from './internal-linking';
+import { insightArticlePaths } from './insights';
 import { categoryPath, parseAppPath } from './routing';
 import { getSeoMetadataForPath, HOME_PRERENDER_H1, PRIMARY_DOMAIN, SeoMetadata } from './seo';
 
@@ -125,8 +126,13 @@ export function collectPrerenderPaths(
     paths.add(`/product/${product.slug}`);
   }
 
-  for (const page of cmsPages.filter((p) => p.isPublished)) {
+  for (const page of cmsPages.filter((p) => p.isPublished && p.category !== 'INSIGHTS')) {
     paths.add(`/${page.slug}`);
+  }
+
+  paths.add('/insights');
+  for (const insightPath of insightArticlePaths()) {
+    paths.add(insightPath);
   }
 
   return [...paths].sort();

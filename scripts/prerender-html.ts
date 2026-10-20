@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { INITIAL_CMS_PAGES } from '../src/lib/cms-data';
+import { INSIGHT_ARTICLES } from '../src/lib/cms-insights-posts';
 import { INITIAL_CATEGORIES } from '../src/lib/data/categories';
 import { ALL_CATALOGUE_PRODUCTS } from '../src/lib/data/all-products';
 import { categoryPath } from '../src/lib/routing';
@@ -16,11 +17,12 @@ const distDir = resolve(root, 'dist');
 const templatePath = resolve(distDir, 'index.html');
 
 const template = readFileSync(templatePath, 'utf8');
-const paths = collectPrerenderPaths(ALL_CATALOGUE_PRODUCTS, INITIAL_CATEGORIES, INITIAL_CMS_PAGES);
+const cmsForPrerender = [...INITIAL_CMS_PAGES, ...INSIGHT_ARTICLES];
+const paths = collectPrerenderPaths(ALL_CATALOGUE_PRODUCTS, INITIAL_CATEGORIES, cmsForPrerender);
 
 let written = 0;
 for (const path of paths) {
-  const seo = resolvePrerenderSeo(path, ALL_CATALOGUE_PRODUCTS, INITIAL_CATEGORIES, INITIAL_CMS_PAGES);
+  const seo = resolvePrerenderSeo(path, ALL_CATALOGUE_PRODUCTS, INITIAL_CATEGORIES, cmsForPrerender);
   if (seo.robots.includes('noindex')) {
     continue;
   }

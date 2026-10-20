@@ -120,6 +120,18 @@ export function runParityTests(): TestResult[] {
   );
 
   results.push(
+    run('/insights index and article routes parse correctly', () => {
+      const index = parseAppPath('/insights');
+      const article = parseAppPath('/insights/kpv-peptide-inflammation-research-models');
+      return {
+        passed: index.kind === 'insights-index' && article.kind === 'insight' && article.slug === 'kpv-peptide-inflammation-research-models',
+        expected: 'insights-index + insight slug',
+        actual: `index=${index.kind} article=${article.kind}`,
+      };
+    })
+  );
+
+  results.push(
     run('First-class /research-chemicals route is a category collection', () => {
       const parsed = parseAppPath('/research-chemicals');
       return {

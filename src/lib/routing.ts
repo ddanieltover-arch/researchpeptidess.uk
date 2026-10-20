@@ -34,6 +34,8 @@ export type RouteKind =
   | 'admin'
   | 'admin-login'
   | 'cms'
+  | 'insights-index'
+  | 'insight'
   | 'notfound';
 
 export interface ParsedAppRoute {
@@ -60,6 +62,7 @@ export const RESERVED_SLUGS = new Set([
   'payment-verification',
   'peptides',
   'research-chemicals',
+  'insights',
 ]);
 
 export const ROUTES = {
@@ -74,7 +77,12 @@ export const ROUTES = {
   accountLogin: '/account/login',
   admin: '/admin',
   adminLogin: '/admin/login',
+  insights: '/insights',
 } as const;
+
+export function insightPath(slug: string): string {
+  return `/insights/${slug}`;
+}
 
 export function productPath(slug: string): string {
   return `/product/${SLUG_REDIRECTS[slug] || slug}`;
@@ -185,6 +193,16 @@ export function parseAppPath(input: string): ParsedAppRoute {
       slug: segments[1],
       href: `/product/${segments[1]}`,
     });
+  }
+
+  if (segments[0] === 'insights') {
+    if (segments.length === 1) {
+      return base('insights-index', { pathname: ROUTES.insights, href: ROUTES.insights });
+    }
+    if (segments.length === 2) {
+      const pathname = `/insights/${segments[1]}`;
+      return base('insight', { pathname, slug: segments[1], href: pathname });
+    }
   }
 
   if (segments.length === 1) {

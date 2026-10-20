@@ -25,6 +25,7 @@ import {
   SHIPPING_UK_BUYER_TOPICS,
 } from './uk-buyer-seo';
 import { buildProductListingTitle } from './product-seo-titles';
+import { getInsightArticle } from './insights';
 
 export const PRIMARY_DOMAIN = 'https://researchpeptidess.uk';
 
@@ -74,6 +75,81 @@ export function getSeoMetadataForPath(
   }
 ): SeoMetadata {
   const canonicalUrl = buildCanonicalUrl(path);
+  const pathOnly = path.split('?')[0] || '/';
+
+  if (pathOnly === '/insights') {
+    return {
+      title: 'Lab Insights | Research Peptides UK',
+      description:
+        'Research articles for UK laboratories — buying research peptides, solvents, documentation, and catalogue compliance. In-vitro use only.',
+      canonicalUrl: `${PRIMARY_DOMAIN}/insights`,
+      ogTitle: 'Lab Insights | Research Peptides UK',
+      ogDescription:
+        'Editorial guides for UK research peptide and reagent catalogues — documentation, compliance, and laboratory context.',
+      ogType: 'website',
+      robots: 'index, follow',
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Lab Insights',
+          url: `${PRIMARY_DOMAIN}/insights`,
+        },
+      ],
+    };
+  }
+
+  const insightSlugMatch = /^\/insights\/([^/]+)$/.exec(pathOnly);
+  if (insightSlugMatch) {
+    const article = getInsightArticle(insightSlugMatch[1]);
+    if (article) {
+      const published = article.publishedAt || article.lastUpdated;
+      const jsonLd: Record<string, unknown>[] = [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: article.title,
+          description: article.seoDescription,
+          datePublished: published,
+          dateModified: article.lastUpdated,
+          url: canonicalUrl,
+          author: {
+            '@type': 'Organization',
+            name: 'Research Peptides UK',
+            url: PRIMARY_DOMAIN,
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Research Peptides UK',
+            logo: {
+              '@type': 'ImageObject',
+              url: `${PRIMARY_DOMAIN}/logo.svg`,
+            },
+          },
+          mainEntityOfPage: canonicalUrl,
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: PRIMARY_DOMAIN },
+            { '@type': 'ListItem', position: 2, name: 'Lab Insights', item: `${PRIMARY_DOMAIN}/insights` },
+            { '@type': 'ListItem', position: 3, name: article.title, item: canonicalUrl },
+          ],
+        },
+      ];
+      return {
+        title: article.seoTitle,
+        description: article.seoDescription,
+        canonicalUrl,
+        ogTitle: article.seoTitle,
+        ogDescription: article.seoDescription,
+        ogType: 'article',
+        robots: 'index, follow',
+        jsonLd,
+      };
+    }
+  }
 
   // 1. Product Detail Page
   if (context?.product) {
@@ -416,12 +492,28 @@ export function generateXmlSitemap(
   }
 
   // Published Informational / CMS Pages
-  for (const cms of cmsPages.filter((c) => c.isPublished)) {
+  for (const cms of cmsPages.filter((c) => c.isPublished && c.category !== 'INSIGHTS')) {
     urls.push({
       loc: `${PRIMARY_DOMAIN}/${cms.slug}`,
       lastmod: cms.lastUpdated || today,
       changefreq: 'monthly',
       priority: '0.6',
+    });
+  }
+
+  urls.push({
+    loc: `${PRIMARY_DOMAIN}/insights`,
+    lastmod: today,
+    changefreq: 'weekly',
+    priority: '0.7',
+  });
+
+  for (const article of cmsPages.filter((c) => c.isPublished && c.category === 'INSIGHTS')) {
+    urls.push({
+      loc: `${PRIMARY_DOMAIN}/insights/${article.slug}`,
+      lastmod: article.publishedAt || article.lastUpdated || today,
+      changefreq: 'monthly',
+      priority: '0.65',
     });
   }
 
@@ -451,6 +543,7 @@ User-agent: *
 Allow: /
 Allow: /shop
 Allow: /peptides
+Allow: /insights
 Allow: /research-chemicals
 Allow: /product/
 Allow: /about
@@ -481,6 +574,7 @@ User-agent: OAI-SearchBot
 Allow: /
 Allow: /shop
 Allow: /peptides
+Allow: /insights
 Allow: /research-chemicals
 Allow: /product/
 Allow: /quality

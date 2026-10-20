@@ -522,7 +522,7 @@ export interface OrderNotification {
 // ---------------------------------------------------------------------------
 // Content Management System (CMS) & Store Settings
 // ---------------------------------------------------------------------------
-export type CMSPageCategory = 'COMPANY' | 'QUALITY' | 'LEGAL' | 'SUPPORT';
+export type CMSPageCategory = 'COMPANY' | 'QUALITY' | 'LEGAL' | 'SUPPORT' | 'INSIGHTS';
 
 export interface CMSPage {
   id: string;
@@ -530,6 +530,8 @@ export interface CMSPage {
   title: string;
   subtitle?: string;
   category: CMSPageCategory;
+  /** ISO date (YYYY-MM-DD) for insight articles — used in schema and byline. */
+  publishedAt?: string;
   lastUpdated: string;
   contentMarkdown: string;
   requiredBusinessInputs: string[]; // e.g. ['[LEGAL_ENTITY_NAME]', '[REGISTERED_OFFICE_ADDRESS]']

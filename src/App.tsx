@@ -29,6 +29,8 @@ import { AccountLoginPage } from './pages/AccountLoginPage';
 import { AdminPage } from './pages/AdminPage';
 import { AdminLoginPage, AdminSessionLoading } from './pages/AdminLoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { InsightsIndexPage } from './pages/InsightsIndexPage';
+import { getInsightArticle } from './lib/insights';
 
 import { getSeoMetadataForPath } from './lib/seo';
 import { trackPageView } from './lib/analytics';
@@ -172,6 +174,15 @@ const AppContent: React.FC = () => {
           return <AccountLoginPage />;
         }
         return <AccountPage />;
+      case 'insights-index':
+        return <InsightsIndexPage />;
+      case 'insight': {
+        const article = activeRoute.slug ? getInsightArticle(activeRoute.slug) : undefined;
+        if (article) {
+          return <CMSPageView page={article} />;
+        }
+        return <NotFoundPage />;
+      }
       case 'cms':
         if (matchedCmsPage) {
           return <CMSPageView page={matchedCmsPage} />;

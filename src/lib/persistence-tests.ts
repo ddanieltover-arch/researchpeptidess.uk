@@ -23,6 +23,8 @@ import { resourceLinksForPath, SITE_INTERNAL_RESOURCE_LINKS } from './internal-l
 import { categoryPath } from './routing';
 import { buildProductListingTitle } from './product-seo-titles';
 import { PEPTIDES_DEMAND_FEATURED_SLUGS, pickProductsBySlug } from './featured-catalogue';
+import { INSIGHT_ARTICLES } from './cms-insights-posts';
+import { insightArticlePaths } from './insights';
 import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
 import { INITIAL_CATEGORIES } from './data/categories';
 import { INITIAL_CMS_PAGES } from './cms-data';
@@ -293,6 +295,23 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'logo.svg on apex domain',
         actual: logo,
+      };
+    }),
+    run('Insight articles prerender and use BlogPosting-ready SEO paths', () => {
+      const paths = insightArticlePaths();
+      const seo = getSeoMetadataForPath('/insights/bacteriostatic-water-uk-laboratories');
+      const passed =
+        INSIGHT_ARTICLES.length >= 10 &&
+        paths.length === INSIGHT_ARTICLES.length &&
+        seo.ogType === 'article' &&
+        collectPrerenderPaths(ALL_CATALOGUE_PRODUCTS, INITIAL_CATEGORIES, [
+          ...INITIAL_CMS_PAGES,
+          ...INSIGHT_ARTICLES,
+        ]).includes('/insights');
+      return {
+        passed,
+        expected: 'insights index + article SEO',
+        actual: `${paths.length} articles, ogType=${seo.ogType}`,
       };
     }),
     run('Featured demand slugs resolve to published catalogue products', () => {

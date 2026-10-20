@@ -77,6 +77,9 @@ export const Footer: React.FC = () => {
             <AppLink href="/research" className={footerLinkClass}>
               Research
             </AppLink>
+            <AppLink href="/insights" className={footerLinkClass}>
+              Lab Insights
+            </AppLink>
             <AppLink href="/faq" className={footerLinkClass}>
               FAQ
             </AppLink>
