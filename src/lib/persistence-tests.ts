@@ -23,6 +23,7 @@ import { resourceLinksForPath, SITE_INTERNAL_RESOURCE_LINKS } from './internal-l
 import { categoryPath } from './routing';
 import { buildProductListingTitle } from './product-seo-titles';
 import { PEPTIDES_DEMAND_FEATURED_SLUGS, pickProductsBySlug } from './featured-catalogue';
+import { getProductCrossLinks } from './product-cross-links';
 import { INSIGHT_ARTICLES } from './cms-insights-posts';
 import { insightArticlePaths } from './insights';
 import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
@@ -329,6 +330,21 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'insights index + article SEO',
         actual: `${paths.length} articles, ogType=${seo.ogType}`,
+      };
+    }),
+    run('GHK-Cu PDP cross-links include glow blend and bacteriostatic water', () => {
+      const ghk = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === 'ghk-cu');
+      if (!ghk) return { passed: false, expected: 'ghk-cu product', actual: 'missing' };
+      const links = getProductCrossLinks(ghk, ALL_CATALOGUE_PRODUCTS, 10);
+      const slugs = new Set(links.map((l) => l.slug));
+      const passed =
+        slugs.has('glow-blend-ghk-cu-bpc157-tb500') &&
+        slugs.has('bacteriostatic-water-0-9-benzyl') &&
+        links.length >= 6;
+      return {
+        passed,
+        expected: 'curated + demand cross-links for GHK-Cu',
+        actual: links.map((l) => l.slug).join(','),
       };
     }),
     run('Featured demand slugs resolve to published catalogue products', () => {

@@ -53,7 +53,11 @@ for (const path of paths) {
     if (cmsPage) quickAnswerContext.cmsPage = cmsPage;
   }
 
-  const body = buildPrerenderBody(path, seo, { categoryPath: categoryPathForNav, quickAnswerContext });
+  const body = buildPrerenderBody(path, seo, {
+    categoryPath: categoryPathForNav,
+    quickAnswerContext,
+    prerenderCatalogue: ALL_CATALOGUE_PRODUCTS,
+  });
   const html = applyPrerenderShell(template, seo, body);
   const relative = path === '/' ? 'index.html' : `${path.replace(/^\//, '')}/index.html`;
   const outPath = resolve(distDir, relative);

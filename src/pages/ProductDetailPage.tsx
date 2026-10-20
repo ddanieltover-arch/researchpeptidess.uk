@@ -20,6 +20,7 @@ import { SiteResearchResources } from '../components/content/SiteResearchResourc
 import { ProductUkBuyerQuestions } from '../components/product/ProductUkBuyerQuestions';
 import { GeoQuickAnswerFromPath } from '../components/content/GeoQuickAnswerFromPath';
 import { ProductInsightArticleLink } from '../components/content/ProductInsightArticleLink';
+import { ProductDescriptionLinks } from '../components/product/ProductDescriptionLinks';
 import {
   ShieldCheck,
   Plus,
@@ -420,6 +421,8 @@ export const ProductDetailPage: React.FC = () => {
               </h4>
               <p className="whitespace-pre-wrap">{product.longDescription || product.shortDescription}</p>
             </div>
+
+            <ProductDescriptionLinks product={product} catalogue={publishedProducts} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs font-mono">
               <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-1">
