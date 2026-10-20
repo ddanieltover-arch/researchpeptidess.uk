@@ -23,7 +23,7 @@ import { STORE_WHATSAPP_DISPLAY } from '../../lib/store-contact';
 import { WhatsAppContactLink } from '../layout/WhatsAppContactLink';
 import { CmsGeoCatalogueLinks } from './CmsGeoCatalogueLinks';
 import { UkBuyerQuestionsPanel } from './UkBuyerQuestionsPanel';
-import { FAQ_UK_BUYER_TOPICS, SHIPPING_UK_BUYER_TOPICS } from '../../lib/uk-buyer-seo';
+import { FAQ_UK_BUYER_TOPICS, SHIPPING_UK_BUYER_TOPICS, geoFaqTopicsForCmsSlug } from '../../lib/uk-buyer-seo';
 import {
   ShieldAlert,
   ChevronRight,
@@ -227,6 +227,7 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
   };
 
   const isInsight = page.category === 'INSIGHTS';
+  const geoFaqTopics = geoFaqTopicsForCmsSlug(page.slug);
 
   return (
     <div className="bg-stone-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -322,6 +323,16 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
             title="Shipping & delivery questions for UK buyers"
             intro="Where UK delivery applies, how checkout calculates rates, and how tracked dispatch works — aligned to the shipping engine, not marketing slogans."
             topics={SHIPPING_UK_BUYER_TOPICS}
+          />
+        )}
+
+        {geoFaqTopics && (
+          <UkBuyerQuestionsPanel
+            variant="cms"
+            id={`${page.slug}-geo-faq`}
+            title="Common questions — documentation & scope"
+            intro="Short answers for search and AI summaries. Variant-specific facts always live on product pages."
+            topics={geoFaqTopics}
           />
         )}
 

@@ -23,6 +23,7 @@ import { HomeProofSection } from '../components/home/HomeProofSection';
 import { HomeBuyPeptidesKeywords } from '../components/home/HomeBuyPeptidesKeywords';
 import { HomeUkBuyerQuestions } from '../components/home/HomeUkBuyerQuestions';
 import { HomeProductRail } from '../components/home/HomeProductRail';
+import { LabInsightsPromo } from '../components/content/LabInsightsPromo';
 
 const HOME_RAIL_LIMIT = 8;
 
@@ -291,6 +292,8 @@ export const HomePage: React.FC = () => {
       </section>
 
       <HomeBuyPeptidesKeywords />
+
+      <LabInsightsPromo variant="home" />
 
       <HomeUkBuyerQuestions />
 

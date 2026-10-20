@@ -403,6 +403,101 @@ export function getCatalogueUkBuyerTopics(context: CatalogueBuyerContext): HomeU
   ];
 }
 
+/** GEO / AI Overviews — factual quality documentation questions (no accreditation claims). */
+export const QUALITY_GEO_TOPICS: HomeUkBuyerTopic[] = [
+  {
+    question: 'What does research-grade mean on this catalogue?',
+    answer:
+      'It means listings are sold for in-vitro laboratory research. Analytical values or purity figures appear only when documented on the product or an attached batch record — not as a site-wide guarantee.',
+    href: '/research-use',
+    linkLabel: 'Research-use policy',
+  },
+  {
+    question: 'How does Research Peptides UK describe HPLC or COA documentation?',
+    answer:
+      'Documentation is SKU-specific. Where a certificate or batch record exists, it is linked from the product page. Absence of a public COA does not imply hidden testing.',
+    href: '/faq',
+    linkLabel: 'FAQ',
+  },
+  {
+    question: 'Are catalogue peptides medicines or supplements?',
+    answer:
+      'No. Products are biochemical reagents for qualified laboratory buyers. They are not intended for human or veterinary administration.',
+    href: '/research-use',
+    linkLabel: 'Research-use statement',
+  },
+  {
+    question: 'Where do I verify batch information before ordering?',
+    answer:
+      'Open the product page for the exact SKU, review any attached records, then complete checkout with the research-use declaration.',
+    href: '/peptides',
+    linkLabel: 'Peptide catalogue',
+  },
+];
+
+/** GEO — entity and scope for generative “who is this supplier” queries. */
+export const ABOUT_GEO_TOPICS: HomeUkBuyerTopic[] = [
+  {
+    question: 'What is Research Peptides UK?',
+    answer:
+      'A UK-operated online catalogue publishing research peptides, blends, and laboratory reagents for in-vitro use, with GBP pricing on published variants.',
+    href: '/peptides',
+    linkLabel: 'Browse peptides',
+  },
+  {
+    question: 'Who can purchase from the catalogue?',
+    answer:
+      'Qualified researchers, laboratory staff, and institutional buyers who accept the research-use policy at checkout.',
+    href: '/research-use',
+    linkLabel: 'Eligibility',
+  },
+  {
+    question: 'How is this different from consumer peptide shops?',
+    answer:
+      'Checkout requires a research-use acknowledgement, and copy avoids medical or performance claims. The shop is not positioned as a supplement retailer.',
+    href: '/quality',
+    linkLabel: 'Quality approach',
+  },
+  {
+    question: 'Where can I read laboratory articles about compounds?',
+    answer:
+      'Lab Insights publishes research-context articles that link to live catalogue SKUs without dosing or clinical advice.',
+    href: '/insights',
+    linkLabel: 'Lab Insights',
+  },
+];
+
+/** GEO — explains the insights hub vs commerce routes (for AI citation clarity). */
+export const INSIGHTS_INDEX_GEO_TOPICS: HomeUkBuyerTopic[] = [
+  {
+    question: 'What is Lab Insights on Research Peptides UK?',
+    answer:
+      'An editorial section with research-use articles about catalogue compounds, UK ordering context, and documentation — not a separate storefront.',
+    href: '/peptides',
+    linkLabel: 'Peptide catalogue',
+  },
+  {
+    question: 'Can I buy peptides from Lab Insights articles?',
+    answer:
+      'Articles link to product and catalogue pages. Purchases are completed through the shop or peptide collection with the research-use declaration.',
+    href: '/shop',
+    linkLabel: 'Shop',
+  },
+  {
+    question: 'Do Lab Insights posts provide dosing or medical advice?',
+    answer:
+      'No. Posts describe laboratory research context only and defer variant facts to published product pages.',
+    href: '/research-use',
+    linkLabel: 'Research-use policy',
+  },
+];
+
+export function geoFaqTopicsForCmsSlug(slug: string): HomeUkBuyerTopic[] | null {
+  if (slug === 'quality') return QUALITY_GEO_TOPICS;
+  if (slug === 'about') return ABOUT_GEO_TOPICS;
+  return null;
+}
+
 export function buildPageUkBuyerFaqJsonLd(
   canonicalPath: string,
   topics: HomeUkBuyerTopic[]

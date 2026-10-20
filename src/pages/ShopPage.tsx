@@ -17,6 +17,7 @@ import {
 } from '../lib/catalogue-collections';
 import { PEPTIDES_DEMAND_FEATURED_SLUGS, pickProductsBySlug } from '../lib/featured-catalogue';
 import { FeaturedDemandProducts } from '../components/catalogue/FeaturedDemandProducts';
+import { LabInsightsPromo } from '../components/content/LabInsightsPromo';
 import type { CatalogueBuyerContext } from '../lib/uk-buyer-seo';
 import { Search, LayoutGrid, List } from 'lucide-react';
 import { SiteResearchResources } from '../components/content/SiteResearchResources';
@@ -176,6 +177,8 @@ export const ShopPage: React.FC = () => {
           products={featuredDemandProducts}
         />
       ) : null}
+
+      {isPeptidesCollection ? <LabInsightsPromo variant="catalogue" /> : null}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         <aside className="space-y-6 lg:sticky lg:top-20 lg:z-10 lg:col-span-3 lg:self-start lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">

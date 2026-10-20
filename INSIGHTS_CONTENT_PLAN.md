@@ -38,6 +38,10 @@ All posts are **research-use** oriented — no dosage guides, “best supplier�
 - **Review / best supplier** queries (pure peptides uk review, best uk peptide supplier)
 - **Muscle growth / weight loss** buy intent
 
+## GEO / AIO sitewide
+
+See **`docs/GEO_AIO_IMPLEMENTATION.md`** and **`docs/GSC_GEO_SETUP.md`** for FAQ surfaces, schema, and GSC measurement.
+
 ## Ops checklist when adding a post
 
 1. Add entry to `src/lib/cms-insights-posts.ts` with unique `publishedAt` (YYYY-MM-DD).

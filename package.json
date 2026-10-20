@@ -18,8 +18,12 @@
     "catalog:import-gap:dry": "tsx scripts/import-reference-gap.ts --dry-run",
     "catalog:import-supabase:dry": "tsx scripts/import-supabase-products-sql.ts --file \"%USERPROFILE%\\Downloads\\products_rows.sql\" --dry-run",
     "catalog:import-supabase": "tsx scripts/import-supabase-products-sql.ts --file \"%USERPROFILE%\\Downloads\\products_rows.sql\"",
+    "catalog:dedupe": "tsx scripts/deduplicate-catalog-slugs.ts",
+    "catalog:dedupe:dry": "tsx scripts/deduplicate-catalog-slugs.ts --dry-run",
     "db:push": "drizzle-kit push",
-    "seed:admin": "tsx scripts/seed-admin.ts"
+    "seed:admin": "tsx scripts/seed-admin.ts",
+    "sge:audit": "cd \"Search Growth Engineering Skill\" && python -m sge orchestrate --workspace research-peptides-uk --workspaces-root workspaces --mode audit",
+    "sge:strategy": "cd \"Search Growth Engineering Skill\" && python -m sge orchestrate --workspace research-peptides-uk --workspaces-root workspaces --mode strategy"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

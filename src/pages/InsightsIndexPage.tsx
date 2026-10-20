@@ -2,6 +2,8 @@ import React from 'react';
 import { AppLink } from '../components/ui/AppLink';
 import { ROUTES, insightPath } from '../lib/routing';
 import { listPublishedInsights } from '../lib/insights';
+import { UkBuyerQuestionsPanel } from '../components/content/UkBuyerQuestionsPanel';
+import { INSIGHTS_INDEX_GEO_TOPICS } from '../lib/uk-buyer-seo';
 import { getSeoMetadataForPath } from '../lib/seo';
 import { MetaTags } from '../components/seo/MetaTags';
 import { ChevronRight, BookOpen } from 'lucide-react';
@@ -35,6 +37,14 @@ export const InsightsIndexPage: React.FC = () => {
             .
           </p>
         </header>
+
+        <UkBuyerQuestionsPanel
+          variant="cms"
+          id="insights-index-geo-faq"
+          title="About Lab Insights"
+          intro="How this editorial section relates to the Research Peptides UK catalogue."
+          topics={INSIGHTS_INDEX_GEO_TOPICS}
+        />
 
         <ul className="space-y-4">
           {posts.map((post) => (

@@ -23,6 +23,9 @@ import {
   FAQ_UK_BUYER_TOPICS,
   getCatalogueUkBuyerTopics,
   SHIPPING_UK_BUYER_TOPICS,
+  QUALITY_GEO_TOPICS,
+  ABOUT_GEO_TOPICS,
+  INSIGHTS_INDEX_GEO_TOPICS,
 } from './uk-buyer-seo';
 import { buildProductListingTitle } from './product-seo-titles';
 import { getInsightArticle } from './insights';
@@ -95,6 +98,7 @@ export function getSeoMetadataForPath(
           name: 'Lab Insights',
           url: `${PRIMARY_DOMAIN}/insights`,
         },
+        buildPageUkBuyerFaqJsonLd('/insights', INSIGHTS_INDEX_GEO_TOPICS),
       ],
     };
   }
@@ -334,6 +338,12 @@ export function getSeoMetadataForPath(
     }
     if (cms.slug === 'shipping') {
       jsonLd.push(buildPageUkBuyerFaqJsonLd('/shipping', SHIPPING_UK_BUYER_TOPICS));
+    }
+    if (cms.slug === 'quality') {
+      jsonLd.push(buildPageUkBuyerFaqJsonLd('/quality', QUALITY_GEO_TOPICS));
+    }
+    if (cms.slug === 'about') {
+      jsonLd.push(buildPageUkBuyerFaqJsonLd('/about', ABOUT_GEO_TOPICS));
     }
     return {
       title: `${cms.title} | Research Peptides UK`,
@@ -578,9 +588,12 @@ Allow: /insights
 Allow: /research-chemicals
 Allow: /product/
 Allow: /quality
+Allow: /about
+Allow: /research
 Allow: /faq
 Allow: /research-use
 Allow: /shipping
+Allow: /contact
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /account

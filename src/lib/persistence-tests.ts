@@ -297,6 +297,23 @@ export function runPersistenceTests(): TestResult[] {
         actual: logo,
       };
     }),
+    run('Quality and About CMS routes expose GEO FAQPage JSON-LD', () => {
+      const quality = getSeoMetadataForPath('/quality', {
+        cmsPage: INITIAL_CMS_PAGES.find((p) => p.slug === 'quality'),
+      });
+      const about = getSeoMetadataForPath('/about', {
+        cmsPage: INITIAL_CMS_PAGES.find((p) => p.slug === 'about'),
+      });
+      const hasFaq = (seo: ReturnType<typeof getSeoMetadataForPath>) =>
+        (seo.jsonLd || []).some((row) => row['@type'] === 'FAQPage');
+      const passed = hasFaq(quality) && hasFaq(about);
+      return { passed, expected: 'FAQPage on quality and about', actual: `${hasFaq(quality)}/${hasFaq(about)}` };
+    }),
+    run('Insights index includes FAQPage for GEO hub', () => {
+      const seo = getSeoMetadataForPath('/insights');
+      const passed = (seo.jsonLd || []).some((row) => row['@type'] === 'FAQPage');
+      return { passed, expected: 'FAQPage on /insights', actual: String(passed) };
+    }),
     run('Insight articles prerender and use BlogPosting-ready SEO paths', () => {
       const paths = insightArticlePaths();
       const seo = getSeoMetadataForPath('/insights/bacteriostatic-water-uk-laboratories');
