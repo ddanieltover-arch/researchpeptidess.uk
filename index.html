@@ -18,8 +18,59 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      html:not(.app-ready) #root {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      #app-shell-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483646;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      #app-shell-loader[hidden] {
+        display: none !important;
+      }
+      #app-shell-loader .app-shell-spinner {
+        width: 2.25rem;
+        height: 2.25rem;
+        border: 3px solid #e2e8f0;
+        border-top-color: #4353ff;
+        border-radius: 9999px;
+        animation: app-shell-spin 0.75s linear infinite;
+      }
+      @keyframes app-shell-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-shell-loader .app-shell-spinner {
+          animation: none;
+          border-top-color: #4353ff;
+        }
+      }
+    </style>
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-200 selection:text-blue-950">
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-200 selection:text-blue-950" style="margin: 0; background: #f8fafc; color: #0f172a;">
+    <div id="app-shell-loader" role="status" aria-live="polite" aria-busy="true">
+      <div class="app-shell-spinner" aria-hidden="true"></div>
+      <span style="font: 600 0.8125rem/1.4 system-ui, -apple-system, Segoe UI, sans-serif; letter-spacing: 0.02em; color: #64748b;">Loading catalogue…</span>
+    </div>
     <div id="root">
       <main>
         <h1>Research Peptides UK — Research-Grade Peptides for In-Vitro Laboratory Use</h1>
@@ -35,6 +86,21 @@
       </main>
     </div>
     <noscript>
+      <style>
+        #app-shell-loader {
+          display: none !important;
+        }
+        #root {
+          position: static !important;
+          width: auto !important;
+          height: auto !important;
+          margin: 0 !important;
+          overflow: visible !important;
+          clip: auto !important;
+          white-space: normal !important;
+          padding: 1.5rem !important;
+        }
+      </style>
       <p>Research Peptides UK supplies research peptides and biochemical reagents for in-vitro laboratory use. JavaScript is required to browse the catalogue and complete checkout. Contact info@researchpeptidess.uk</p>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>

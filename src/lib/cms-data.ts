@@ -127,6 +127,10 @@ To maintain the physicochemical stability of synthetic peptides:
     seoTitle: 'Quality Standards & HPLC Testing | Research Peptides UK',
     seoDescription: 'Discover our analytical quality assurance protocols, third-party HPLC chromatography verification, and batch-level Certificate of Analysis standards.',
     contentMarkdown: `
+### At a glance — research-grade peptides UK
+
+**Research Peptides UK** is a United Kingdom–based in-vitro laboratory catalogue. Listings describe research-grade peptides and biochemical reagents for professional laboratory use only. Analytical documentation (for example HPLC or COA files) appears on a product page only when a batch record exists. This page explains how documentation states work — not product efficacy or clinical use.
+
 ### Our approach
 
 Quality on this storefront means showing the records that exist for a listing, and not inventing the ones that do not. Research Peptides UK is a catalogue and fulfilment service. Independent laboratory accreditations are not claimed for the merchant entity unless a supporting document is attached to a specific batch.
@@ -183,8 +187,47 @@ The customer receives the published catalogue item, any public documents attache
     isPublished: true,
     requiredBusinessInputs: ['[SUPPORT_CONTACT_EMAIL]', '[PRIMARY_CONTACT_EMAIL]'],
     seoTitle: 'Frequently Asked Questions | Research Peptides UK',
-    seoDescription: 'Answers to frequently asked questions about peptide ordering, bank transfers, cryptocurrency settlements, UK & European shipping, and research policies.',
+    seoDescription:
+      'How to buy research peptides in the United Kingdom — ordering, UK city delivery, GBP pricing, payments, shipping, and in-vitro research policies.',
     contentMarkdown: `
+### Research peptides UK — common questions
+
+#### What does “research peptides UK” mean on this site?
+It refers to synthetic peptide and biochemical listings sold for **in-vitro scientific research** from a UK-operated catalogue. Products are not sold for human consumption or clinical treatment.
+
+#### Are these research-grade peptides UK products verified?
+Purity or analytical values are shown only when documented on the product or an attached batch record. The storefront does not claim universal third-party accreditation for every SKU.
+
+#### Can I buy research peptides UK through this website?
+Yes — qualified researchers can browse the published catalogue, add items to cart, and complete checkout subject to the research-use declaration and configured payment methods.
+
+#### Can you buy peptides in the UK?
+Peptides and reagents on this site are sold **only for in-vitro laboratory research** to eligible buyers who accept the research-use policy at checkout. They are not sold for personal, cosmetic, or clinical use. UK dispatch options depend on your address and order at checkout.
+
+#### How does this relate to “uk research peptides” searches?
+This is the official Research Peptides UK catalogue for laboratory buyers in the United Kingdom and configured export destinations. Shipping eligibility is confirmed at checkout.
+
+---
+
+### Ordering in the United Kingdom (cities & nations)
+
+#### How to buy research peptides in the United Kingdom
+Add items from the published catalogue to cart and complete checkout as a qualified researcher. Payment verification and available shipping methods are shown when your order qualifies.
+
+#### Where can I buy peptides in London, Manchester, or Scotland?
+We fulfil online orders to qualifying addresses across **England, Scotland, Wales, and Northern Ireland**, including cities such as London, Manchester, Birmingham, Glasgow, Edinburgh, Cardiff, and Belfast. Final eligibility is confirmed at checkout.
+
+#### How much for research peptides in the United Kingdom?
+Variant prices are listed in **GBP** on each product page. Checkout totals reflect quantity, shipping method, and any configured settlement discounts.
+
+#### Can I order peptides online with UK tracked delivery?
+Tracked UK services appear at checkout when configured for your address and order. See the **Shipping Policy** for destinations, prices, and dispatch windows.
+
+#### Who can buy from a UK research peptide supplier?
+Purchasers must confirm **in-vitro laboratory use only** and meet the age and institutional requirements stated at checkout. Products are not sold for human or veterinary administration.
+
+---
+
 ### General & Research Policies
 
 #### Who is eligible to purchase from Research Peptides UK?
@@ -264,8 +307,26 @@ Universities, research institutes, and commercial laboratories requiring custom 
     isPublished: true,
     requiredBusinessInputs: ['[SUPPORT_CONTACT_EMAIL]'],
     seoTitle: 'Shipping & Delivery Policy | Research Peptides UK',
-    seoDescription: 'Shipping destinations, methods, prices, estimated windows, and tracking availability for Research Peptides UK orders.',
+    seoDescription:
+      'Where to buy with UK delivery — shipping to London, Scotland, Wales, and Northern Ireland; prices, tracked dispatch, and checkout rules for Research Peptides UK orders.',
     contentMarkdown: `
+### UK buyer shipping questions
+
+#### Where can I buy research peptides in the United Kingdom with tracked delivery?
+Orders are placed through the online catalogue; qualifying **UK addresses** (England, Scotland, Wales, and Northern Ireland) receive shipping methods from the checkout engine, including tracked options when configured.
+
+#### How to buy peptides online in London, Manchester, Glasgow, or Edinburgh
+Enter your delivery address at checkout. Major UK cities are supported when the shipping engine validates your postcode and order.
+
+#### How much is UK shipping for peptide orders?
+Rates, free-delivery thresholds, and estimated windows are shown **at checkout** from live configuration — for example the default UK mainland method listed below when published in store settings.
+
+---
+
+### At a glance — UK and European dispatch
+
+Orders ship from the United Kingdom using methods configured in the storefront shipping engine (prices, destinations, tracking, and estimated windows are shown at checkout). This policy describes how shipping is calculated; it is not a universal same-day or cold-chain guarantee unless a method is explicitly configured that way.
+
 ### How shipping is calculated
 
 Checkout uses the configured shipping engine. Destination, method name, price, estimated window, and whether tracking is available are taken from those records. Marketing phrases such as same-day dispatch or cold-chain handling are not used unless a method is actually configured that way.
@@ -504,6 +565,10 @@ You can modify your cookie consent settings at any time using our Cookie Consent
     seoTitle: 'Research-Use Only Statement & Agreement | Research Peptides UK',
     seoDescription: 'Mandatory statutory in-vitro research use only statement, compliance obligations, and purchaser certification.',
     contentMarkdown: `
+### At a glance — who may buy research peptides UK
+
+Purchasers must be authorised researchers or institutional buyers who confirm **in-vitro laboratory use only**. Products are not medicines and are not for human or veterinary administration. Checkout requires acceptance of this research-use policy before payment.
+
 # STATUTORY DECLARATION: IN-VITRO LABORATORY USE ONLY
 
 ### STRICT WARNING & REGULATORY NOTICE

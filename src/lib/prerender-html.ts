@@ -5,6 +5,7 @@
 import { CMSPage, Product, ProductCategory } from '../types';
 import { isListedShopCategory } from './catalogue-collections';
 import { isPublicCatalogueProduct } from './merchandising';
+import { buildPrerenderResourceNav } from './internal-linking';
 import { categoryPath, parseAppPath } from './routing';
 import { getSeoMetadataForPath, HOME_PRERENDER_H1, PRIMARY_DOMAIN, SeoMetadata } from './seo';
 
@@ -39,23 +40,15 @@ export function resolvePrerenderSeo(
   return getSeoMetadataForPath(path, { product, category, cmsPage });
 }
 
-export function buildPrerenderBody(path: string, seo: SeoMetadata): string {
+export function buildPrerenderBody(
+  path: string,
+  seo: SeoMetadata,
+  options?: { categoryPath?: string }
+): string {
   const heading = path === '/' ? HOME_PRERENDER_H1 : seo.ogTitle || seo.title;
   const intro = seo.description;
   const shopUrl = `${PRIMARY_DOMAIN}/shop`;
-
-  const resourceLinks =
-    path === '/'
-      ? `<nav aria-label="Research resources">
-  <h2 class="sr-only">Research resources</h2>
-  <ul>
-    <li><a href="${PRIMARY_DOMAIN}/quality">Quality &amp; HPLC documentation</a></li>
-    <li><a href="${PRIMARY_DOMAIN}/shipping">Shipping &amp; delivery</a></li>
-    <li><a href="${PRIMARY_DOMAIN}/research-use">Research-use policy</a></li>
-    <li><a href="${PRIMARY_DOMAIN}/research">Technical documentation</a></li>
-  </ul>
-</nav>`
-      : '';
+  const resourceLinks = buildPrerenderResourceNav(path, options?.categoryPath);
 
   return `<main id="prerender-main">
   <h1>${escapeHtml(heading)}</h1>

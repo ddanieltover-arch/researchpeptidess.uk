@@ -52,6 +52,9 @@ export const Footer: React.FC = () => {
             <AppLink href={ROUTES.shop} className={footerLinkClass}>
               Shop
             </AppLink>
+            <AppLink href="/product/bacteriostatic-water-0-9-benzyl" className={footerLinkClass}>
+              Bacteriostatic water
+            </AppLink>
             <AppLink href={ROUTES.account} className={footerLinkClass}>
               Account
             </AppLink>

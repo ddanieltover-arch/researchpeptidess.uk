@@ -195,8 +195,13 @@ function aliasMatches(compact: string, slugCompact: string, alias: string): bool
   return false;
 }
 
+function isPenListing(name: string, slug: string): boolean {
+  return /\bpen\b/i.test(`${name} ${slug}`);
+}
+
 export function matchExisting(name: string, slug: string, usedIds: Set<string>): ExistingRecord | null {
   const wcIsBlend = isBlendName(name, slug);
+  const wcIsPen = isPenListing(name, slug);
   const compactName = compactKey(name);
   const slugCompact = compactKey(slug);
   const wcKeys = new Set(keysFor(name, slug));
@@ -206,6 +211,7 @@ export function matchExisting(name: string, slug: string, usedIds: Set<string>):
     if (!aliasMatches(compactName, slugCompact, alias) && !wcKeys.has(alias)) continue;
     const rec = EXISTING_CATALOG.find((row) => row.id === id);
     if (!rec || usedIds.has(rec.id) || rec.extraKind === 'nasal' || rec.extraKind === 'equipment') continue;
+    if (wcIsPen !== isPenListing(rec.name, rec.slug)) continue;
     if (wcIsBlend && !BLEND_IDS.has(rec.id) && rec.categoryId !== 'cat-reagents') continue;
     if (!wcIsBlend && BLEND_IDS.has(rec.id)) continue;
     return rec;
@@ -215,6 +221,7 @@ export function matchExisting(name: string, slug: string, usedIds: Set<string>):
   for (const rec of EXISTING_CATALOG) {
     if (usedIds.has(rec.id)) continue;
     if (rec.extraKind === 'nasal' || rec.extraKind === 'equipment') continue;
+    if (wcIsPen !== isPenListing(rec.name, rec.slug)) continue;
     if (wcIsBlend && !BLEND_IDS.has(rec.id)) continue;
     if (!wcIsBlend && BLEND_IDS.has(rec.id)) continue;
 

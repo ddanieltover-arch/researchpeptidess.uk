@@ -28,5 +28,23 @@ Disallow: /checkout/*
 Disallow: /payment-verification/*
 Disallow: /api/*
 
+# OpenAI search crawler (eligibility only — not evidence of citation or ranking)
+User-agent: OAI-SearchBot
+Allow: /
+Allow: /shop
+Allow: /peptides
+Allow: /research-chemicals
+Allow: /product/
+Allow: /quality
+Allow: /faq
+Allow: /research-use
+Allow: /shipping
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /api/*
+
 # Sitemap Location
 Sitemap: https://researchpeptidess.uk/sitemap.xml

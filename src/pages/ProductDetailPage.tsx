@@ -15,6 +15,8 @@ import { recordRecentlyViewed } from '../lib/recently-viewed';
 import { ProductShippingPanel } from '../components/product/ProductShippingPanel';
 import { BatchDocumentationPanel } from '../components/product/BatchDocumentationPanel';
 import { RecentlyViewedRail } from '../components/catalogue/RecentlyViewedRail';
+import { SiteResearchResources } from '../components/content/SiteResearchResources';
+import { ProductUkBuyerQuestions } from '../components/product/ProductUkBuyerQuestions';
 import {
   ShieldCheck,
   Plus,
@@ -529,6 +531,14 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         )}
       </section>
+
+      <ProductUkBuyerQuestions product={product} />
+
+      <SiteResearchResources
+        pathname={productPath(product.slug)}
+        categoryPath={category ? categoryPath(category.slug) : undefined}
+        className="mt-8"
+      />
 
       {relatedProducts.length > 0 && (
         <section className="space-y-6 pt-6 border-t border-slate-200">

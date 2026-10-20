@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { INITIAL_CMS_PAGES } from '../src/lib/cms-data';
 import { INITIAL_CATEGORIES } from '../src/lib/data/categories';
 import { ALL_CATALOGUE_PRODUCTS } from '../src/lib/data/all-products';
+import { categoryPath } from '../src/lib/routing';
 import {
   applyPrerenderShell,
   buildPrerenderBody,
@@ -23,7 +24,14 @@ for (const path of paths) {
   if (seo.robots.includes('noindex')) {
     continue;
   }
-  const body = buildPrerenderBody(path, seo);
+  let categoryPathForNav: string | undefined;
+  if (path.startsWith('/product/')) {
+    const slug = path.replace('/product/', '');
+    const product = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === slug);
+    const cat = product ? INITIAL_CATEGORIES.find((c) => c.id === product.categoryId) : undefined;
+    categoryPathForNav = cat ? categoryPath(cat.slug) : undefined;
+  }
+  const body = buildPrerenderBody(path, seo, { categoryPath: categoryPathForNav });
   const html = applyPrerenderShell(template, seo, body);
   const relative = path === '/' ? 'index.html' : `${path.replace(/^\//, '')}/index.html`;
   const outPath = resolve(distDir, relative);

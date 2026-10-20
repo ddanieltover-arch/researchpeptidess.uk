@@ -5,6 +5,7 @@ import { PRODUCTS_REAGENTS, PRODUCTS_EQUIPMENT } from './products-reagents-equip
 import { getProductImage } from '../product-image-generator';
 import { applyShopCategory } from '../shop-category-assignment';
 import { withPurchasableCatalogueStock } from '../catalogue-stock';
+import { withUkBuyerCatalogueCopy } from '../uk-buyer-seo';
 import { REMOVED_PRODUCT_SLUGS } from '../removed-product-slugs';
 import { WOOCOMMERCE_PRODUCTS } from './generated/from-woocommerce';
 import catalog from './generated/woocommerce-catalog.json';
@@ -55,4 +56,5 @@ export const ALL_CATALOGUE_PRODUCTS: Product[] = [...WOOCOMMERCE_PRODUCTS, ...EX
   .filter((product) => !REMOVED_PRODUCT_SLUGS.has(product.slug))
   .map(applyShopCategory)
   .map(withCatalogueImages)
-  .map(withPurchasableCatalogueStock);
+  .map(withPurchasableCatalogueStock)
+  .map(withUkBuyerCatalogueCopy);

@@ -4,13 +4,13 @@ import { categoryPath, productPath, ROUTES } from '../../lib/routing';
 
 /** Homepage keyword links mapped onto existing catalogue URLs only. */
 const BUY_PEPTIDES_LINKS = [
-  { label: 'Peptide Capsules', href: productPath('mk-677-ibutamoren-10mg-100-tablets') },
-  { label: 'Purchase Peptides', href: ROUTES.peptides },
-  { label: 'Peptide Blends', href: productPath('glow-blend-ghk-cu-bpc157-tb500') },
-  { label: 'IGF-1 Proteins', href: productPath('igf-1-lr3-1mg') },
-  { label: 'Melanotan Peptides', href: productPath('mt-2-melanotan-2-acetate-10mg') },
-  { label: 'Peptides Tablets', href: productPath('tesofensine-500mcg-100-tablets') },
-  { label: 'Peptides Vials', href: productPath('bpc-157') },
+  { label: 'How to buy peptides in the United Kingdom', href: ROUTES.peptides },
+  { label: 'Where to buy research peptides — UK catalogue', href: ROUTES.shop },
+  { label: 'Buy BPC-157 in the UK', href: productPath('bpc-157') },
+  { label: 'Peptide blends — UK listings', href: productPath('glow-blend-ghk-cu-bpc157-tb500') },
+  { label: 'IGF-1 LR3 — order online UK', href: productPath('igf-1-lr3-1mg') },
+  { label: 'Melanotan research peptide UK', href: productPath('mt-2-melanotan-2-acetate-10mg') },
+  { label: 'Peptide capsules — UK shop', href: productPath('mk-677-ibutamoren-10mg-100-tablets') },
 ] as const;
 
 export const HomeBuyPeptidesKeywords: React.FC = () => {
@@ -24,7 +24,8 @@ export const HomeBuyPeptidesKeywords: React.FC = () => {
             </h2>
           </AppLink>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
-            Research-use listings from the UK catalogue. Each link opens a related collection or product page.
+            Buyer searches — how to buy, where to order, and UK catalogue paths. Each link opens a real product or
+            collection page.
           </p>
           <AppLink
             href={categoryPath('buy-peptides-online')}

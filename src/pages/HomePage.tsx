@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
-import { ProductCard } from '../components/ui/ProductCard';
 import { AppLink } from '../components/ui/AppLink';
 import { NewsletterSignup } from '../components/content/NewsletterSignup';
 import { RecentlyViewedRail } from '../components/catalogue/RecentlyViewedRail';
-import { isListedShopCategory } from '../lib/catalogue-collections';
+import { isListedShopCategory, categoryNavLabel, PEPTIDES_CATEGORY_SLUG, RESEARCH_CHEMICALS_CATEGORY_SLUG } from '../lib/catalogue-collections';
 import { categoryPath, ROUTES } from '../lib/routing';
 import {
   getBestsellerEntries,
   getFeaturedProducts,
   getNewArrivalProducts,
   getBackInStockProducts,
+  getCategoryHighlightProducts,
+  getBlendProducts,
+  getHighPurityProducts,
+  getInStockHighlightProducts,
 } from '../lib/merchandising';
 import { FileCheck2, FlaskConical, ShieldCheck } from 'lucide-react';
 import { HeroFeaturedProduct } from '../components/home/HeroFeaturedProduct';
@@ -18,14 +21,74 @@ import { HeroIntro } from '../components/home/HeroIntro';
 import { HeroTrustBar } from '../components/home/HeroTrustBar';
 import { HomeProofSection } from '../components/home/HomeProofSection';
 import { HomeBuyPeptidesKeywords } from '../components/home/HomeBuyPeptidesKeywords';
+import { HomeUkBuyerQuestions } from '../components/home/HomeUkBuyerQuestions';
+import { HomeProductRail } from '../components/home/HomeProductRail';
+
+const HOME_RAIL_LIMIT = 8;
 
 export const HomePage: React.FC = () => {
   const { publishedProducts, categories, orders, inventoryTransactions, storeSettings } = useStore();
-  const bestsellers = getBestsellerEntries(publishedProducts, orders, 4);
-  const featured = getFeaturedProducts(publishedProducts, 4);
-  const newArrivals = getNewArrivalProducts(publishedProducts, Date.now(), 4);
-  const restocked = getBackInStockProducts(publishedProducts, inventoryTransactions, Date.now(), 4);
+  const now = Date.now();
+
+  const bestsellers = getBestsellerEntries(publishedProducts, orders, HOME_RAIL_LIMIT);
+  const featured = getFeaturedProducts(publishedProducts, HOME_RAIL_LIMIT);
+  const newArrivals = getNewArrivalProducts(publishedProducts, now, HOME_RAIL_LIMIT);
+  const restocked = getBackInStockProducts(publishedProducts, inventoryTransactions, now, HOME_RAIL_LIMIT);
+  const blends = getBlendProducts(publishedProducts, HOME_RAIL_LIMIT);
+  const highPurity = getHighPurityProducts(publishedProducts, 99, HOME_RAIL_LIMIT);
+  const inStockNow = getInStockHighlightProducts(publishedProducts, HOME_RAIL_LIMIT);
+
   const discoveryCategories = categories.filter(isListedShopCategory);
+
+  const categoryRails = useMemo(() => {
+    const rails: Array<{
+      key: string;
+      eyebrow: string;
+      title: string;
+      description?: string;
+      href: string;
+      linkLabel: string;
+      products: ReturnType<typeof getCategoryHighlightProducts>;
+      tone?: 'default' | 'panel';
+    }> = [];
+
+    const orderedCategories = [...discoveryCategories].sort((a, b) => {
+      const rank = (category: { slug?: string; sortOrder?: number }) => {
+        if (category.slug === PEPTIDES_CATEGORY_SLUG) return 0;
+        if (category.slug === RESEARCH_CHEMICALS_CATEGORY_SLUG) return 1;
+        if (category.slug === 'buy-peptides-online') return 2;
+        return 10 + (category.sortOrder ?? 0);
+      };
+      return rank(a) - rank(b);
+    });
+
+    for (const category of orderedCategories) {
+      const products = getCategoryHighlightProducts(publishedProducts, category.id, HOME_RAIL_LIMIT);
+      if (products.length === 0) continue;
+
+      const label = categoryNavLabel(category);
+      const isPrimaryPeptides = category.slug === PEPTIDES_CATEGORY_SLUG;
+      const isResearchChemicals = category.slug === RESEARCH_CHEMICALS_CATEGORY_SLUG;
+
+      rails.push({
+        key: category.id,
+        eyebrow: isPrimaryPeptides ? 'Main catalogue' : isResearchChemicals ? 'Compounds' : 'Collection',
+        title: label,
+        description: isPrimaryPeptides
+          ? 'Core research peptides from the live UK catalogue — formats and batch documentation vary by listing.'
+          : isResearchChemicals
+            ? 'Non-peptide research chemicals with the same documentation and checkout rules as the peptide catalogue.'
+            : category.description,
+        href: categoryPath(category.slug),
+        linkLabel: `Shop ${label} →`,
+        products,
+        tone: isPrimaryPeptides || isResearchChemicals ? 'panel' : 'default',
+      });
+    }
+
+    return rails;
+  }, [discoveryCategories, publishedProducts]);
+
   const heroProduct =
     publishedProducts.find((product) => product.slug === 'tesamorelin') ||
     featured[0] ||
@@ -56,66 +119,80 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {bestsellers.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
-          <div className="mb-8 flex items-end justify-between border-b border-slate-200 pb-4">
-            <div>
-              <span className="mb-1 block font-mono text-xs font-bold tracking-widest text-[#4353FF] uppercase">
-                From completed orders
-              </span>
-              <h2 className="font-mono text-xl font-bold text-slate-900 sm:text-2xl">Bestsellers</h2>
-            </div>
-            <AppLink href={ROUTES.shop} className="font-mono text-xs font-bold tracking-wider text-[#4353FF] uppercase">
-              Shop catalogue →
-            </AppLink>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-            {bestsellers.map((entry) => (
-              <ProductCard key={entry.product.id} product={entry.product} />
-            ))}
-          </div>
-        </section>
-      )}
+      <HomeProductRail
+        eyebrow="From completed orders"
+        title="Bestsellers"
+        products={bestsellers.map((entry) => entry.product)}
+        href={ROUTES.shop}
+        linkLabel="Shop catalogue →"
+      />
 
-      {featured.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
-          <div className="mb-8 flex items-end justify-between border-b border-slate-200 pb-4">
-            <div>
-              <span className="mb-1 block font-mono text-xs font-bold tracking-widest text-[#4353FF] uppercase">
-                Admin merchandising
-              </span>
-              <h2 className="font-mono text-xl font-bold text-slate-900 sm:text-2xl">Featured catalogue</h2>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-            {featured.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
+      <HomeProductRail
+        eyebrow="Admin merchandising"
+        title="Featured catalogue"
+        products={featured}
+        href={ROUTES.shop}
+        linkLabel="View featured →"
+      />
 
-      {newArrivals.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
-          <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">New arrivals</h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-            {newArrivals.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
+      <HomeProductRail
+        eyebrow="Recently published"
+        title="New arrivals"
+        description="Listings added or pinned as new in the last 30 days."
+        products={newArrivals}
+        href={ROUTES.shop}
+        linkLabel="Browse new listings →"
+      />
 
-      {restocked.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
-          <h2 className="mb-6 font-mono text-xl font-bold text-slate-900">Back in stock</h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
-            {restocked.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
+      <HomeProductRail
+        eyebrow="Inventory"
+        title="Back in stock"
+        description="Variants restocked in the last three weeks."
+        products={restocked}
+        href={ROUTES.shop}
+        linkLabel="Shop restocked items →"
+      />
+
+      <HomeProductRail
+        eyebrow="Dispatch"
+        title="In stock now"
+        description="Published listings with available variant stock for UK dispatch."
+        products={inStockNow}
+        href={ROUTES.shop}
+        linkLabel="Shop in-stock →"
+        tone="panel"
+      />
+
+      <HomeProductRail
+        eyebrow="Analytical"
+        title="99%+ HPLC highlights"
+        description="Purity values recorded on the product record — not a blanket site-wide claim."
+        products={highPurity}
+        href="/quality"
+        linkLabel="Quality approach →"
+      />
+
+      <HomeProductRail
+        eyebrow="Formulations"
+        title="Peptide blends"
+        description="Multi-compound blends and stacks from the live catalogue."
+        products={blends}
+        href={ROUTES.peptides}
+        linkLabel="Browse peptides →"
+      />
+
+      {categoryRails.map((rail) => (
+        <HomeProductRail
+          key={rail.key}
+          eyebrow={rail.eyebrow}
+          title={rail.title}
+          description={rail.description}
+          products={rail.products}
+          href={rail.href}
+          linkLabel={rail.linkLabel}
+          tone={rail.tone}
+        />
+      ))}
 
       <section className="border-y border-slate-200 bg-white py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
@@ -175,9 +252,10 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-5">
-            <h3 className="font-mono text-sm font-bold text-slate-900">Configured shipping</h3>
+            <h3 className="font-mono text-sm font-bold text-slate-900">UK ordering &amp; delivery</h3>
             <p className="mt-2 text-xs leading-relaxed text-slate-600">
-              Destination, method, price, window, and tracking come from the shipping engine at checkout.
+              How to buy, where UK delivery applies (London, Manchester, Scotland, and more), and GBP pricing are
+              answered on product pages and in the FAQ — checkout confirms shipping and totals.
             </p>
           </div>
         </div>
@@ -202,7 +280,7 @@ export const HomePage: React.FC = () => {
               <span className="inline-flex rounded-md border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#4353FF] uppercase">
                 {cat.productCount ?? 0} published
               </span>
-              <h3 className="font-mono text-sm font-bold text-slate-900 group-hover:text-[#4353FF]">{cat.name}</h3>
+              <h3 className="font-mono text-sm font-bold text-slate-900 group-hover:text-[#4353FF]">{categoryNavLabel(cat)}</h3>
               <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{cat.description}</p>
               <span className="inline-flex font-mono text-[11px] font-bold tracking-wider text-[#4353FF] uppercase">
                 View collection
@@ -213,6 +291,8 @@ export const HomePage: React.FC = () => {
       </section>
 
       <HomeBuyPeptidesKeywords />
+
+      <HomeUkBuyerQuestions />
 
       <section className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
         <div className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-6 md:grid-cols-2">

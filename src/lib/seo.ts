@@ -15,19 +15,29 @@ import { categoryPath } from './routing';
 import { STORE_CONTACT_EMAIL, STORE_WHATSAPP_URL } from './store-contact';
 import { isListedShopCategory } from './catalogue-collections';
 import { isPublicCatalogueProduct } from './merchandising';
+import {
+  buildHomeUkBuyerFaqJsonLd,
+  buildPageUkBuyerFaqJsonLd,
+  buildProductUkFaqJsonLd,
+  buildProductUkSeoDescription,
+  FAQ_UK_BUYER_TOPICS,
+  getCatalogueUkBuyerTopics,
+  SHIPPING_UK_BUYER_TOPICS,
+} from './uk-buyer-seo';
+import { buildProductListingTitle } from './product-seo-titles';
 
 export const PRIMARY_DOMAIN = 'https://researchpeptidess.uk';
 
 /** Homepage SERP copy aligned to observed GSC query themes (UK + research-grade). */
 export const HOME_PAGE_TITLE = 'Research Peptides UK | Research-Grade Peptides UK';
 export const HOME_PAGE_DESCRIPTION =
-  'Buy research-grade peptides from a UK in-vitro laboratory catalogue. Documentation and batch records are shown only where they exist.';
+  'Buy research-grade peptides in the United Kingdom — how to order, where UK delivery applies, and GBP catalogue pricing. In-vitro laboratory use only; documentation where batch records exist.';
 export const HOME_PRERENDER_H1 =
   'Research Peptides UK — Research-Grade Peptides for In-Vitro Laboratory Use';
 
 export const PEPTIDES_PAGE_TITLE = 'Buy Research Peptides UK | In-Vitro Peptide Catalogue';
 export const PEPTIDES_PAGE_DESCRIPTION =
-  'Buy research peptides UK from a published laboratory catalogue. In-vitro use only; batch documentation shown where records exist.';
+  'Where to buy research peptides in the United Kingdom — browse the published in-vitro catalogue, compare GBP variant prices, and order with UK dispatch when checkout qualifies.';
 
 export interface SeoMetadata {
   title: string;
@@ -77,8 +87,8 @@ export function getSeoMetadataForPath(
     const activeVariants = p.variants?.filter((v) => v.status === 'ACTIVE' || v.status === 'LOW_STOCK') || [];
     const inStock = activeVariants.some((v) => (v.stock - (v.reservedStock || 0)) > 0);
 
-    const title = `${p.name} | Research Peptides UK`;
-    const description = `${p.shortDescription || p.name} for laboratory research.${p.casNumber ? ` CAS ${p.casNumber}.` : ''} Documentation is shown only where a batch record exists.`;
+    const title = buildProductListingTitle(p);
+    const description = buildProductUkSeoDescription(p);
     const primaryImg = p.images?.find((img) => img.isPrimary)?.url || p.images?.[0]?.url || `${PRIMARY_DOMAIN}/og-image.svg`;
 
     // Only index published products
@@ -177,6 +187,8 @@ export function getSeoMetadataForPath(
       });
     }
 
+    jsonLd.push(buildProductUkFaqJsonLd(p, canonicalUrl));
+
     return {
       title,
       description,
@@ -232,6 +244,21 @@ export function getSeoMetadataForPath(
   // 3. CMS Pages
   if (context?.cmsPage) {
     const cms = context.cmsPage;
+    const jsonLd: Record<string, unknown>[] = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: cms.title,
+        description: cms.seoDescription,
+        url: canonicalUrl,
+      },
+    ];
+    if (cms.slug === 'faq') {
+      jsonLd.push(buildPageUkBuyerFaqJsonLd('/faq', FAQ_UK_BUYER_TOPICS));
+    }
+    if (cms.slug === 'shipping') {
+      jsonLd.push(buildPageUkBuyerFaqJsonLd('/shipping', SHIPPING_UK_BUYER_TOPICS));
+    }
     return {
       title: `${cms.title} | Research Peptides UK`,
       description: cms.seoDescription,
@@ -240,15 +267,7 @@ export function getSeoMetadataForPath(
       ogDescription: cms.seoDescription,
       ogType: 'article',
       robots: cms.isPublished ? 'index, follow' : 'noindex, nofollow',
-      jsonLd: [
-        {
-          '@context': 'https://schema.org',
-          '@type': 'WebPage',
-          name: cms.title,
-          description: cms.seoDescription,
-          url: canonicalUrl,
-        },
-      ],
+      jsonLd,
     };
   }
 
@@ -271,6 +290,16 @@ export function getSeoMetadataForPath(
     const hasSearch = Boolean(context?.searchQuery && context.searchQuery.trim().length > 0);
     const pathOnly = path.split('?')[0] || '/shop';
     const canonicalPath = pathOnly.startsWith('/search') ? '/shop' : pathOnly;
+    const catalogueContext =
+      pathOnly === '/peptides'
+        ? 'peptides'
+        : pathOnly === '/research-chemicals'
+          ? 'research-chemicals'
+          : 'shop';
+    const shopJsonLd: Record<string, unknown>[] = hasSearch
+      ? []
+      : [buildPageUkBuyerFaqJsonLd(canonicalPath, getCatalogueUkBuyerTopics(catalogueContext))];
+
     return {
       title: hasSearch
         ? `Search: "${context?.searchQuery}" | Research Peptides UK`
@@ -282,7 +311,9 @@ export function getSeoMetadataForPath(
       description:
         pathOnly === '/peptides'
           ? PEPTIDES_PAGE_DESCRIPTION
-          : 'Browse published research peptides and laboratory catalogue items. Documentation is shown only where batch records exist.',
+          : pathOnly === '/research-chemicals'
+            ? 'Where to buy research chemicals in the United Kingdom — published in-vitro catalogue, GBP prices on each listing, UK dispatch when checkout qualifies.'
+            : 'How to buy research peptides and laboratory reagents in the UK — browse the shop, compare GBP prices, and order with delivery confirmed at checkout.',
       canonicalUrl: `${PRIMARY_DOMAIN}${canonicalPath}`,
       ogTitle:
         pathOnly === '/peptides' ? PEPTIDES_PAGE_TITLE : 'Catalogue | Research Peptides UK',
@@ -292,6 +323,7 @@ export function getSeoMetadataForPath(
           : 'Research peptides and laboratory reagents for in-vitro use.',
       ogType: 'website',
       robots: hasSearch ? 'noindex, follow' : 'index, follow',
+      jsonLd: shopJsonLd.length > 0 ? shopJsonLd : undefined,
     };
   }
 
@@ -331,6 +363,7 @@ export function getSeoMetadataForPath(
           'query-input': 'required name=search_term_string',
         },
       },
+      buildHomeUkBuyerFaqJsonLd(),
     ],
   };
 }
@@ -441,6 +474,24 @@ Disallow: /cart
 Disallow: /checkout
 Disallow: /checkout/*
 Disallow: /payment-verification/*
+Disallow: /api/*
+
+# OpenAI search crawler (eligibility only — not evidence of citation or ranking)
+User-agent: OAI-SearchBot
+Allow: /
+Allow: /shop
+Allow: /peptides
+Allow: /research-chemicals
+Allow: /product/
+Allow: /quality
+Allow: /faq
+Allow: /research-use
+Allow: /shipping
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
 Disallow: /api/*
 
 # Sitemap Location

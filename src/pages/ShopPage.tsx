@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ProductCard } from '../components/ui/ProductCard';
 import { Input } from '../components/ui/Input';
@@ -10,8 +10,20 @@ import { categoryPath, ROUTES, searchPath } from '../lib/routing';
 import { productMatchesQuery } from '../lib/catalogue-search';
 import { getProductPriceBounds } from '../lib/product-display';
 import { calculateBestsellerScores } from '../lib/merchandising';
-import { isListedShopCategory, RESEARCH_CHEMICALS_CATEGORY_SLUG } from '../lib/catalogue-collections';
+import {
+  isListedShopCategory,
+  PEPTIDES_CATEGORY_SLUG,
+  RESEARCH_CHEMICALS_CATEGORY_SLUG,
+} from '../lib/catalogue-collections';
+import { PEPTIDES_DEMAND_FEATURED_SLUGS, pickProductsBySlug } from '../lib/featured-catalogue';
+import { FeaturedDemandProducts } from '../components/catalogue/FeaturedDemandProducts';
+import type { CatalogueBuyerContext } from '../lib/uk-buyer-seo';
 import { Search, LayoutGrid, List } from 'lucide-react';
+import { SiteResearchResources } from '../components/content/SiteResearchResources';
+import { CatalogueUkBuyerQuestions } from '../components/catalogue/CatalogueUkBuyerQuestions';
+import { Pagination } from '../components/ui/Pagination';
+
+const SHOP_PRODUCTS_PER_PAGE = 30;
 
 export const ShopPage: React.FC = () => {
   const {
@@ -22,12 +34,14 @@ export const ShopPage: React.FC = () => {
     setSearchQuery,
     navigate,
     orders,
+    currentPath,
   } = useStore();
 
   const [sortBy, setSortBy] = useState<string>('featured');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const bestsellerScores = useMemo(() => calculateBestsellerScores(orders), [orders]);
   const activeCategory = categories.find((category) => category.slug === selectedCategorySlug);
@@ -84,8 +98,45 @@ export const ShopPage: React.FC = () => {
     bestsellerScores,
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / SHOP_PRODUCTS_PER_PAGE));
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * SHOP_PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(start, start + SHOP_PRODUCTS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategorySlug, searchQuery, minPrice, maxPrice, sortBy]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const pageRangeStart =
+    filteredProducts.length === 0 ? 0 : (currentPage - 1) * SHOP_PRODUCTS_PER_PAGE + 1;
+  const pageRangeEnd = Math.min(currentPage * SHOP_PRODUCTS_PER_PAGE, filteredProducts.length);
+
   const isResearchChemicalsEmpty =
     selectedCategorySlug === RESEARCH_CHEMICALS_CATEGORY_SLUG && filteredProducts.length === 0 && !searchQuery.trim();
+
+  const isPeptidesCollection =
+    selectedCategorySlug === PEPTIDES_CATEGORY_SLUG || currentPath === ROUTES.peptides;
+
+  const featuredDemandProducts = useMemo(
+    () => (isPeptidesCollection ? pickProductsBySlug(publishedProducts, PEPTIDES_DEMAND_FEATURED_SLUGS) : []),
+    [isPeptidesCollection, publishedProducts]
+  );
+
+  const catalogueBuyerContext: CatalogueBuyerContext = isPeptidesCollection
+    ? 'peptides'
+    : selectedCategorySlug === RESEARCH_CHEMICALS_CATEGORY_SLUG || currentPath === ROUTES.researchChemicals
+      ? 'research-chemicals'
+      : selectedCategorySlug
+        ? 'category'
+        : 'shop';
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
@@ -117,6 +168,14 @@ export const ShopPage: React.FC = () => {
           {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
         </Badge>
       </div>
+
+      {isPeptidesCollection && featuredDemandProducts.length > 0 ? (
+        <FeaturedDemandProducts
+          title="High-demand research peptides & reagents"
+          description="Published listings aligned to common UK laboratory searches — including solvents, blends, and single-compound formats. Documentation appears only where batch records exist."
+          products={featuredDemandProducts}
+        />
+      ) : null}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         <aside className="space-y-6 lg:sticky lg:top-20 lg:z-10 lg:col-span-3 lg:self-start lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">
@@ -258,18 +317,38 @@ export const ShopPage: React.FC = () => {
               }}
             />
           ) : (
-            <div
-              className={`grid gap-3 sm:gap-6 ${
-                viewMode === 'grid' ? 'grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'
-              }`}
-            >
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} layout={viewMode} />
-              ))}
-            </div>
+            <>
+              <p className="font-mono text-[11px] font-medium text-slate-500">
+                Showing {pageRangeStart}–{pageRangeEnd} of {filteredProducts.length}
+              </p>
+              <div
+                className={`grid gap-3 sm:gap-6 ${
+                  viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                }`}
+              >
+                {paginatedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} layout={viewMode} />
+                ))}
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
+            </>
           )}
         </div>
       </div>
+
+      <CatalogueUkBuyerQuestions context={catalogueBuyerContext} />
+
+      <SiteResearchResources
+        pathname={selectedCategorySlug && activeCategory ? categoryPath(activeCategory.slug) : ROUTES.shop}
+        className="mt-10"
+      />
     </div>
   );
 };

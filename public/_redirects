@@ -1,4 +1,3 @@
-/api/*  /api/:splat  200
 /product/bpc-157-reference-standard /product/bpc-157 301
 /product/tb-500-thymosin-beta-4-derivative /product/thymosin-beta-4-tb500-10mg 301
 /product/semaglutide-reference-standard /product/sema 301

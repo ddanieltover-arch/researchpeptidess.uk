@@ -127,6 +127,50 @@ export function getNewArrivalProducts(products: Product[], now = Date.now(), lim
     .slice(0, limit);
 }
 
+function compareStorefrontMerchandising(a: Product, b: Product): number {
+  if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+  return (b.merchandising?.priority || 0) - (a.merchandising?.priority || 0);
+}
+
+function productTotalStock(product: Product): number {
+  return (product.variants || []).reduce((sum, variant) => sum + Math.max(0, variant.stock), 0);
+}
+
+export function getCategoryHighlightProducts(
+  products: Product[],
+  categoryId: string,
+  limit = 8
+): Product[] {
+  return products
+    .filter((product) => isStorefrontVisible(product) && product.categoryId === categoryId)
+    .sort(compareStorefrontMerchandising)
+    .slice(0, limit);
+}
+
+export function getBlendProducts(products: Product[], limit = 8): Product[] {
+  return products
+    .filter((product) => isStorefrontVisible(product) && product.productType === 'BLEND')
+    .sort(compareStorefrontMerchandising)
+    .slice(0, limit);
+}
+
+export function getHighPurityProducts(products: Product[], minPurity = 99, limit = 8): Product[] {
+  return products
+    .filter((product) => isStorefrontVisible(product) && (product.purityValue ?? 0) >= minPurity)
+    .sort((a, b) => (b.purityValue ?? 0) - (a.purityValue ?? 0))
+    .slice(0, limit);
+}
+
+export function getInStockHighlightProducts(products: Product[], limit = 8): Product[] {
+  return products
+    .filter((product) => {
+      if (!isStorefrontVisible(product)) return false;
+      return (product.variants || []).some((variant) => variant.stock > 0);
+    })
+    .sort((a, b) => productTotalStock(b) - productTotalStock(a))
+    .slice(0, limit);
+}
+
 export function getBackInStockProducts(
   products: Product[],
   transactions: InventoryTransaction[],

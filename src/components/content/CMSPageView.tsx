@@ -21,6 +21,9 @@ import { ContactEnquiryForm } from './ContactEnquiryForm';
 import { resolvePublicBusinessValue } from '../../lib/public-placeholders';
 import { STORE_WHATSAPP_DISPLAY } from '../../lib/store-contact';
 import { WhatsAppContactLink } from '../layout/WhatsAppContactLink';
+import { CmsGeoCatalogueLinks } from './CmsGeoCatalogueLinks';
+import { UkBuyerQuestionsPanel } from './UkBuyerQuestionsPanel';
+import { FAQ_UK_BUYER_TOPICS, SHIPPING_UK_BUYER_TOPICS } from '../../lib/uk-buyer-seo';
 import {
   ShieldAlert,
   ChevronRight,
@@ -265,6 +268,28 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
         <article className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-10 shadow-sm prose prose-stone max-w-none">
           {renderMarkdownElements(resolvedMarkdown)}
         </article>
+
+        {page.slug === 'faq' && (
+          <UkBuyerQuestionsPanel
+            variant="cms"
+            id="faq-uk-buyer-questions"
+            title="UK buyer questions — quick answers"
+            intro="Search-friendly ordering questions for the United Kingdom catalogue. Each answer links to a live route where applicable."
+            topics={FAQ_UK_BUYER_TOPICS}
+          />
+        )}
+
+        {page.slug === 'shipping' && (
+          <UkBuyerQuestionsPanel
+            variant="cms"
+            id="shipping-uk-buyer-questions"
+            title="Shipping & delivery questions for UK buyers"
+            intro="Where UK delivery applies, how checkout calculates rates, and how tracked dispatch works — aligned to the shipping engine, not marketing slogans."
+            topics={SHIPPING_UK_BUYER_TOPICS}
+          />
+        )}
+
+        <CmsGeoCatalogueLinks slug={page.slug} />
 
         {page.slug === 'contact' && (
           <>

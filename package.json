@@ -13,6 +13,11 @@
     "db:migrate": "tsx scripts/apply-migrations.ts",
     "sync:woocommerce": "tsx scripts/woocommerce-sync/index.ts",
     "sync:woocommerce:dry": "tsx scripts/woocommerce-sync/index.ts --dry-run",
+    "catalog:gap": "node scripts/catalog-gap-analysis.mjs",
+    "catalog:import-gap": "tsx scripts/import-reference-gap.ts",
+    "catalog:import-gap:dry": "tsx scripts/import-reference-gap.ts --dry-run",
+    "catalog:import-supabase:dry": "tsx scripts/import-supabase-products-sql.ts --file \"%USERPROFILE%\\Downloads\\products_rows.sql\" --dry-run",
+    "catalog:import-supabase": "tsx scripts/import-supabase-products-sql.ts --file \"%USERPROFILE%\\Downloads\\products_rows.sql\"",
     "db:push": "drizzle-kit push",
     "seed:admin": "tsx scripts/seed-admin.ts"
   },

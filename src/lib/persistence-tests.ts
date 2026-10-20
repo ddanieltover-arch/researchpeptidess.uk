@@ -19,6 +19,10 @@ import {
 import { resolvePublicBusinessValue, UNPUBLISHED_BUSINESS_DETAIL } from './public-placeholders';
 import { getSeoMetadataForPath, generateRobotsTxt } from './seo';
 import { applyPrerenderShell, buildPrerenderBody, collectPrerenderPaths } from './prerender-html';
+import { resourceLinksForPath, SITE_INTERNAL_RESOURCE_LINKS } from './internal-linking';
+import { categoryPath } from './routing';
+import { buildProductListingTitle } from './product-seo-titles';
+import { PEPTIDES_DEMAND_FEATURED_SLUGS, pickProductsBySlug } from './featured-catalogue';
 import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
 import { INITIAL_CATEGORIES } from './data/categories';
 import { INITIAL_CMS_PAGES } from './cms-data';
@@ -291,6 +295,49 @@ export function runPersistenceTests(): TestResult[] {
         actual: logo,
       };
     }),
+    run('Featured demand slugs resolve to published catalogue products', () => {
+      const picked = pickProductsBySlug(ALL_CATALOGUE_PRODUCTS, PEPTIDES_DEMAND_FEATURED_SLUGS);
+      const passed = picked.length >= 5 && picked.some((p) => p.slug === 'kpv');
+      return {
+        passed,
+        expected: 'at least 5 featured slugs including kpv',
+        actual: `${picked.length} resolved`,
+      };
+    }),
+    run('Priority PDP titles use compound-aligned listing pattern', () => {
+      const kpv = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === 'kpv');
+      if (!kpv) return { passed: false, expected: 'kpv product', actual: 'missing' };
+      const title = buildProductListingTitle(kpv);
+      const passed = title.includes('KPV') && title.includes('Research Peptide UK');
+      return { passed, expected: 'KPV compound title', actual: title };
+    }),
+    run('Internal resource graph exposes catalogue and compliance pillars', () => {
+      const shopLinks = resourceLinksForPath('/shop');
+      const passed =
+        SITE_INTERNAL_RESOURCE_LINKS.length >= 8 &&
+        shopLinks.some((l) => l.href === '/peptides') &&
+        shopLinks.some((l) => l.href === '/research-use');
+      return {
+        passed,
+        expected: 'shop page resource list includes peptides and research-use',
+        actual: shopLinks.map((l) => l.href).join(','),
+      };
+    }),
+    run('Prerender product shell includes category back link in resource nav', () => {
+      const sample = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug);
+      if (!sample) {
+        return { passed: false, expected: 'a catalogue product', actual: 'none' };
+      }
+      const cat = INITIAL_CATEGORIES.find((c) => c.id === sample.categoryId);
+      const path = `/product/${sample.slug}`;
+      const body = buildPrerenderBody(path, getSeoMetadataForPath(path), {
+        categoryPath: cat ? categoryPath(cat.slug) : undefined,
+      });
+      const passed =
+        body.includes('Back to category collection') &&
+        (cat ? body.includes(categoryPath(cat.slug)) : true);
+      return { passed, expected: 'category pillar link in prerender body', actual: body.slice(0, 200) };
+    }),
     run('Prerender shell injects a single H1 and research resource links on home', () => {
       const seo = getSeoMetadataForPath('/');
       const body = buildPrerenderBody('/', seo);
@@ -404,7 +451,9 @@ export function runPersistenceTests(): TestResult[] {
         robots.includes('Disallow: /cart') &&
         robots.includes('Disallow: /checkout') &&
         robots.includes('Disallow: /account') &&
-        robots.includes('Disallow: /admin');
+        robots.includes('Disallow: /admin') &&
+        robots.includes('User-agent: OAI-SearchBot') &&
+        robots.includes('Allow: /quality');
       return {
         passed,
         expected: 'Sitemap + transactional disallows',

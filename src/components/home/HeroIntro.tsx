@@ -30,8 +30,10 @@ export const HeroIntro: React.FC = () => {
 
       <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-slate-500 sm:text-lg">
         Premium British research peptides independently verified to{' '}
-        <strong className="font-semibold text-slate-700">99%+ HPLC purity</strong> — dispatched same-day from
-        the UK with full COA available on request.
+        <strong className="font-semibold text-slate-700">99%+ HPLC purity</strong> — dispatched from the UK with
+        COA where batch records exist. If you are looking for{' '}
+        <strong className="font-semibold text-slate-600">how to buy research peptides in the United Kingdom</strong>,
+        start with the catalogue; UK delivery and GBP pricing are confirmed at checkout.
       </p>
 
       <ul className="mt-5 flex flex-wrap gap-2">
