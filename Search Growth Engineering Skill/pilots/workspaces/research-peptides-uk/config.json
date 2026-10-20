@@ -3,8 +3,8 @@
   "display_name": "Research Peptides UK",
   "project_type": "ecommerce-or-catalogue",
   "traits": ["highly-competitive", "commercial", "compliance-sensitive"],
-  "target_url": "",
-  "target_domain": "",
+  "target_url": "https://researchpeptidess.uk",
+  "target_domain": "researchpeptidess.uk",
   "connectors": ["gsc", "ga4", "serpapi"],
   "notes": [
     "Set target_url from first-party knowledge before audit.",

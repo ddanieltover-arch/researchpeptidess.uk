@@ -1,4 +1,5 @@
 import { STORE_CONTACT_EMAIL } from '../store-contact';
+import { PRIMARY_DOMAIN } from '../seo';
 
 export const EMAIL_BRAND = {
   name: 'Research Peptides UK',
@@ -6,7 +7,7 @@ export const EMAIL_BRAND = {
   tagline: 'High-purity analytical & in-vitro research biochemicals',
   legalLine: 'For in-vitro laboratory research use only. Not for human or veterinary use.',
   supportEmail: STORE_CONTACT_EMAIL,
-  siteUrl: 'https://www.researchpeptidess.uk',
+  siteUrl: PRIMARY_DOMAIN,
   colors: {
     navy: '#0B132B',
     primary: '#4353FF',

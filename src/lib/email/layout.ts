@@ -209,6 +209,6 @@ function getHostLabel(): string {
   try {
     return new URL(sitePath('/')).host;
   } catch {
-    return 'www.researchpeptidess.uk';
+    return 'researchpeptidess.uk';
   }
 }

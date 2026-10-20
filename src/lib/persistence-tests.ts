@@ -18,6 +18,10 @@ import {
 } from './settlement-instructions';
 import { resolvePublicBusinessValue, UNPUBLISHED_BUSINESS_DETAIL } from './public-placeholders';
 import { getSeoMetadataForPath, generateRobotsTxt } from './seo';
+import { applyPrerenderShell, buildPrerenderBody, collectPrerenderPaths } from './prerender-html';
+import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
+import { INITIAL_CATEGORIES } from './data/categories';
+import { INITIAL_CMS_PAGES } from './cms-data';
 import { Product } from '../types';
 import { isPublicBootstrapSafe } from './public-bootstrap';
 import { normalizeNeonConnectionString } from './neon-connection-string';
@@ -243,6 +247,17 @@ export function runPersistenceTests(): TestResult[] {
         actual: `${resolved} / ${phone}`,
       };
     }),
+    run('Peptides collection title targets buy research peptides UK query cluster', () => {
+      const seo = getSeoMetadataForPath('/peptides');
+      const passed =
+        seo.title.toLowerCase().includes('buy research peptides uk') &&
+        seo.canonicalUrl === 'https://researchpeptidess.uk/peptides';
+      return {
+        passed,
+        expected: 'buy-focused title on /peptides canonical',
+        actual: seo.title,
+      };
+    }),
     run('Peptides category canonical is not rewritten to /shop', () => {
       const seo = getSeoMetadataForPath('/peptides');
       const passed =
@@ -251,6 +266,45 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'https://researchpeptidess.uk/peptides with index',
         actual: `${seo.canonicalUrl} ${seo.robots}`,
+      };
+    }),
+    run('Homepage title matches GSC-aligned research peptides UK positioning', () => {
+      const seo = getSeoMetadataForPath('/');
+      const passed =
+        seo.title.includes('Research Peptides UK') &&
+        seo.title.toLowerCase().includes('research-grade') &&
+        seo.description.toLowerCase().includes('buy');
+      return {
+        passed,
+        expected: 'Research Peptides UK + research-grade in title; buy in description',
+        actual: `${seo.title} | ${seo.description.slice(0, 60)}…`,
+      };
+    }),
+    run('Home Organization schema references live logo and OG assets', () => {
+      const seo = getSeoMetadataForPath('/');
+      const org = (seo.jsonLd || []).find((row) => row['@type'] === 'Organization') as Record<string, unknown> | undefined;
+      const logo = String(org?.logo || '');
+      const passed = logo.includes('/logo.svg');
+      return {
+        passed,
+        expected: 'logo.svg on apex domain',
+        actual: logo,
+      };
+    }),
+    run('Prerender shell injects a single H1 and research resource links on home', () => {
+      const seo = getSeoMetadataForPath('/');
+      const body = buildPrerenderBody('/', seo);
+      const html = applyPrerenderShell('<html><head><title>x</title></head><body><div id="root"></div></body></html>', seo, body);
+      const h1Count = (html.match(/<h1\b/gi) || []).length;
+      const passed =
+        h1Count === 1 &&
+        html.includes('/research-use') &&
+        html.includes('https://researchpeptidess.uk/') &&
+        collectPrerenderPaths(ALL_CATALOGUE_PRODUCTS, INITIAL_CATEGORIES, INITIAL_CMS_PAGES).includes('/research-use');
+      return {
+        passed,
+        expected: 'one H1 + research-use in prerender graph',
+        actual: `h1=${h1Count}`,
       };
     }),
     run('Public bootstrap payload omits orders, payments, and inventory', () => {

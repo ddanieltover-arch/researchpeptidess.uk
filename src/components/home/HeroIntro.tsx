@@ -1,41 +1,19 @@
 import React from 'react';
-import { ArrowRight, Check, FileText, ShoppingBag, Star } from 'lucide-react';
+import { ArrowRight, Check, FileText, ShoppingBag, Truck } from 'lucide-react';
 import { AppLink } from '../ui/AppLink';
 import { ROUTES } from '../../lib/routing';
-
-const TRUST_AVATARS = [
-  { initials: 'JD', className: 'z-30 bg-[#3B5BDB]' },
-  { initials: 'SK', className: 'z-20 -ml-2 bg-[#8B7CF6]' },
-  { initials: 'RM', className: 'z-10 -ml-2 bg-[#34D399]' },
-] as const;
 
 const FEATURE_PILLS = ['99%+ HPLC Purity', 'COA Available', 'Royal Mail Tracked'] as const;
 
 export const HeroIntro: React.FC = () => {
   return (
     <div className="max-w-xl lg:max-w-[34rem]">
-      <div className="mb-6 inline-flex max-w-full flex-wrap items-center gap-2.5 rounded-full border border-slate-200/90 bg-white px-3 py-1.5 shadow-sm">
-        <div className="flex items-center" aria-hidden="true">
-          {TRUST_AVATARS.map((avatar) => (
-            <span
-              key={avatar.initials}
-              className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white ${avatar.className}`}
-            >
-              {avatar.initials}
-            </span>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="flex text-amber-400" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <Star key={index} className="h-3.5 w-3.5 fill-amber-400" />
-            ))}
-          </span>
-          <p className="text-[13px] leading-none text-slate-500">
-            <span className="font-bold text-slate-900">4.9/5</span>
-            <span> · 2,400+ UK researchers</span>
-          </p>
-        </div>
+      <div className="mb-6 inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-slate-200/90 bg-white px-3 py-1.5 shadow-sm">
+        <Truck className="h-4 w-4 text-[#4353FF]" aria-hidden="true" />
+        <p className="text-[13px] leading-snug text-slate-600">
+          <span className="font-bold text-slate-900">UK dispatch</span>
+          <span> · Batch documentation shown only where records exist</span>
+        </p>
       </div>
 
       <h1 className="font-display tracking-tight">

@@ -1,0 +1,48 @@
+{
+  "summary": {
+    "pages_crawled": 1,
+    "html_pages": 1,
+    "successful_pages": 1,
+    "errors": 0,
+    "finding_count": 2,
+    "finding_types": {
+      "H1_COUNT": 1,
+      "THIN_TEXT": 1
+    },
+    "document_classes": {
+      "html": 1
+    }
+  },
+  "findings": [
+    {
+      "type": "H1_COUNT",
+      "priority": "P2",
+      "url": "https://researchpeptidess.uk",
+      "message": "HTML page does not have exactly one H1.",
+      "evidence": {
+        "status": "verified",
+        "value": "h1_count=0"
+      },
+      "confidence": 0.97,
+      "business_value": 0.45,
+      "technical_severity": 0.6,
+      "business_relevance": 0.4,
+      "search_significance": 0.2328
+    },
+    {
+      "type": "THIN_TEXT",
+      "priority": "P2",
+      "url": "https://researchpeptidess.uk",
+      "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+      "evidence": {
+        "status": "verified",
+        "value": "body_word_count=8"
+      },
+      "confidence": 0.8,
+      "business_value": 0.4,
+      "technical_severity": 0.6,
+      "business_relevance": 0.35,
+      "search_significance": 0.168
+    }
+  ]
+}

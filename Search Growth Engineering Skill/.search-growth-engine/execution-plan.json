@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.4",
+  "generated_at": "2026-10-19T16:02:44.375556+00:00",
+  "root": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+  "mode": "dry-run",
+  "requires_approval": true,
+  "operations": [],
+  "acceptance_criteria": [
+    "No unapproved files are changed.",
+    "Every applied operation has a backup or is reversible.",
+    "Relevant tests/lint/build checks pass.",
+    "SEO validation is re-run after changes.",
+    "A machine-readable execution report is written."
+  ],
+  "risks": [
+    "Redirect, robots, package, routing, payment, authentication and production configuration changes require explicit approval.",
+    "Content changes should preserve business facts and existing functionality."
+  ],
+  "approved": false
+}

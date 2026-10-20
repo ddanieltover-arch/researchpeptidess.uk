@@ -1,0 +1,287 @@
+{
+  "version": "2.1.2",
+  "search_data_status": "insufficient",
+  "opportunities": [
+    {
+      "type": "required-data",
+      "title": "Connect Google Search Console",
+      "connector": "gsc",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Query, page, country and index coverage are unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect Google Analytics 4",
+      "connector": "ga4",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Landing-page and conversion evidence is unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect an authorized SERP provider",
+      "connector": "serpapi",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Live rankings and SERP competitors were not collected.",
+      "priority_score": 86.62
+    }
+  ],
+  "opportunity_count": 3,
+  "known_opportunities": [],
+  "unknown_opportunities": [
+    {
+      "type": "unknown",
+      "title": "Search demand is unknown until GSC or keyword evidence is connected",
+      "evidence": "No query, ranking or impression rows were supplied."
+    },
+    {
+      "type": "unknown",
+      "title": "Competitors are unknown until SERP or GSC evidence is connected",
+      "evidence": "Market map was not estimated."
+    },
+    {
+      "type": "unknown",
+      "title": "AI-search visibility is unknown; citation rate is null, not zero",
+      "evidence": "No AI-search observations were supplied."
+    }
+  ],
+  "required_data": [
+    "gsc",
+    "ga4",
+    "serpapi"
+  ],
+  "technical_findings": [
+    {
+      "type": "H1_COUNT",
+      "priority": "P2",
+      "url": "https://researchpeptidess.uk",
+      "message": "HTML page does not have exactly one H1.",
+      "evidence": {
+        "status": "verified",
+        "value": "h1_count=0"
+      },
+      "confidence": 0.97,
+      "business_value": 0.45,
+      "technical_severity": 0.6,
+      "business_relevance": 0.4,
+      "search_significance": 0.2328
+    },
+    {
+      "type": "THIN_TEXT",
+      "priority": "P2",
+      "url": "https://researchpeptidess.uk",
+      "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+      "evidence": {
+        "status": "verified",
+        "value": "body_word_count=8"
+      },
+      "confidence": 0.8,
+      "business_value": 0.4,
+      "technical_severity": 0.6,
+      "business_relevance": 0.35,
+      "search_significance": 0.168
+    }
+  ],
+  "provisional_strategy": "Discovery-constrained: recommend only observed technical blockers, document policy, entity clarity and required data connections. Do not claim market or ranking opportunities.",
+  "limitations": {
+    "search_data_status": "insufficient",
+    "available": [
+      "technical-evidence",
+      "on-page-evidence",
+      "repository-evidence",
+      "entity-evidence"
+    ],
+    "unavailable": [
+      "search-demand",
+      "current-rankings",
+      "competitors",
+      "ctr",
+      "conversions",
+      "ai-search-observations"
+    ],
+    "required_data": [
+      "gsc",
+      "ga4",
+      "serpapi"
+    ],
+    "notes": [
+      "Technical findings are stored separately from business opportunities.",
+      "Missing search metrics were not estimated or coerced to zero."
+    ]
+  },
+  "keyword_url_map": {
+    "mappings": [],
+    "new_page_candidates": [],
+    "existing_page_candidates": []
+  },
+  "roadmap": {
+    "0-30_days": [
+      {
+        "title": "Connect Google Search Console",
+        "type": "required-data",
+        "priority_score": 86.62,
+        "recommended_action": "Connect Google Search Console"
+      },
+      {
+        "title": "Connect Google Analytics 4",
+        "type": "required-data",
+        "priority_score": 86.62,
+        "recommended_action": "Connect Google Analytics 4"
+      },
+      {
+        "title": "Connect an authorized SERP provider",
+        "type": "required-data",
+        "priority_score": 86.62,
+        "recommended_action": "Connect an authorized SERP provider"
+      }
+    ],
+    "31-60_days": [],
+    "61-90_days": []
+  },
+  "top_opportunities": [
+    {
+      "type": "required-data",
+      "title": "Connect Google Search Console",
+      "connector": "gsc",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Query, page, country and index coverage are unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect Google Analytics 4",
+      "connector": "ga4",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Landing-page and conversion evidence is unknown.",
+      "priority_score": 86.62
+    },
+    {
+      "type": "required-data",
+      "title": "Connect an authorized SERP provider",
+      "connector": "serpapi",
+      "impact": 0.88,
+      "business_value": 0.92,
+      "confidence": 0.95,
+      "effort": 0.3,
+      "urgency": 0.8,
+      "evidence": "Live rankings and SERP competitors were not collected.",
+      "priority_score": 86.62
+    }
+  ],
+  "market_map": {
+    "target_domain": "researchpeptidess.uk",
+    "target_presence": {
+      "organic_serp_occurrences": 0,
+      "top_3_count": 0,
+      "top_10_count": 0,
+      "ai_citations": 0
+    },
+    "competitors": [],
+    "competitor_count": 0,
+    "market_domains": []
+  },
+  "keyword_competitor_gaps": {
+    "target_domain": "researchpeptidess.uk",
+    "true_content_gaps": [],
+    "ranking_gaps": [],
+    "competitive_wins": [],
+    "gap_count": 0,
+    "ranking_gap_count": 0
+  },
+  "ai_source_competitors": {
+    "target_domain": "researchpeptidess.uk",
+    "top_ai_source_competitors": [],
+    "query_source_gaps": [],
+    "target_citation_count": 0
+  },
+  "content_intelligence": {
+    "version": "1.9.0",
+    "topic_map": {
+      "topics": [],
+      "topic_count": 0
+    },
+    "internal_link_graph": {
+      "nodes": 1,
+      "edges": 0,
+      "orphan_pages": [
+        "https://researchpeptidess.uk"
+      ],
+      "hubs": [],
+      "inbound": {
+        "https://researchpeptidess.uk": 0
+      },
+      "outbound": {
+        "https://researchpeptidess.uk": 0
+      }
+    },
+    "content_gaps": [],
+    "content_decay": [],
+    "information_gain": [
+      {
+        "url": "https://researchpeptidess.uk",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      }
+    ],
+    "opportunities": [
+      {
+        "type": "internal-link-gap",
+        "title": "Create internal links to orphan page: https://researchpeptidess.uk",
+        "page": "https://researchpeptidess.uk",
+        "impact": 0.55,
+        "business_value": 0.5,
+        "confidence": 0.9,
+        "effort": 0.25,
+        "urgency": 0.55,
+        "evidence": "Page has no inbound internal links in current crawl graph.",
+        "priority_score": 62.75
+      }
+    ],
+    "opportunity_count": 1,
+    "content_briefs": [
+      {
+        "topic": "Create internal links to orphan page: https://researchpeptidess.uk",
+        "intent": "mixed-or-unclear",
+        "recommended_page_type": "informational resource",
+        "primary_goal": "satisfy search intent and create a clearly differentiated, useful resource",
+        "must_cover": [
+          "Create internal links to orphan page: https://researchpeptidess.uk"
+        ],
+        "entity_targets": [],
+        "evidence_to_add": [
+          "first-party experience or proprietary data where available",
+          "specific examples or demonstrations",
+          "clear author/source identity",
+          "supporting references for important factual claims"
+        ],
+        "internal_link_targets": [],
+        "quality_gate": "Do not publish unless the page provides meaningful value beyond a generic keyword rewrite."
+      }
+    ]
+  }
+}

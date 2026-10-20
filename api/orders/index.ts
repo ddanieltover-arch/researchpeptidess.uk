@@ -545,7 +545,7 @@ function buildOrderEmail(params: {
     params.order.paymentProofReference || params.payment.transactionHash || params.payment.reference || ''
   );
   const evidenceNotes = String(params.payment.evidenceNotes || params.payment.notes || '');
-  const site = 'https://www.researchpeptidess.uk';
+  const site = 'https://researchpeptidess.uk';
   const summary =
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${kvRows([
       ['Order', escapeHtml(orderNumber)],

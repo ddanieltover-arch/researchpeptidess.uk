@@ -1,3 +1,11 @@
 {
-  "reviews": []
+  "reviews": [
+    { "id": "home-gsc-title-meta", "title": "GSC-aligned homepage title and meta", "decision": "accept" },
+    { "id": "prerender-shells", "title": "Build-time prerender for indexable routes", "decision": "accept" },
+    { "id": "peptides-buy-title", "title": "Distinct /peptides title for buy query", "decision": "accept" },
+    { "id": "custom-domain-promote", "title": "Point custom domain to latest Vercel deploy", "decision": "accept" },
+    { "id": "gsc-api-connect", "title": "CONNECT GSC API", "decision": "accept" },
+    { "id": "llms-txt", "title": "llms.txt for Google", "decision": "override" },
+    { "id": "automated-link-building", "title": "Automated link building", "decision": "defer" }
+  ]
 }

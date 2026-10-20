@@ -250,10 +250,14 @@ export const HomePage: React.FC = () => {
             FAQ →
           </AppLink>
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <AppLink href="/faq" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
             <h3 className="font-mono text-sm font-bold text-slate-900">FAQ</h3>
             <p className="mt-1">Ordering, payments, and research-use questions.</p>
+          </AppLink>
+          <AppLink href="/research-use" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Research-use policy</h3>
+            <p className="mt-1">In-vitro laboratory use, compliance, and purchaser acknowledgements.</p>
           </AppLink>
           <AppLink href="/contact" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
             <h3 className="font-mono text-sm font-bold text-slate-900">Contact</h3>

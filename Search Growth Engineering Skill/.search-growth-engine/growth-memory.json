@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.5",
+  "project": {},
+  "snapshots": [],
+  "changes": [],
+  "experiments": [],
+  "insights": [],
+  "runs": [
+    {
+      "id": "run-87f5a1398af7",
+      "kind": "orchestrator",
+      "status": "ok",
+      "created_at": "2026-10-19T16:01:18.209902+00:00",
+      "details": {
+        "project_path": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+        "target_url": "https://researchpeptidess.uk",
+        "apply": false,
+        "opportunity_count": 3,
+        "execution_mode": "dry-run",
+        "validation_status": null
+      }
+    },
+    {
+      "id": "run-d26057ee0850",
+      "kind": "orchestrator",
+      "status": "ok",
+      "created_at": "2026-10-19T16:01:57.254296+00:00",
+      "details": {
+        "project_path": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+        "target_url": "https://researchpeptidess.uk",
+        "apply": false,
+        "opportunity_count": 3,
+        "execution_mode": "dry-run",
+        "validation_status": null
+      }
+    },
+    {
+      "id": "run-66594307d29e",
+      "kind": "orchestrator",
+      "status": "ok",
+      "created_at": "2026-10-19T16:02:44.379285+00:00",
+      "details": {
+        "project_path": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+        "target_url": "https://researchpeptidess.uk",
+        "apply": false,
+        "opportunity_count": 3,
+        "execution_mode": "dry-run",
+        "validation_status": null
+      }
+    }
+  ]
+}

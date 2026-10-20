@@ -18,6 +18,17 @@ import { isPublicCatalogueProduct } from './merchandising';
 
 export const PRIMARY_DOMAIN = 'https://researchpeptidess.uk';
 
+/** Homepage SERP copy aligned to observed GSC query themes (UK + research-grade). */
+export const HOME_PAGE_TITLE = 'Research Peptides UK | Research-Grade Peptides UK';
+export const HOME_PAGE_DESCRIPTION =
+  'Buy research-grade peptides from a UK in-vitro laboratory catalogue. Documentation and batch records are shown only where they exist.';
+export const HOME_PRERENDER_H1 =
+  'Research Peptides UK — Research-Grade Peptides for In-Vitro Laboratory Use';
+
+export const PEPTIDES_PAGE_TITLE = 'Buy Research Peptides UK | In-Vitro Peptide Catalogue';
+export const PEPTIDES_PAGE_DESCRIPTION =
+  'Buy research peptides UK from a published laboratory catalogue. In-vitro use only; batch documentation shown where records exist.';
+
 export interface SeoMetadata {
   title: string;
   description: string;
@@ -68,7 +79,7 @@ export function getSeoMetadataForPath(
 
     const title = `${p.name} | Research Peptides UK`;
     const description = `${p.shortDescription || p.name} for laboratory research.${p.casNumber ? ` CAS ${p.casNumber}.` : ''} Documentation is shown only where a batch record exists.`;
-    const primaryImg = p.images?.find((img) => img.isPrimary)?.url || p.images?.[0]?.url || `${PRIMARY_DOMAIN}/og-image.png`;
+    const primaryImg = p.images?.find((img) => img.isPrimary)?.url || p.images?.[0]?.url || `${PRIMARY_DOMAIN}/og-image.svg`;
 
     // Only index published products
     const robots = isPublicCatalogueProduct(p)
@@ -264,15 +275,21 @@ export function getSeoMetadataForPath(
       title: hasSearch
         ? `Search: "${context?.searchQuery}" | Research Peptides UK`
         : pathOnly === '/peptides'
-          ? 'Peptides | Research Peptides UK'
+          ? PEPTIDES_PAGE_TITLE
           : pathOnly === '/research-chemicals'
             ? 'Research Chemicals | Research Peptides UK'
             : 'Research Peptides Catalogue | Research Peptides UK',
       description:
-        'Browse published research peptides and laboratory catalogue items. Documentation is shown only where batch records exist.',
+        pathOnly === '/peptides'
+          ? PEPTIDES_PAGE_DESCRIPTION
+          : 'Browse published research peptides and laboratory catalogue items. Documentation is shown only where batch records exist.',
       canonicalUrl: `${PRIMARY_DOMAIN}${canonicalPath}`,
-      ogTitle: 'Catalogue | Research Peptides UK',
-      ogDescription: 'Research peptides and laboratory reagents for in-vitro use.',
+      ogTitle:
+        pathOnly === '/peptides' ? PEPTIDES_PAGE_TITLE : 'Catalogue | Research Peptides UK',
+      ogDescription:
+        pathOnly === '/peptides'
+          ? PEPTIDES_PAGE_DESCRIPTION
+          : 'Research peptides and laboratory reagents for in-vitro use.',
       ogType: 'website',
       robots: hasSearch ? 'noindex, follow' : 'index, follow',
     };
@@ -280,13 +297,11 @@ export function getSeoMetadataForPath(
 
   // 6. Homepage (Default)
   return {
-    title: 'Buy Research Peptides UK - 99% Pure British Peptides',
-    description:
-      'UK laboratory catalogue of research peptides and biochemical reagents for in-vitro use. Documentation is shown only where records exist.',
+    title: HOME_PAGE_TITLE,
+    description: HOME_PAGE_DESCRIPTION,
     canonicalUrl: PRIMARY_DOMAIN,
-    ogTitle: 'Buy Research Peptides UK - 99% Pure British Peptides',
-    ogDescription:
-      'Research peptides and laboratory reagents for in-vitro use, with documentation shown only where records exist.',
+    ogTitle: HOME_PAGE_TITLE,
+    ogDescription: HOME_PAGE_DESCRIPTION,
     ogType: 'website',
     robots: 'index, follow, max-snippet:-1, max-image-preview:large',
     jsonLd: [
@@ -295,7 +310,7 @@ export function getSeoMetadataForPath(
         '@type': 'Organization',
         name: 'Research Peptides UK',
         url: PRIMARY_DOMAIN,
-        logo: `${PRIMARY_DOMAIN}/logo.png`,
+        logo: `${PRIMARY_DOMAIN}/logo.svg`,
         sameAs: [STORE_WHATSAPP_URL],
         contactPoint: {
           '@type': 'ContactPoint',

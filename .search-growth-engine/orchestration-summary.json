@@ -1,0 +1,744 @@
+{
+  "version": "2.0.0",
+  "status": "completed",
+  "generated_at": "2026-10-19T16:01:57.425987+00:00",
+  "project": {
+    "project_root": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+    "project_types": [
+      "ecommerce",
+      "saas"
+    ],
+    "business_model": "ecommerce",
+    "frameworks": [
+      "React",
+      "Vite"
+    ],
+    "manifests": [
+      "package.json"
+    ],
+    "rendering_architecture": "likely client-rendered; verify actual deployment and prerendering",
+    "classification_layers": {
+      "project_technology": [
+        "React",
+        "Vite"
+      ],
+      "business_offering": [
+        "web-development",
+        "ecommerce-build"
+      ],
+      "content_topics": [],
+      "client_case_study_technology": [],
+      "identity_files": [
+        "package.json",
+        "README.md",
+        "readme.md"
+      ],
+      "identity_text": "{\n  \"name\": \"react-example\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --port=3000 --host=0.0.0.0\",\n    \"build\": \"tsx scripts/write-sitemap.ts && vite build\",\n    \"preview\": \"vite preview\",\n    \"clean\": \"rm -rf dist server.js\",\n    \"lint\": \"tsc --noEmit\",\n    \"test\": \"tsx src/lib/run-tests.ts\",\n    \"db:migrate\": \"tsx scripts/apply-migrations.ts\",\n    \"sync:woocommerce\": \"tsx scripts/woocommerce-sync/index.ts\",\n    \"sync:woocommerce:dry\": \"tsx scripts/woocommerce-sync/index.ts --dry-run\",\n    \"db:push\": \"drizzle-kit push\",\n    \"seed:admin\": \"tsx scripts/seed-admin.ts\"\n  },\n  \"dependencies\": {\n    \"@google/genai\": \"^2.4.0\",\n    \"@tailwindcss/vite\": \"^4.1.14\",\n    \"@vitejs/plugin-react\": \"^5.0.4\",\n    \"clsx\": \"^2.1.1\",\n    \"@neondatabase/serverless\": \"^1.0.2\",\n    \"dotenv\": \"^17.2.3\",\n    \"drizzle-orm\": \"^0.45.2\",\n    \"sharp\": \"^0.34.2\",\n    \"express\": \"^4.21.2\",\n    \"lucide-react\": \"^0.546.0\",\n    \"motion\": \"^12.23.24\",\n    \"react\": \"^19.0.1\",\n    \"react-dom\": \"^19.0.1\",\n    \"tailwind-merge\": \"^3.6.0\",\n    \"vite\": \"^6.2.3\"\n  },\n  \"devDependencies\": {\n    \"@types/node\": \"^22.14.0\",\n    \"autoprefixer\": \"^10.4.21\",\n    \"esbuild\": \"^0.25.0\",\n    \"tailwindcss\": \"^4.1.14\",\n    \"tsx\": \"^4.21.0\",\n    \"typescript\": \"~5.8.2\",\n    \"vite\": \"^6.2.3\",\n    \"@types/express\": \"^4.17.21\",\n    \"drizzle-kit\": \"^0.31.4\"\n  }\n}\n\n# Research Peptides UK — Architecture & Foundation\n\n> **Brand:** Research Peptides UK  \n> **Positioning:** In-vitro research peptides and laboratory catalogue  \n> **Domain:** researchpeptidess.uk  \n> **Primary Market:** United Kingdom & Europe  \n\nResearch Peptides UK is an independent e-commerce application engineered specifically for **authorized in-vitro scientific research, laboratory experimentation, and analytical reference standards**.\n\n---\n\n## 1. Architectural Foundations\n\n- **Frontend & Framework:** React 19 + TypeScript + Vite + Tailwind CSS v4.\n- **Design Archetype:** **Premium British Scientific Commerce** (Cinzel serif typography paired with JetBrains Mono data matrices and clean warm neutral layouts).\n- **Database & Schema:** Neon PostgreSQL compatible schema modeled with **Drizzle ORM** in `/src/db/schema.ts`. Prices stored authoritatively in minor units (pence/integers).\n- **State Engine:** Server-authoritative calculations in `StoreContext.tsx` and `pricing.ts`.\n\n---\n\n## 2. Regulatory Compliance & Scientific Integrity\n\nAll copy and product entities are bound to in-vitro laboratory guidelines:\n- **No Human / Veterinary Consumption Claims**: Audited by `/src/lib/compliance.ts`.\n- **Mandatory Compliance Disclaimer**: 3-point legal acknowledgment before checkout.\n- **HPLC & Mass Spectrometry Transparency**: Product pages show HPLC/COA files and purity percentages only when those records exist on the product or batch.\n\n---\n\n## 3. Pricing & Settlement Engine\n\n- **Authoritative Calculations:** Server-side engine calculates subtotal, bulk tier savings (10% for 3+, 15% for 6+, 20% for 10+), and shipping thresholds (£75.00 for free UK Tracked delivery).\n- **Payment Methods:**\n  1. **UK Faster Payments / SEPA Bank Transfer**: Destination details are taken from production environment configuration and shown only when they are not sample/placeholder values. Settlement is verified manually in Admin.\n  2. **Cryptocurrency (BTC)**: A **5%** discount is applied in the pricing engine when crypto is selected. Wallets are shown only when a non-sample receiving address is configured. This is not instant settlement.\n\n---\n\n## 4. Key Page Routes\n\n| Route | Functionality |\n|---|---|\n| `/` | Homepage with hero, trust statistics, featured compounds, HPLC transparency |\n| `/shop` | Full catalogue with search, category filtering, purity filters, grid/list view |\n| `/product/:slug` | Deep technical specifications, COA viewer, bulk tier matrix, variant selection |\n| `/cart` | Basket, free shipping progress, tier discounts, coupon input |\n| `/checkout` | 2-step checkout, bank transfer / crypt",
+      "app_routes": [
+        "accountloginpage.tsx",
+        "accountpage.tsx",
+        "adminloginpage.tsx",
+        "adminpage.tsx",
+        "cartpage.tsx",
+        "checkoutpage.tsx",
+        "homepage.tsx",
+        "notfoundpage.tsx",
+        "productdetailpage.tsx",
+        "shoppage.tsx"
+      ],
+      "nap_present": false,
+      "programmatic_templates": false,
+      "indexable_template_estimate": 0,
+      "app_store_urls": []
+    },
+    "evidence": {
+      "verified_files": [
+        "package.json",
+        "README.md",
+        "readme.md"
+      ]
+    },
+    "activated_modules": [
+      "content",
+      "ecommerce",
+      "geo-aio",
+      "on-page-seo",
+      "semantic-entity",
+      "technical-seo"
+    ],
+    "confidence": "high",
+    "notes": [
+      "Classification weights homepage, services, conversion routes and organization metadata above content topics and filenames.",
+      "Project technology, business offering, content topics and case-study stacks are recorded separately."
+    ],
+    "module_gates": {
+      "technical-seo": {
+        "active": true,
+        "reason": "Public web property; technical eligibility always in scope."
+      },
+      "on-page-seo": {
+        "active": true,
+        "reason": "HTML documents exist or are expected."
+      },
+      "content": {
+        "active": true,
+        "reason": "Content and intent mapping applies to public sites."
+      },
+      "semantic-entity": {
+        "active": true,
+        "reason": "Entity clarity applies to organizations and services."
+      },
+      "geo-aio": {
+        "active": true,
+        "reason": "Machine-understanding work is an extension of technical and entity foundations."
+      },
+      "local-seo": {
+        "active": false,
+        "reason": "No local-business identity or NAP evidence."
+      },
+      "ecommerce": {
+        "active": true,
+        "reason": "Checkout/product architecture observed."
+      },
+      "marketplace": {
+        "active": false,
+        "reason": "No multi-seller inventory model on this property."
+      },
+      "aso": {
+        "active": false,
+        "reason": "No first-party app store listing."
+      },
+      "saas": {
+        "active": false,
+        "reason": "SaaS mentioned as a service offering is not SaaS-product SEO."
+      },
+      "programmatic-seo": {
+        "active": false,
+        "reason": "Page volume is not a programmatic SEO system."
+      },
+      "sem": {
+        "active": false,
+        "reason": "Google Ads is not connected and paid search was not authorized."
+      },
+      "mobile-app": {
+        "active": false,
+        "reason": "Building mobile apps for clients is not ASO."
+      }
+    }
+  },
+  "target_url": "https://researchpeptidess.uk",
+  "modules": {
+    "activated": [
+      "content",
+      "ecommerce",
+      "geo-aio",
+      "on-page-seo",
+      "semantic-entity",
+      "technical-seo"
+    ],
+    "disabled": [
+      "external-connectors"
+    ]
+  },
+  "evidence": {
+    "project": {
+      "project_root": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+      "project_types": [
+        "ecommerce",
+        "saas"
+      ],
+      "business_model": "ecommerce",
+      "frameworks": [
+        "React",
+        "Vite"
+      ],
+      "manifests": [
+        "package.json"
+      ],
+      "rendering_architecture": "likely client-rendered; verify actual deployment and prerendering",
+      "classification_layers": {
+        "project_technology": [
+          "React",
+          "Vite"
+        ],
+        "business_offering": [
+          "web-development",
+          "ecommerce-build"
+        ],
+        "content_topics": [],
+        "client_case_study_technology": [],
+        "identity_files": [
+          "package.json",
+          "README.md",
+          "readme.md"
+        ],
+        "identity_text": "{\n  \"name\": \"react-example\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --port=3000 --host=0.0.0.0\",\n    \"build\": \"tsx scripts/write-sitemap.ts && vite build\",\n    \"preview\": \"vite preview\",\n    \"clean\": \"rm -rf dist server.js\",\n    \"lint\": \"tsc --noEmit\",\n    \"test\": \"tsx src/lib/run-tests.ts\",\n    \"db:migrate\": \"tsx scripts/apply-migrations.ts\",\n    \"sync:woocommerce\": \"tsx scripts/woocommerce-sync/index.ts\",\n    \"sync:woocommerce:dry\": \"tsx scripts/woocommerce-sync/index.ts --dry-run\",\n    \"db:push\": \"drizzle-kit push\",\n    \"seed:admin\": \"tsx scripts/seed-admin.ts\"\n  },\n  \"dependencies\": {\n    \"@google/genai\": \"^2.4.0\",\n    \"@tailwindcss/vite\": \"^4.1.14\",\n    \"@vitejs/plugin-react\": \"^5.0.4\",\n    \"clsx\": \"^2.1.1\",\n    \"@neondatabase/serverless\": \"^1.0.2\",\n    \"dotenv\": \"^17.2.3\",\n    \"drizzle-orm\": \"^0.45.2\",\n    \"sharp\": \"^0.34.2\",\n    \"express\": \"^4.21.2\",\n    \"lucide-react\": \"^0.546.0\",\n    \"motion\": \"^12.23.24\",\n    \"react\": \"^19.0.1\",\n    \"react-dom\": \"^19.0.1\",\n    \"tailwind-merge\": \"^3.6.0\",\n    \"vite\": \"^6.2.3\"\n  },\n  \"devDependencies\": {\n    \"@types/node\": \"^22.14.0\",\n    \"autoprefixer\": \"^10.4.21\",\n    \"esbuild\": \"^0.25.0\",\n    \"tailwindcss\": \"^4.1.14\",\n    \"tsx\": \"^4.21.0\",\n    \"typescript\": \"~5.8.2\",\n    \"vite\": \"^6.2.3\",\n    \"@types/express\": \"^4.17.21\",\n    \"drizzle-kit\": \"^0.31.4\"\n  }\n}\n\n# Research Peptides UK — Architecture & Foundation\n\n> **Brand:** Research Peptides UK  \n> **Positioning:** In-vitro research peptides and laboratory catalogue  \n> **Domain:** researchpeptidess.uk  \n> **Primary Market:** United Kingdom & Europe  \n\nResearch Peptides UK is an independent e-commerce application engineered specifically for **authorized in-vitro scientific research, laboratory experimentation, and analytical reference standards**.\n\n---\n\n## 1. Architectural Foundations\n\n- **Frontend & Framework:** React 19 + TypeScript + Vite + Tailwind CSS v4.\n- **Design Archetype:** **Premium British Scientific Commerce** (Cinzel serif typography paired with JetBrains Mono data matrices and clean warm neutral layouts).\n- **Database & Schema:** Neon PostgreSQL compatible schema modeled with **Drizzle ORM** in `/src/db/schema.ts`. Prices stored authoritatively in minor units (pence/integers).\n- **State Engine:** Server-authoritative calculations in `StoreContext.tsx` and `pricing.ts`.\n\n---\n\n## 2. Regulatory Compliance & Scientific Integrity\n\nAll copy and product entities are bound to in-vitro laboratory guidelines:\n- **No Human / Veterinary Consumption Claims**: Audited by `/src/lib/compliance.ts`.\n- **Mandatory Compliance Disclaimer**: 3-point legal acknowledgment before checkout.\n- **HPLC & Mass Spectrometry Transparency**: Product pages show HPLC/COA files and purity percentages only when those records exist on the product or batch.\n\n---\n\n## 3. Pricing & Settlement Engine\n\n- **Authoritative Calculations:** Server-side engine calculates subtotal, bulk tier savings (10% for 3+, 15% for 6+, 20% for 10+), and shipping thresholds (£75.00 for free UK Tracked delivery).\n- **Payment Methods:**\n  1. **UK Faster Payments / SEPA Bank Transfer**: Destination details are taken from production environment configuration and shown only when they are not sample/placeholder values. Settlement is verified manually in Admin.\n  2. **Cryptocurrency (BTC)**: A **5%** discount is applied in the pricing engine when crypto is selected. Wallets are shown only when a non-sample receiving address is configured. This is not instant settlement.\n\n---\n\n## 4. Key Page Routes\n\n| Route | Functionality |\n|---|---|\n| `/` | Homepage with hero, trust statistics, featured compounds, HPLC transparency |\n| `/shop` | Full catalogue with search, category filtering, purity filters, grid/list view |\n| `/product/:slug` | Deep technical specifications, COA viewer, bulk tier matrix, variant selection |\n| `/cart` | Basket, free shipping progress, tier discounts, coupon input |\n| `/checkout` | 2-step checkout, bank transfer / crypt",
+        "app_routes": [
+          "accountloginpage.tsx",
+          "accountpage.tsx",
+          "adminloginpage.tsx",
+          "adminpage.tsx",
+          "cartpage.tsx",
+          "checkoutpage.tsx",
+          "homepage.tsx",
+          "notfoundpage.tsx",
+          "productdetailpage.tsx",
+          "shoppage.tsx"
+        ],
+        "nap_present": false,
+        "programmatic_templates": false,
+        "indexable_template_estimate": 0,
+        "app_store_urls": []
+      },
+      "evidence": {
+        "verified_files": [
+          "package.json",
+          "README.md",
+          "readme.md"
+        ]
+      },
+      "activated_modules": [
+        "content",
+        "ecommerce",
+        "geo-aio",
+        "on-page-seo",
+        "semantic-entity",
+        "technical-seo"
+      ],
+      "confidence": "high",
+      "notes": [
+        "Classification weights homepage, services, conversion routes and organization metadata above content topics and filenames.",
+        "Project technology, business offering, content topics and case-study stacks are recorded separately."
+      ],
+      "module_gates": {
+        "technical-seo": {
+          "active": true,
+          "reason": "Public web property; technical eligibility always in scope."
+        },
+        "on-page-seo": {
+          "active": true,
+          "reason": "HTML documents exist or are expected."
+        },
+        "content": {
+          "active": true,
+          "reason": "Content and intent mapping applies to public sites."
+        },
+        "semantic-entity": {
+          "active": true,
+          "reason": "Entity clarity applies to organizations and services."
+        },
+        "geo-aio": {
+          "active": true,
+          "reason": "Machine-understanding work is an extension of technical and entity foundations."
+        },
+        "local-seo": {
+          "active": false,
+          "reason": "No local-business identity or NAP evidence."
+        },
+        "ecommerce": {
+          "active": true,
+          "reason": "Checkout/product architecture observed."
+        },
+        "marketplace": {
+          "active": false,
+          "reason": "No multi-seller inventory model on this property."
+        },
+        "aso": {
+          "active": false,
+          "reason": "No first-party app store listing."
+        },
+        "saas": {
+          "active": false,
+          "reason": "SaaS mentioned as a service offering is not SaaS-product SEO."
+        },
+        "programmatic-seo": {
+          "active": false,
+          "reason": "Page volume is not a programmatic SEO system."
+        },
+        "sem": {
+          "active": false,
+          "reason": "Google Ads is not connected and paid search was not authorized."
+        },
+        "mobile-app": {
+          "active": false,
+          "reason": "Building mobile apps for clients is not ASO."
+        }
+      }
+    },
+    "collected_at": "2026-10-19T16:01:55.830998+00:00",
+    "sources": [
+      {
+        "type": "crawl",
+        "target": "https://researchpeptidess.uk",
+        "pages": 1
+      },
+      {
+        "type": "technical-audit",
+        "findings": 2
+      }
+    ],
+    "crawl": {
+      "start_url": "https://researchpeptidess.uk",
+      "host": "researchpeptidess.uk",
+      "max_pages": 50,
+      "pages": [
+        {
+          "url": "https://researchpeptidess.uk",
+          "status": 200,
+          "content_type": "text/html",
+          "title": "Buy Research Peptides UK - 99% Pure British Peptides",
+          "meta_description": "UK catalogue of research peptides and biochemical reagents for in-vitro laboratory use. Documentation is shown only where batch records exist.",
+          "canonical": null,
+          "robots_meta": null,
+          "h1_count": 0,
+          "word_count": 8,
+          "internal_links": [],
+          "external_links": [],
+          "images_missing_alt": 0,
+          "images_total": 0,
+          "structured_data_types": [],
+          "lang": "en",
+          "bytes": 1984,
+          "response_ms": 1247,
+          "error": null,
+          "requested_url": "https://researchpeptidess.uk",
+          "final_url": "https://researchpeptidess.uk",
+          "redirect_chain": [],
+          "document_class": "html",
+          "jsonld": [],
+          "body_word_count": 8,
+          "chrome_word_count": 0,
+          "identity_url": "https://researchpeptidess.uk/"
+        }
+      ],
+      "crawled_pages": 1
+    },
+    "audit": {
+      "summary": {
+        "pages_crawled": 1,
+        "html_pages": 1,
+        "successful_pages": 1,
+        "errors": 0,
+        "finding_count": 2,
+        "finding_types": {
+          "H1_COUNT": 1,
+          "THIN_TEXT": 1
+        },
+        "document_classes": {
+          "html": 1
+        }
+      },
+      "findings": [
+        {
+          "type": "H1_COUNT",
+          "priority": "P2",
+          "url": "https://researchpeptidess.uk",
+          "message": "HTML page does not have exactly one H1.",
+          "evidence": {
+            "status": "verified",
+            "value": "h1_count=0"
+          },
+          "confidence": 0.97,
+          "business_value": 0.45,
+          "technical_severity": 0.6,
+          "business_relevance": 0.4,
+          "search_significance": 0.2328
+        },
+        {
+          "type": "THIN_TEXT",
+          "priority": "P2",
+          "url": "https://researchpeptidess.uk",
+          "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+          "evidence": {
+            "status": "verified",
+            "value": "body_word_count=8"
+          },
+          "confidence": 0.8,
+          "business_value": 0.4,
+          "technical_severity": 0.6,
+          "business_relevance": 0.35,
+          "search_significance": 0.168
+        }
+      ]
+    },
+    "target_url": "https://researchpeptidess.uk",
+    "target_domain": "researchpeptidess.uk",
+    "keyword_clusters": [],
+    "keyword_rows": [],
+    "cannibalization": [],
+    "serp_rows": [],
+    "serp_analysis": {},
+    "ai_observations": [],
+    "ai_analysis": {},
+    "content_intelligence": {},
+    "entity_graph": {
+      "entities": [],
+      "relationships": [],
+      "collisions": [],
+      "people": [],
+      "organizations": []
+    },
+    "entity_collisions": [],
+    "topic_map": {
+      "topics": [],
+      "topic_count": 0
+    },
+    "information_gain": [
+      {
+        "url": "https://researchpeptidess.uk",
+        "information_gain_score": 20.0,
+        "unique_facts": 0,
+        "original_sources": 0,
+        "unique_term_signal": 0.0,
+        "heuristic_floor": 20.0,
+        "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+      }
+    ]
+  },
+  "strategy": {
+    "version": "2.1.2",
+    "search_data_status": "insufficient",
+    "opportunities": [
+      {
+        "type": "required-data",
+        "title": "Connect Google Search Console",
+        "connector": "gsc",
+        "impact": 0.88,
+        "business_value": 0.92,
+        "confidence": 0.95,
+        "effort": 0.3,
+        "urgency": 0.8,
+        "evidence": "Query, page, country and index coverage are unknown.",
+        "priority_score": 86.62
+      },
+      {
+        "type": "required-data",
+        "title": "Connect Google Analytics 4",
+        "connector": "ga4",
+        "impact": 0.88,
+        "business_value": 0.92,
+        "confidence": 0.95,
+        "effort": 0.3,
+        "urgency": 0.8,
+        "evidence": "Landing-page and conversion evidence is unknown.",
+        "priority_score": 86.62
+      },
+      {
+        "type": "required-data",
+        "title": "Connect an authorized SERP provider",
+        "connector": "serpapi",
+        "impact": 0.88,
+        "business_value": 0.92,
+        "confidence": 0.95,
+        "effort": 0.3,
+        "urgency": 0.8,
+        "evidence": "Live rankings and SERP competitors were not collected.",
+        "priority_score": 86.62
+      }
+    ],
+    "opportunity_count": 3,
+    "known_opportunities": [],
+    "unknown_opportunities": [
+      {
+        "type": "unknown",
+        "title": "Search demand is unknown until GSC or keyword evidence is connected",
+        "evidence": "No query, ranking or impression rows were supplied."
+      },
+      {
+        "type": "unknown",
+        "title": "Competitors are unknown until SERP or GSC evidence is connected",
+        "evidence": "Market map was not estimated."
+      },
+      {
+        "type": "unknown",
+        "title": "AI-search visibility is unknown; citation rate is null, not zero",
+        "evidence": "No AI-search observations were supplied."
+      }
+    ],
+    "required_data": [
+      "gsc",
+      "ga4",
+      "serpapi"
+    ],
+    "technical_findings": [
+      {
+        "type": "H1_COUNT",
+        "priority": "P2",
+        "url": "https://researchpeptidess.uk",
+        "message": "HTML page does not have exactly one H1.",
+        "evidence": {
+          "status": "verified",
+          "value": "h1_count=0"
+        },
+        "confidence": 0.97,
+        "business_value": 0.45,
+        "technical_severity": 0.6,
+        "business_relevance": 0.4,
+        "search_significance": 0.2328
+      },
+      {
+        "type": "THIN_TEXT",
+        "priority": "P2",
+        "url": "https://researchpeptidess.uk",
+        "message": "Page has a low amount of extractable main-content text after excluding nav/header/footer; investigate intent before adding content.",
+        "evidence": {
+          "status": "verified",
+          "value": "body_word_count=8"
+        },
+        "confidence": 0.8,
+        "business_value": 0.4,
+        "technical_severity": 0.6,
+        "business_relevance": 0.35,
+        "search_significance": 0.168
+      }
+    ],
+    "provisional_strategy": "Discovery-constrained: recommend only observed technical blockers, document policy, entity clarity and required data connections. Do not claim market or ranking opportunities.",
+    "limitations": {
+      "search_data_status": "insufficient",
+      "available": [
+        "technical-evidence",
+        "on-page-evidence",
+        "repository-evidence",
+        "entity-evidence"
+      ],
+      "unavailable": [
+        "search-demand",
+        "current-rankings",
+        "competitors",
+        "ctr",
+        "conversions",
+        "ai-search-observations"
+      ],
+      "required_data": [
+        "gsc",
+        "ga4",
+        "serpapi"
+      ],
+      "notes": [
+        "Technical findings are stored separately from business opportunities.",
+        "Missing search metrics were not estimated or coerced to zero."
+      ]
+    },
+    "keyword_url_map": {
+      "mappings": [],
+      "new_page_candidates": [],
+      "existing_page_candidates": []
+    },
+    "roadmap": {
+      "0-30_days": [
+        {
+          "title": "Connect Google Search Console",
+          "type": "required-data",
+          "priority_score": 86.62,
+          "recommended_action": "Connect Google Search Console"
+        },
+        {
+          "title": "Connect Google Analytics 4",
+          "type": "required-data",
+          "priority_score": 86.62,
+          "recommended_action": "Connect Google Analytics 4"
+        },
+        {
+          "title": "Connect an authorized SERP provider",
+          "type": "required-data",
+          "priority_score": 86.62,
+          "recommended_action": "Connect an authorized SERP provider"
+        }
+      ],
+      "31-60_days": [],
+      "61-90_days": []
+    },
+    "top_opportunities": [
+      {
+        "type": "required-data",
+        "title": "Connect Google Search Console",
+        "connector": "gsc",
+        "impact": 0.88,
+        "business_value": 0.92,
+        "confidence": 0.95,
+        "effort": 0.3,
+        "urgency": 0.8,
+        "evidence": "Query, page, country and index coverage are unknown.",
+        "priority_score": 86.62
+      },
+      {
+        "type": "required-data",
+        "title": "Connect Google Analytics 4",
+        "connector": "ga4",
+        "impact": 0.88,
+        "business_value": 0.92,
+        "confidence": 0.95,
+        "effort": 0.3,
+        "urgency": 0.8,
+        "evidence": "Landing-page and conversion evidence is unknown.",
+        "priority_score": 86.62
+      },
+      {
+        "type": "required-data",
+        "title": "Connect an authorized SERP provider",
+        "connector": "serpapi",
+        "impact": 0.88,
+        "business_value": 0.92,
+        "confidence": 0.95,
+        "effort": 0.3,
+        "urgency": 0.8,
+        "evidence": "Live rankings and SERP competitors were not collected.",
+        "priority_score": 86.62
+      }
+    ],
+    "market_map": {
+      "target_domain": "researchpeptidess.uk",
+      "target_presence": {
+        "organic_serp_occurrences": 0,
+        "top_3_count": 0,
+        "top_10_count": 0,
+        "ai_citations": 0
+      },
+      "competitors": [],
+      "competitor_count": 0,
+      "market_domains": []
+    },
+    "keyword_competitor_gaps": {
+      "target_domain": "researchpeptidess.uk",
+      "true_content_gaps": [],
+      "ranking_gaps": [],
+      "competitive_wins": [],
+      "gap_count": 0,
+      "ranking_gap_count": 0
+    },
+    "ai_source_competitors": {
+      "target_domain": "researchpeptidess.uk",
+      "top_ai_source_competitors": [],
+      "query_source_gaps": [],
+      "target_citation_count": 0
+    },
+    "content_intelligence": {
+      "version": "1.9.0",
+      "topic_map": {
+        "topics": [],
+        "topic_count": 0
+      },
+      "internal_link_graph": {
+        "nodes": 1,
+        "edges": 0,
+        "orphan_pages": [
+          "https://researchpeptidess.uk"
+        ],
+        "hubs": [],
+        "inbound": {
+          "https://researchpeptidess.uk": 0
+        },
+        "outbound": {
+          "https://researchpeptidess.uk": 0
+        }
+      },
+      "content_gaps": [],
+      "content_decay": [],
+      "information_gain": [
+        {
+          "url": "https://researchpeptidess.uk",
+          "information_gain_score": 20.0,
+          "unique_facts": 0,
+          "original_sources": 0,
+          "unique_term_signal": 0.0,
+          "heuristic_floor": 20.0,
+          "explanation": "Heuristic floor of 20 plus bonuses for first-party facts, original sources and rare terms versus competitor pages. This is a relative evidence heuristic, not a claim about content quality or market uniqueness."
+        }
+      ],
+      "opportunities": [
+        {
+          "type": "internal-link-gap",
+          "title": "Create internal links to orphan page: https://researchpeptidess.uk",
+          "page": "https://researchpeptidess.uk",
+          "impact": 0.55,
+          "business_value": 0.5,
+          "confidence": 0.9,
+          "effort": 0.25,
+          "urgency": 0.55,
+          "evidence": "Page has no inbound internal links in current crawl graph.",
+          "priority_score": 62.75
+        }
+      ],
+      "opportunity_count": 1,
+      "content_briefs": [
+        {
+          "topic": "Create internal links to orphan page: https://researchpeptidess.uk",
+          "intent": "mixed-or-unclear",
+          "recommended_page_type": "informational resource",
+          "primary_goal": "satisfy search intent and create a clearly differentiated, useful resource",
+          "must_cover": [
+            "Create internal links to orphan page: https://researchpeptidess.uk"
+          ],
+          "entity_targets": [],
+          "evidence_to_add": [
+            "first-party experience or proprietary data where available",
+            "specific examples or demonstrations",
+            "clear author/source identity",
+            "supporting references for important factual claims"
+          ],
+          "internal_link_targets": [],
+          "quality_gate": "Do not publish unless the page provides meaningful value beyond a generic keyword rewrite."
+        }
+      ]
+    }
+  },
+  "execution_plan": {
+    "schema_version": "1.4",
+    "generated_at": "2026-10-19T16:01:57.248276+00:00",
+    "root": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+    "mode": "dry-run",
+    "requires_approval": true,
+    "operations": [],
+    "acceptance_criteria": [
+      "No unapproved files are changed.",
+      "Every applied operation has a backup or is reversible.",
+      "Relevant tests/lint/build checks pass.",
+      "SEO validation is re-run after changes.",
+      "A machine-readable execution report is written."
+    ],
+    "risks": [
+      "Redirect, robots, package, routing, payment, authentication and production configuration changes require explicit approval.",
+      "Content changes should preserve business facts and existing functionality."
+    ],
+    "approved": false
+  },
+  "execution": {
+    "schema_version": "1.4",
+    "executed_at": "2026-10-19T16:01:57.251527+00:00",
+    "mode": "dry-run",
+    "results": []
+  },
+  "validation": null,
+  "growth_memory": {
+    "latest_snapshot": null,
+    "recent_changes": [],
+    "active_experiments": [],
+    "recent_insights": [],
+    "recent_runs": [
+      {
+        "id": "run-87f5a1398af7",
+        "kind": "orchestrator",
+        "status": "ok",
+        "created_at": "2026-10-19T16:01:18.209902+00:00",
+        "details": {
+          "project_path": "D:\\PROJECTS\\Away\\researchpeptidess.uk",
+          "target_url": "https://researchpeptidess.uk",
+          "apply": false,
+          "opportunity_count": 3,
+          "execution_mode": "dry-run",
+          "validation_status": null
+        }
+      }
+    ]
+  },
+  "artifacts": {
+    "project-profile.json": ".search-growth-engine\\project-profile.json",
+    "evidence.json": ".search-growth-engine\\evidence.json",
+    "audit.json": ".search-growth-engine\\audit.json",
+    "limitations.json": ".search-growth-engine\\limitations.json",
+    "strategy.json": ".search-growth-engine\\strategy.json",
+    "execution-plan.json": ".search-growth-engine\\execution-plan.json",
+    "execution-report.json": ".search-growth-engine\\execution-report.json",
+    "orchestration-summary.json": ".search-growth-engine\\orchestration-summary.json"
+  }
+}

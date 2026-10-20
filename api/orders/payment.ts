@@ -177,7 +177,7 @@ async function dispatchPaymentSubmittedEmails(
   const orderNumber = String(order.orderNumber || order.id || '');
   const proof = String(order.paymentProofReference || payment.transactionHash || payment.reference || 'Recorded');
   const total = money(order.total, order.currency);
-  const site = 'https://www.researchpeptidess.uk';
+  const site = 'https://researchpeptidess.uk';
   const address =
     order.shippingAddress && typeof order.shippingAddress === 'object'
       ? (order.shippingAddress as Record<string, unknown>)

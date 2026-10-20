@@ -45,11 +45,17 @@ class ConnectorRegistry:
             })
         return rows
 
+    def _connector_config(self, connector_id: str) -> dict[str, Any]:
+        raw = self.config.get('connectors')
+        if isinstance(raw, dict):
+            return dict(raw.get(connector_id) or {})
+        return {}
+
     def instance(self, connector_id: str) -> Connector:
         key = self.resolve_id(connector_id)
         if key not in self._instances:
             cls = self._classes[key]
-            cfg = (self.config.get('connectors') or {}).get(key) or {}
+            cfg = self._connector_config(key)
             self._instances[key] = cls(secrets=self.secrets, config=cfg)
         return self._instances[key]
 
