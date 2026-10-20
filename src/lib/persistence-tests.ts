@@ -24,6 +24,7 @@ import { categoryPath } from './routing';
 import { buildProductListingTitle } from './product-seo-titles';
 import { PEPTIDES_DEMAND_FEATURED_SLUGS, pickProductsBySlug } from './featured-catalogue';
 import { getProductCrossLinks } from './product-cross-links';
+import { parseProductLongDescription, isMinimalCatalogueDescription } from './product-description-template';
 import { INSIGHT_ARTICLES } from './cms-insights-posts';
 import { insightArticlePaths } from './insights';
 import { ALL_CATALOGUE_PRODUCTS } from './data/all-products';
@@ -331,6 +332,33 @@ export function runPersistenceTests(): TestResult[] {
         expected: 'insights index + article SEO',
         actual: `${paths.length} articles, ogType=${seo.ogType}`,
       };
+    }),
+    run('Long PDP descriptions parse into multiple specification sections', () => {
+      const ghk = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === 'ghk-cu');
+      if (!ghk) return { passed: false, expected: 'ghk-cu', actual: 'missing' };
+      const sections = parseProductLongDescription(ghk.longDescription, ghk);
+      const passed =
+        sections.length >= 4 &&
+        sections.some((s) => /ghk|what is/i.test(s.title)) &&
+        sections.some((s) => s.variant === 'disclaimer');
+      return {
+        passed,
+        expected: 'structured sections + disclaimer',
+        actual: `${sections.length} sections`,
+      };
+    }),
+    run('Minimal catalogue copy uses professional narrative fallback', () => {
+      const sample = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug);
+      if (!sample) return { passed: false, expected: 'catalogue product', actual: 'none' };
+      const minimal =
+        'Supplied strictly for in-vitro laboratory research and analytical use. Not for human or veterinary use.';
+      if (!isMinimalCatalogueDescription(minimal)) {
+        return { passed: false, expected: 'minimal detector', actual: 'failed' };
+      }
+      const sections = parseProductLongDescription(minimal, sample);
+      const passed =
+        sections.length >= 3 && sections.some((s) => s.id === 'identity' || s.title.includes('Analytical'));
+      return { passed, expected: 'fallback template', actual: sections.map((s) => s.id).join(',') };
     }),
     run('GHK-Cu PDP cross-links include glow blend and bacteriostatic water', () => {
       const ghk = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === 'ghk-cu');

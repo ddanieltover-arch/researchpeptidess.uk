@@ -21,6 +21,7 @@ import { ProductUkBuyerQuestions } from '../components/product/ProductUkBuyerQue
 import { GeoQuickAnswerFromPath } from '../components/content/GeoQuickAnswerFromPath';
 import { ProductInsightArticleLink } from '../components/content/ProductInsightArticleLink';
 import { ProductDescriptionLinks } from '../components/product/ProductDescriptionLinks';
+import { ProductSpecificationDocument } from '../components/product/ProductSpecificationDocument';
 import {
   ShieldCheck,
   Plus,
@@ -415,12 +416,7 @@ export const ProductDetailPage: React.FC = () => {
         {/* Tab 1: Technical Documentation Viewer */}
         {activeTab === 'specs' && (
           <div className="space-y-6 animate-in fade-in duration-150">
-            <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed font-sans">
-              <h4 className="text-sm font-bold text-slate-900 uppercase font-mono">
-                Laboratory Product Specification &amp; Overview
-              </h4>
-              <p className="whitespace-pre-wrap">{product.longDescription || product.shortDescription}</p>
-            </div>
+            <ProductSpecificationDocument product={product} />
 
             <ProductDescriptionLinks product={product} catalogue={publishedProducts} />
 
