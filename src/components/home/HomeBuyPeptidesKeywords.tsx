@@ -11,6 +11,8 @@ const BUY_PEPTIDES_LINKS = [
   { label: 'IGF-1 LR3 — order online UK', href: productPath('igf-1-lr3-1mg') },
   { label: 'Melanotan research peptide UK', href: productPath('mt-2-melanotan-2-acetate-10mg') },
   { label: 'Peptide capsules — UK shop', href: productPath('mk-677-ibutamoren-10mg-100-tablets') },
+  { label: 'Lab Insights — research articles', href: ROUTES.insights },
+  { label: 'Quality & batch documentation', href: '/quality' },
 ] as const;
 
 export const HomeBuyPeptidesKeywords: React.FC = () => {

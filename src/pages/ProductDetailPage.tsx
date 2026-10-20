@@ -18,6 +18,8 @@ import { BatchDocumentationPanel } from '../components/product/BatchDocumentatio
 import { RecentlyViewedRail } from '../components/catalogue/RecentlyViewedRail';
 import { SiteResearchResources } from '../components/content/SiteResearchResources';
 import { ProductUkBuyerQuestions } from '../components/product/ProductUkBuyerQuestions';
+import { GeoQuickAnswerFromPath } from '../components/content/GeoQuickAnswerFromPath';
+import { ProductInsightArticleLink } from '../components/content/ProductInsightArticleLink';
 import {
   ShieldCheck,
   Plus,
@@ -168,6 +170,8 @@ export const ProductDetailPage: React.FC = () => {
           { label: product.name, href: productPath(product.slug) },
         ]}
       />
+
+      <GeoQuickAnswerFromPath path={productPath(product.slug)} context={{ product }} />
 
       {/* Main Product Hero / Purchase Module */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -523,6 +527,8 @@ export const ProductDetailPage: React.FC = () => {
       </section>
 
       <ProductUkBuyerQuestions product={product} />
+
+      <ProductInsightArticleLink productSlug={product.slug} className="mt-6" />
 
       <SiteResearchResources
         pathname={productPath(product.slug)}

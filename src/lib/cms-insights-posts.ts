@@ -156,7 +156,7 @@ Searches such as **bpc157 tb500** may refer to a **co-formulated blend** or to s
 
 ### Published example
 
-When available, the [BPC-157 & TB-500 blend listing](/product/bpc-10mg-tb-10mg-20mg) states total peptide content per vial. Researchers must confirm internal SOP alignment before ordering.
+When available, the [BPC-157 & TB-500 blend listing](/product/bpc-5mg-tb-5mg) states total peptide content per vial. Researchers must confirm internal SOP alignment before ordering.
 
 ### Avoiding healing claims
 
@@ -178,7 +178,7 @@ ${RESEARCH_FOOTER}
     contentMarkdown: `
 ### NAD+ naming in search
 
-Queries combine **nad peptide**, **nad+ peptide**, and product-specific strengths. Competitors may rank **500 mg** URLs while only stocking another size. Research Peptides UK should rank on **honest variant labels** — for example [NAD+ 250 mg](/product/nad-250mg) when that is the published SKU.
+Queries combine **nad peptide**, **nad+ peptide**, and product-specific strengths. Research Peptides UK lists **honest variant labels** on the canonical PDP — for example [NAD+ 500 mg](/product/nad-500mg) when that is the published SKU.
 
 ### Research framing
 
@@ -350,6 +350,40 @@ Queries like **peptides shop** and **bacteriostatic water for peptides** combine
 ### Keep commerce on catalogue routes
 
 Editorial posts link to [peptides](/peptides) and [shop](/shop); they do not replace them.
+
+${RESEARCH_FOOTER}
+`,
+  }),
+  insight({
+    id: 'insight_ghrp2',
+    slug: 'ghrp-2-growth-hormone-secretagogue-research',
+    title: 'GHRP-2 (Pralmorelin) in Growth Hormone Secretagogue Research Models',
+    subtitle: 'Catalogue naming, GHRP class context, and UK research-use supply',
+    publishedAt: '2026-03-10',
+    lastUpdated: '2026-03-10',
+    seoTitle: 'GHRP-2 Research UK — Secretagogue Models | Lab Insights',
+    seoDescription:
+      'GHRP-2 and pralmorelin informational searches — how UK research catalogues label GH secretagogue peptides for in-vitro buyers, with links to published SKUs.',
+    contentMarkdown: `
+### Why GHRP-2 appears in peptide search
+
+**GHRP-2** (often listed as **pralmorelin** or **GHRP 2**) is discussed in **growth hormone secretagogue** literature as a synthetic hexapeptide used in controlled laboratory models — not as a consumer wellness product. UK buyers searching **ghrp-2** usually need a **published SKU**, variant mass in milligrams, and any batch documentation on the product page.
+
+### Naming and canonical URLs
+
+Catalogues may list the same compound under marketing names (**GHRP-2 acetate**, **pralmorelin 5 mg**, **10 mg** vials). Internal links should converge on **one canonical PDP** per active variant, such as [GHRP-2 10 mg](/product/ghrp-2-10mg) when that listing is published, or the [5 mg pralmorelin format](/product/ghrp-2-pralmorelin-5mg) when that is the live SKU. Avoid duplicate posts for spelling variants; use this article once.
+
+### Relationship to other secretagogue listings
+
+GHRP-2 sits in the same **research peptide** family as other GHRP compounds and combination blends (for example [CJC-1295 / ipamorelin](/product/cjc-1295-no-dac-5mg-ipamorelin-5mg) products). Each SKU is distinct — compare specifications on the relevant product page rather than assuming interchangeability.
+
+### Documentation and UK ordering
+
+HPLC or COA references appear **only where attached** to a batch or product record. See the [quality approach](/quality) and the wider [peptide collection](/peptides) for catalogue scope. Checkout requires the [research-use declaration](/research-use).
+
+### What this article does not cover
+
+No administration routes, doses, or human endocrine outcomes. For purchasing steps, see [how UK laboratories buy research peptides online](/insights/buy-research-peptides-uk-compliance).
 
 ${RESEARCH_FOOTER}
 `,

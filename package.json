@@ -22,6 +22,7 @@
     "catalog:dedupe:dry": "tsx scripts/deduplicate-catalog-slugs.ts --dry-run",
     "db:push": "drizzle-kit push",
     "seed:admin": "tsx scripts/seed-admin.ts",
+    "audit:internal-links": "tsx scripts/audit-internal-links.ts",
     "sge:audit": "cd \"Search Growth Engineering Skill\" && python -m sge orchestrate --workspace research-peptides-uk --workspaces-root workspaces --mode audit",
     "sge:strategy": "cd \"Search Growth Engineering Skill\" && python -m sge orchestrate --workspace research-peptides-uk --workspaces-root workspaces --mode strategy"
   },

@@ -16,7 +16,7 @@ import { useStore } from '../../context/StoreContext';
 import { MetaTags } from '../seo/MetaTags';
 import { getSeoMetadataForPath } from '../../lib/seo';
 import { AppLink } from '../ui/AppLink';
-import { ROUTES } from '../../lib/routing';
+import { ROUTES, insightPath } from '../../lib/routing';
 import { ContactEnquiryForm } from './ContactEnquiryForm';
 import { resolvePublicBusinessValue } from '../../lib/public-placeholders';
 import { STORE_WHATSAPP_DISPLAY } from '../../lib/store-contact';
@@ -24,6 +24,9 @@ import { WhatsAppContactLink } from '../layout/WhatsAppContactLink';
 import { CmsGeoCatalogueLinks } from './CmsGeoCatalogueLinks';
 import { UkBuyerQuestionsPanel } from './UkBuyerQuestionsPanel';
 import { FAQ_UK_BUYER_TOPICS, SHIPPING_UK_BUYER_TOPICS, geoFaqTopicsForCmsSlug } from '../../lib/uk-buyer-seo';
+import { GeoQuickAnswerFromPath } from './GeoQuickAnswerFromPath';
+import { SiteResearchResources } from './SiteResearchResources';
+import { InsightRelatedReading } from './InsightRelatedReading';
 import {
   ShieldAlert,
   ChevronRight,
@@ -289,6 +292,11 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           </div>
         </header>
 
+        <GeoQuickAnswerFromPath
+          path={isInsight ? insightPath(page.slug) : `/${page.slug}`}
+          context={{ cmsPage: page }}
+        />
+
         {/* In-Vitro Statutory Research Banner */}
         <section
           aria-label="Statutory Research Notice"
@@ -336,7 +344,14 @@ export const CMSPageView: React.FC<CMSPageViewProps> = ({ page }) => {
           />
         )}
 
-        {!isInsight && <CmsGeoCatalogueLinks slug={page.slug} />}
+        {isInsight ? (
+          <div className="space-y-4">
+            <SiteResearchResources pathname={insightPath(page.slug)} title="Catalogue & policies" />
+            <InsightRelatedReading currentSlug={page.slug} />
+          </div>
+        ) : (
+          <CmsGeoCatalogueLinks slug={page.slug} />
+        )}
 
         {page.slug === 'contact' && (
           <>

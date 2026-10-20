@@ -8,6 +8,7 @@ import { isPublicCatalogueProduct } from './merchandising';
 import { buildPrerenderResourceNav } from './internal-linking';
 import { insightArticlePaths } from './insights';
 import { categoryPath, parseAppPath } from './routing';
+import { GeoQuickAnswerContext, getGeoQuickAnswerText } from './geo-quick-answers';
 import { getSeoMetadataForPath, HOME_PRERENDER_H1, PRIMARY_DOMAIN, SeoMetadata } from './seo';
 
 export function escapeHtml(value: string): string {
@@ -44,15 +45,20 @@ export function resolvePrerenderSeo(
 export function buildPrerenderBody(
   path: string,
   seo: SeoMetadata,
-  options?: { categoryPath?: string }
+  options?: { categoryPath?: string; quickAnswerContext?: GeoQuickAnswerContext }
 ): string {
   const heading = path === '/' ? HOME_PRERENDER_H1 : seo.ogTitle || seo.title;
   const intro = seo.description;
   const shopUrl = `${PRIMARY_DOMAIN}/shop`;
   const resourceLinks = buildPrerenderResourceNav(path, options?.categoryPath);
+  const quickAnswer = getGeoQuickAnswerText(path, options?.quickAnswerContext);
+  const answerBlock = quickAnswer
+    ? `<section id="answer" aria-label="Quick Answer"><p><strong>Quick Answer:</strong> ${escapeHtml(quickAnswer)}</p></section>`
+    : '';
 
   return `<main id="prerender-main">
   <h1>${escapeHtml(heading)}</h1>
+  ${answerBlock}
   <p>${escapeHtml(intro)}</p>
   <p><a href="${escapeHtml(shopUrl)}">Browse the research catalogue</a></p>
   ${resourceLinks}

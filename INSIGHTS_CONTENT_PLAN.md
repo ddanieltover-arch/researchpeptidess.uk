@@ -19,6 +19,7 @@ All posts are **research-use** oriented — no dosage guides, “best supplier�
 | 2025-10-14 | `glow-peptide-blend-ghk-cu-research-context` | glow peptide, glow blend | Glow blend PDP |
 | 2025-10-28 | `follistatin-344-research-material-overview` | follistatin, follistatin 344 | Follistatin PDP |
 | 2026-02-10 | `uk-laboratory-peptide-reconstitution-workflow` | peptides shop, bacteriostatic water for peptides | /shop, bac water PDP |
+| 2026-03-10 | `ghrp-2-growth-hormone-secretagogue-research` | ghrp-2, pralmorelin | GHRP-2 10 mg / pralmorelin PDPs, /quality |
 
 **Cadence:** ~1 post every 14 days Jun–Oct 2025, then a freshness post Feb 2026.
 
@@ -26,7 +27,6 @@ All posts are **research-use** oriented — no dosage guides, “best supplier�
 
 | Target window | Topic | Keywords | Notes |
 |---------------|-------|----------|-------|
-| 2026-03 | GHRP-2 in GH secretagogue models | ghrp-2 | Link GHRP-2 PDP |
 | 2026-04 | HGH fragment 176-191 naming | hgh fragment 176-191 | No performance claims |
 | 2026-05 | “Can you buy peptides in the UK?” (expanded) | can you buy peptides in the uk | Overlap FAQ — keep single canonical FAQ |
 | 2026-06 | Wholesale / bulk inquiries | wholesale peptides uk | B2B → contact, not consumer |

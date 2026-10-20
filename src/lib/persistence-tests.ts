@@ -368,6 +368,7 @@ export function runPersistenceTests(): TestResult[] {
       const path = `/product/${sample.slug}`;
       const body = buildPrerenderBody(path, getSeoMetadataForPath(path), {
         categoryPath: cat ? categoryPath(cat.slug) : undefined,
+        quickAnswerContext: { product: sample },
       });
       const passed =
         body.includes('Back to category collection') &&
@@ -388,6 +389,26 @@ export function runPersistenceTests(): TestResult[] {
         passed,
         expected: 'one H1 + research-use in prerender graph',
         actual: `h1=${h1Count}`,
+      };
+    }),
+    run('Prerender and GEO routes include Quick Answer section#answer', () => {
+      const homeBody = buildPrerenderBody('/', getSeoMetadataForPath('/'));
+      const peptidesBody = buildPrerenderBody('/peptides', getSeoMetadataForPath('/peptides'));
+      const sample = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug);
+      const productBody = sample
+        ? buildPrerenderBody(`/product/${sample.slug}`, getSeoMetadataForPath(`/product/${sample.slug}`), {
+            quickAnswerContext: { product: sample },
+          })
+        : '';
+      const passed =
+        homeBody.includes('id="answer"') &&
+        homeBody.includes('Quick Answer:') &&
+        peptidesBody.includes('COA references') &&
+        (sample ? productBody.includes('How to buy') : true);
+      return {
+        passed,
+        expected: 'answer capsule in prerender HTML for home, peptides, product',
+        actual: `home=${homeBody.includes('id="answer"')} peptides=${peptidesBody.includes('id="answer"')}`,
       };
     }),
     run('Public bootstrap payload omits orders, payments, and inventory', () => {

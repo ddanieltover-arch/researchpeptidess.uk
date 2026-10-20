@@ -22,6 +22,7 @@ import type { CatalogueBuyerContext } from '../lib/uk-buyer-seo';
 import { Search, LayoutGrid, List } from 'lucide-react';
 import { SiteResearchResources } from '../components/content/SiteResearchResources';
 import { CatalogueUkBuyerQuestions } from '../components/catalogue/CatalogueUkBuyerQuestions';
+import { GeoQuickAnswerFromPath } from '../components/content/GeoQuickAnswerFromPath';
 import { Pagination } from '../components/ui/Pagination';
 
 const SHOP_PRODUCTS_PER_PAGE = 30;
@@ -169,6 +170,11 @@ export const ShopPage: React.FC = () => {
           {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
         </Badge>
       </div>
+
+      <GeoQuickAnswerFromPath
+        path={currentPath}
+        context={activeCategory ? { category: activeCategory } : undefined}
+      />
 
       {isPeptidesCollection && featuredDemandProducts.length > 0 ? (
         <FeaturedDemandProducts

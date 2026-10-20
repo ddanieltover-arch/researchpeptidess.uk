@@ -17,6 +17,7 @@ export const SITE_INTERNAL_RESOURCE_LINKS: InternalResourceLink[] = [
   { href: ROUTES.researchChemicals, label: 'Research chemicals catalogue', cluster: 'catalogue' },
   { href: ROUTES.shop, label: 'Full laboratory shop catalogue', cluster: 'catalogue' },
   { href: '/quality', label: 'Quality & HPLC documentation', cluster: 'compliance' },
+  { href: '/about', label: 'About Research Peptides UK', cluster: 'compliance' },
   { href: '/research-use', label: 'Research-use policy', cluster: 'compliance' },
   { href: '/research', label: 'Technical documentation', cluster: 'compliance' },
   { href: '/shipping', label: 'Shipping & delivery', cluster: 'support' },

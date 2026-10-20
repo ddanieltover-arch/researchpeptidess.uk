@@ -11,20 +11,22 @@
 | Extract | H1 + short blocks; UK buyer panels; CMS “at a glance”; Lab Insights |
 | Entity | Organization, WebSite, Product, BlogPosting; no fake reviews |
 | Answers | `FAQPage` JSON-LD + visible `UkBuyerQuestionsPanel` on key routes |
+| Answer capsules | `GeoQuickAnswer` (`section#answer`) on home, catalogue, PDP, CMS, insights — see `src/lib/geo-quick-answers.ts` |
 | Links | `internal-linking.ts`, footer, insights → PDPs |
 
 ## Route checklist
 
-| Route | Visible GEO | FAQPage JSON-LD |
+| Route | Quick Answer (`#answer`) | FAQ panel | FAQPage JSON-LD |
 |-------|-------------|-----------------|
-| `/` | HomeUkBuyerQuestions | Yes (home topics) |
-| `/peptides` | Featured rail, LabInsightsPromo, CatalogueUkBuyerQuestions | Yes (catalogue) |
-| `/shop` | CatalogueUkBuyerQuestions | Yes (shop) |
-| PDP | ProductUkBuyerQuestions | Product + FAQPage |
-| `/faq`, `/shipping` | UkBuyerQuestionsPanel | Yes |
-| `/quality`, `/about` | UkBuyerQuestionsPanel (GEO topics) | Yes |
-| `/insights` | Index FAQ panel | CollectionPage + FAQPage |
-| `/insights/*` | Article body | BlogPosting |
+| `/` | Yes | HomeUkBuyerQuestions | Yes (home topics) |
+| `/peptides` | Yes | Featured rail, LabInsightsPromo, CatalogueUkBuyerQuestions | Yes (catalogue) |
+| `/shop`, `/research-chemicals` | Yes | CatalogueUkBuyerQuestions | Yes |
+| `/category/*` | Yes (collection copy) | CatalogueUkBuyerQuestions | Category SEO |
+| PDP | Yes (product copy) | ProductUkBuyerQuestions | Product + FAQPage |
+| `/faq`, `/shipping`, `/research-use`, `/contact`, `/research` | Yes | UkBuyerQuestionsPanel where applicable | Yes |
+| `/quality`, `/about` | Yes | UkBuyerQuestionsPanel (GEO topics) | Yes |
+| `/insights` | Yes | Index FAQ panel | CollectionPage + FAQPage |
+| `/insights/*` | Yes (from article meta) | Article body | BlogPosting |
 
 ## Explicitly not used
 

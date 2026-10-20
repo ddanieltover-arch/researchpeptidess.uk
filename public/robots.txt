@@ -3,6 +3,7 @@ User-agent: *
 Allow: /
 Allow: /shop
 Allow: /peptides
+Allow: /insights
 Allow: /research-chemicals
 Allow: /product/
 Allow: /about
@@ -33,12 +34,16 @@ User-agent: OAI-SearchBot
 Allow: /
 Allow: /shop
 Allow: /peptides
+Allow: /insights
 Allow: /research-chemicals
 Allow: /product/
 Allow: /quality
+Allow: /about
+Allow: /research
 Allow: /faq
 Allow: /research-use
 Allow: /shipping
+Allow: /contact
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /account

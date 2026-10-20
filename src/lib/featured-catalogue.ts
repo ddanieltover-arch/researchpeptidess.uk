@@ -11,10 +11,10 @@ export const PEPTIDES_DEMAND_FEATURED_SLUGS: readonly string[] = [
   'kpv',
   'glow-blend-ghk-cu-bpc157-tb500',
   'cjc-1295-no-dac-5mg-ipamorelin-5mg',
-  'bpc-10mg-tb-10mg-20mg',
+  'bpc-5mg-tb-5mg',
   '5-amino-1mq',
   'bpc-157',
-  'nad-250mg',
+  'nad-500mg',
 ];
 
 export const REAGENT_FOOTER_SLUGS: readonly string[] = [

@@ -333,7 +333,7 @@ export const HomePage: React.FC = () => {
             FAQ →
           </AppLink>
         </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <AppLink href="/faq" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
             <h3 className="font-mono text-sm font-bold text-slate-900">FAQ</h3>
             <p className="mt-1">Ordering, payments, and research-use questions.</p>
@@ -349,6 +349,14 @@ export const HomePage: React.FC = () => {
           <AppLink href="/shipping" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
             <h3 className="font-mono text-sm font-bold text-slate-900">Shipping</h3>
             <p className="mt-1">Configured destinations, prices, and tracking.</p>
+          </AppLink>
+          <AppLink href="/quality" className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Quality</h3>
+            <p className="mt-1">HPLC and COA scope — documented per SKU where records exist.</p>
+          </AppLink>
+          <AppLink href={ROUTES.insights} className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+            <h3 className="font-mono text-sm font-bold text-slate-900">Lab Insights</h3>
+            <p className="mt-1">Research-context articles linked to live catalogue listings.</p>
           </AppLink>
         </div>
       </section>

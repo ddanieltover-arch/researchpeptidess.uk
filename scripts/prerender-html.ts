@@ -27,13 +27,33 @@ for (const path of paths) {
     continue;
   }
   let categoryPathForNav: string | undefined;
+  const quickAnswerContext: {
+    product?: (typeof ALL_CATALOGUE_PRODUCTS)[number];
+    cmsPage?: (typeof cmsForPrerender)[number];
+    category?: (typeof INITIAL_CATEGORIES)[number];
+  } = {};
+
   if (path.startsWith('/product/')) {
     const slug = path.replace('/product/', '');
     const product = ALL_CATALOGUE_PRODUCTS.find((p) => p.slug === slug);
+    if (product) quickAnswerContext.product = product;
     const cat = product ? INITIAL_CATEGORIES.find((c) => c.id === product.categoryId) : undefined;
     categoryPathForNav = cat ? categoryPath(cat.slug) : undefined;
+  } else if (path.startsWith('/category/')) {
+    const slug = path.replace('/category/', '');
+    const category = INITIAL_CATEGORIES.find((c) => c.slug === slug);
+    if (category) quickAnswerContext.category = category;
+  } else if (path.startsWith('/insights/')) {
+    const slug = path.replace('/insights/', '');
+    const article = cmsForPrerender.find((p) => p.slug === slug && p.category === 'INSIGHTS');
+    if (article) quickAnswerContext.cmsPage = article;
+  } else if (path.startsWith('/') && path.length > 1 && !path.includes('/', 2)) {
+    const slug = path.slice(1);
+    const cmsPage = cmsForPrerender.find((p) => p.slug === slug && p.category !== 'INSIGHTS');
+    if (cmsPage) quickAnswerContext.cmsPage = cmsPage;
   }
-  const body = buildPrerenderBody(path, seo, { categoryPath: categoryPathForNav });
+
+  const body = buildPrerenderBody(path, seo, { categoryPath: categoryPathForNav, quickAnswerContext });
   const html = applyPrerenderShell(template, seo, body);
   const relative = path === '/' ? 'index.html' : `${path.replace(/^\//, '')}/index.html`;
   const outPath = resolve(distDir, relative);

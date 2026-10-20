@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, Check, FileText, ShoppingBag, Truck } from 'lucide-react';
 import { AppLink } from '../ui/AppLink';
 import { ROUTES } from '../../lib/routing';
+import { GeoQuickAnswerFromPath } from '../content/GeoQuickAnswerFromPath';
 
 const FEATURE_PILLS = ['99%+ HPLC Purity', 'COA Available', 'Royal Mail Tracked'] as const;
 
@@ -35,6 +36,8 @@ export const HeroIntro: React.FC = () => {
         <strong className="font-semibold text-slate-600">how to buy research peptides in the United Kingdom</strong>,
         start with the catalogue; UK delivery and GBP pricing are confirmed at checkout.
       </p>
+
+      <GeoQuickAnswerFromPath path="/" className="mt-5 max-w-lg" />
 
       <ul className="mt-5 flex flex-wrap gap-2">
         {FEATURE_PILLS.map((label) => (
