@@ -50,7 +50,7 @@
     },
     {
       "source": "/product/tb-500-thymosin-beta-4-derivative",
-      "destination": "/product/thymosin-beta-4-tb500-10mg",
+      "destination": "/product/thymosin-beta-4-tb500-5mg",
       "permanent": true
     },
     {
@@ -95,12 +95,12 @@
     },
     {
       "source": "/product/ghrp6-analytical-grade-compound",
-      "destination": "/product/ghrp-6-5mg",
+      "destination": "/product/ghrp-6-10mg",
       "permanent": true
     },
     {
       "source": "/product/hexarelin-analytical-grade-standard",
-      "destination": "/product/hexarelin-acetate",
+      "destination": "/product/hexarelin-2mg",
       "permanent": true
     },
     {
@@ -115,7 +115,7 @@
     },
     {
       "source": "/product/hgh-frag-176-191-standard",
-      "destination": "/product/hgh-fragment-176-191-10mg",
+      "destination": "/product/hgh-fragment-176-191-5mg",
       "permanent": true
     },
     {
@@ -130,7 +130,7 @@
     },
     {
       "source": "/product/igf-1-des-truncated-standard",
-      "destination": "/product/igf-1-1-3-1mg",
+      "destination": "/product/igf-1-des-1mg",
       "permanent": true
     },
     {
@@ -220,7 +220,7 @@
     },
     {
       "source": "/product/bpc-157-tb-500-dual-blend-standard",
-      "destination": "/product/bpc-10mg-tb-10mg-20mg",
+      "destination": "/product/bpc-5mg-tb-5mg",
       "permanent": true
     },
     {
@@ -245,7 +245,7 @@
     },
     {
       "source": "/product/nad-plus-nicotinamide-adenine-dinucleotide-standard",
-      "destination": "/product/nad-250mg",
+      "destination": "/product/nad-500mg",
       "permanent": true
     },
     {
@@ -261,6 +261,181 @@
     {
       "source": "/product/bacteriostatic-water-10ml-vial",
       "destination": "/product/bacteriostatic-water-0-9-benzyl",
+      "permanent": true
+    },
+    {
+      "source": "/product/nad-250mg",
+      "destination": "/product/nad-500mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/nad",
+      "destination": "/product/nad-500mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/tesamorelin-5mg-ipamorelin-5mg-10mg-total-peptide-blend",
+      "destination": "/product/tesamorelin-5mg-ipamorelin-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/mt-2-melanotan-2-acetate",
+      "destination": "/product/mt-2-melanotan-2-acetate-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/kisspeptin-10",
+      "destination": "/product/kisspeptin",
+      "permanent": true
+    },
+    {
+      "source": "/product/cjc-1295-no-dac-ipamorelin-blend",
+      "destination": "/product/cjc-1295-no-dac-5mg-ipamorelin-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/cjc-1295-no-dac-5mg-ipamorelin-5mg-10mg-total-peptide-blend",
+      "destination": "/product/cjc-1295-no-dac-5mg-ipamorelin-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/mt-1",
+      "destination": "/product/mt-1-melanotan-1-acetate-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/bpc-10mg-tb-10mg-20mg",
+      "destination": "/product/bpc-5mg-tb-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/bpc-10mg-tb-10mg-20mg-peptide-blend",
+      "destination": "/product/bpc-5mg-tb-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/cagrilintide",
+      "destination": "/product/gagrilintide-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/hgh-191aa-somatropin",
+      "destination": "/product/hgh-191aasomatropin",
+      "permanent": true
+    },
+    {
+      "source": "/product/semaglutide",
+      "destination": "/product/sema",
+      "permanent": true
+    },
+    {
+      "source": "/product/semaglutide-glp-1",
+      "destination": "/product/sema",
+      "permanent": true
+    },
+    {
+      "source": "/product/tirzepatide-100mg-one-vial",
+      "destination": "/product/tirzepatide",
+      "permanent": true
+    },
+    {
+      "source": "/product/mots-c",
+      "destination": "/product/mots-c-mitochondrial-derived-peptide",
+      "permanent": true
+    },
+    {
+      "source": "/product/retatrutide",
+      "destination": "/product/reta",
+      "permanent": true
+    },
+    {
+      "source": "/product/retatrutide-glp-3",
+      "destination": "/product/reta",
+      "permanent": true
+    },
+    {
+      "source": "/product/hexarelin-acetate",
+      "destination": "/product/hexarelin-2mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/thymosin-beta-4-tb500-10mg",
+      "destination": "/product/thymosin-beta-4-tb500-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/gonadorelin-acetate-gnrh-2mg",
+      "destination": "/product/gonadorelin-acetategnrh-2mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/hgh-fragment-176-191-10mg",
+      "destination": "/product/hgh-fragment-176-191-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/hgh-fragment-176-191",
+      "destination": "/product/hgh-fragment-176-191-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/selank",
+      "destination": "/product/selank-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/pt-141",
+      "destination": "/product/pt-141-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ipamorelin",
+      "destination": "/product/ipamorelin-5mg-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/igf-1-lr3",
+      "destination": "/product/igf-1-lr3-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/igf-1-1-3-1mg",
+      "destination": "/product/igf-1-des-1mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ghrp-6-5mg",
+      "destination": "/product/ghrp-6-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ghrp-6-acetate",
+      "destination": "/product/ghrp-6-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ghrp-2-acetate",
+      "destination": "/product/ghrp-2-10mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/dsip",
+      "destination": "/product/dsip-delta-sleep-inducing-peptide",
+      "permanent": true
+    },
+    {
+      "source": "/product/cjc-1295-with-dac",
+      "destination": "/product/cjc-1295-with-dac-2mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/aod9604",
+      "destination": "/product/aod-9604-5mg",
+      "permanent": true
+    },
+    {
+      "source": "/product/ace-031",
+      "destination": "/product/ace-031-1mg",
       "permanent": true
     }
   ]

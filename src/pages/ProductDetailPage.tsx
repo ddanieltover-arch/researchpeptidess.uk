@@ -6,6 +6,7 @@ import { Badge } from '../components/ui/Badge';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { categoryPath, productPath, ROUTES } from '../lib/routing';
 import { Tabs } from '../components/ui/Tabs';
+import { Select } from '../components/ui/Select';
 import { ProductCard } from '../components/ui/ProductCard';
 import { formatPrice } from '../lib/utils';
 import { calculateTierDiscountForLine } from '../lib/pricing';
@@ -248,33 +249,22 @@ export const ProductDetailPage: React.FC = () => {
 
           {/* Variant Selection */}
           <div className="space-y-2.5 pt-2 border-t border-slate-200">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-800 font-mono">
-              <span>Select Quantity / Format:</span>
-              <span className="text-[#4353FF] font-bold">{selectedVariant.size}</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {product.variants.map((v) => {
-                const isSelected = v.id === selectedVariant.id;
-                return (
-                  <button
-                    key={v.id}
-                    onClick={() => setSelectedVariantId(v.id)}
-                    className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-[#4353FF] bg-blue-50/50 shadow-xs ring-1 ring-blue-500/30'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-slate-900 font-mono">{v.size}</span>
-                    <span className="text-xs font-mono font-semibold text-slate-700 mt-1">
-                      {formatPrice(v.price, currency)}
-                    </span>
-                    <span className="text-[10px] font-mono mt-0.5 text-emerald-700">In stock</span>
-                  </button>
-                );
+            <Select
+              id="product-variant-select"
+              label="Select quantity / format"
+              value={selectedVariant.id}
+              onChange={(event) => setSelectedVariantId(event.target.value)}
+              className="h-11 font-mono text-xs"
+              options={product.variants.map((variant) => {
+                const inStock = variant.stock > 0 && variant.status === 'ACTIVE';
+                const stockLabel = inStock ? 'In stock' : 'Out of stock';
+                return {
+                  value: variant.id,
+                  label: `${variant.size} — ${formatPrice(variant.price, currency)} — ${stockLabel}`,
+                  disabled: !inStock,
+                };
               })}
-            </div>
+            />
           </div>
 
           {/* Volume Pricing Matrix Table */}
